@@ -14,8 +14,7 @@
       "!**/*.js.map",
       "!**/*.d.ts",
       "!**/*.d.ts.map"
-    ],
-    "maxSize": 4194304
+    ]
   },
   "formatter": {
     "enabled": true,
