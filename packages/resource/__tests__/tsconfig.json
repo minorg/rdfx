@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "noUncheckedIndexedAccess": false,
+    "sourceMap": true,
+    "target": "ES2020"
+  },
+  "extends": ["@tsconfig/strictest/tsconfig.json"],
+  "include": ["*.ts"]
+}
