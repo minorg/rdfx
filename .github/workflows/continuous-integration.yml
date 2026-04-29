@@ -1,0 +1,28 @@
+name: Continuous Integration
+on:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch: null
+jobs:
+  build:
+    env:
+      DO_NOT_TRACK: 1
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test:coverage
+      - name: Coverage report
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
