@@ -1,0 +1,32 @@
+{
+  "devDependencies": {
+    "@biomejs/biome": "2.3.10",
+    "@vitest/coverage-v8": "~4.0.18",
+    "tsx": "~4.16.2",
+    "turbo": "~2.5.5",
+    "vitest": "~4.0.18"
+  },
+  "name": "rdfx",
+  "optionalDependencies": {
+    "@biomejs/cli-linux-x64": "2.3.10"
+  },
+  "packageManager": "npm@11.11.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "check": "biome check",
+    "check:write": "biome check --write",
+    "check:write:unsafe": "biome check --write --unsafe",
+    "clean": "turbo run clean",
+    "depcheck": "turbo run depcheck",
+    "dev": "turbo run --concurrency 12 dev dev:tests",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "typecheck": "turbo run typecheck",
+    "typecheck:watch": "turbo run --concurrency 12 dev:noEmit dev:tests"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}
