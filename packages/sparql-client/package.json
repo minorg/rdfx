@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "@rdfjs/types": "~2.0.1",
+    "@types/n3": "~1.26.0",
+    "n3": "~1.26.0"
+  },
+  "devDependencies": {
+    "oxigraph": "0.4.7"
+  },
+  "license": "Apache-2.0",
+  "name": "@rdfx/sparql-client",
+  "packageManager": "npm@11.11.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minorg/rdfx.git"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist",
+    "depcheck": "depcheck .",
+    "dev": "tsc -w --preserveWatchOutput"
+  },
+  "type": "module",
+  "version": "0.0.1"
+}
