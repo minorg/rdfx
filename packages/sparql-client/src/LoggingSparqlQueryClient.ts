@@ -1,7 +1,7 @@
-import { BlankNode, Literal, NamedNode, Quad } from "@rdfjs/types";
+import type { BlankNode, Literal, NamedNode, Quad } from "@rdfjs/types";
 import N3 from "n3";
 import { LoggingSparqlBaseClient } from "./LoggingSparqlBaseClient.js";
-import { SparqlQueryClient } from "./SparqlQueryClient.js";
+import type { SparqlQueryClient } from "./SparqlQueryClient.js";
 
 /**
  * SparqlClient implementation that logs queries and delegates actual work to another SparqlClient implementation.

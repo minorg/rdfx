@@ -1,6 +1,6 @@
-import { DatasetCore, DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
+import type { DatasetCore, DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
 import { LoggingSparqlBaseClient } from "./LoggingSparqlBaseClient.js";
-import { SparqlGraphStoreClient } from "./SparqlGraphStoreClient.js";
+import type { SparqlGraphStoreClient } from "./SparqlGraphStoreClient.js";
 
 export class LoggingSparqlGraphStoreClient
   extends LoggingSparqlBaseClient<SparqlGraphStoreClient>

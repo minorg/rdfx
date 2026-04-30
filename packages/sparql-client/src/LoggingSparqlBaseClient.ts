@@ -1,6 +1,6 @@
-import { SparqlGraphStoreClient } from "./SparqlGraphStoreClient.js";
-import { SparqlQueryClient } from "./SparqlQueryClient.js";
-import { SparqlUpdateClient } from "./SparqlUpdateClient.js";
+import type { SparqlGraphStoreClient } from "./SparqlGraphStoreClient.js";
+import type { SparqlQueryClient } from "./SparqlQueryClient.js";
+import type { SparqlUpdateClient } from "./SparqlUpdateClient.js";
 
 type Logger = (
   message: string,

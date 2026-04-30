@@ -1,4 +1,4 @@
-import { DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
+import type { DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
 
 export interface SparqlGraphStoreClient {
   /**

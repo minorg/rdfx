@@ -1,5 +1,5 @@
 import { LoggingSparqlBaseClient } from "./LoggingSparqlBaseClient.js";
-import { SparqlUpdateClient } from "./SparqlUpdateClient.js";
+import type { SparqlUpdateClient } from "./SparqlUpdateClient.js";
 
 /**
  * SparqlClient implementation that logs queries and delegates actual work to another SparqlClient implementation.

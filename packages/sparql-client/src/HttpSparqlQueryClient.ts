@@ -1,7 +1,13 @@
-import { BlankNode, DataFactory, Literal, NamedNode, Quad } from "@rdfjs/types";
+import type {
+  BlankNode,
+  DataFactory,
+  Literal,
+  NamedNode,
+  Quad,
+} from "@rdfjs/types";
 import N3 from "n3";
 import { HttpSparqlBaseClient } from "./HttpSparqlBaseClient.js";
-import { SparqlQueryClient } from "./SparqlQueryClient.js";
+import type { SparqlQueryClient } from "./SparqlQueryClient.js";
 
 export class HttpSparqlQueryClient
   extends HttpSparqlBaseClient<HttpSparqlQueryClient.RequestOptions>

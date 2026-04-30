@@ -1,6 +1,6 @@
-import { NamedNode } from "@rdfjs/types";
+import type { NamedNode } from "@rdfjs/types";
 import { HttpSparqlBaseClient } from "./HttpSparqlBaseClient.js";
-import { SparqlUpdateClient } from "./SparqlUpdateClient.js";
+import type { SparqlUpdateClient } from "./SparqlUpdateClient.js";
 
 export class HttpSparqlUpdateClient
   extends HttpSparqlBaseClient<HttpSparqlUpdateClient.RequestOptions>

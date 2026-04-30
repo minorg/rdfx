@@ -1,4 +1,4 @@
-import {
+import type {
   BlankNode,
   DataFactory,
   DefaultGraph,
@@ -7,9 +7,9 @@ import {
   Quad,
   Term,
 } from "@rdfjs/types";
-import { SparqlGraphStoreClient } from "./SparqlGraphStoreClient.js";
-import { SparqlQueryClient } from "./SparqlQueryClient.js";
-import { SparqlUpdateClient } from "./SparqlUpdateClient.js";
+import type { SparqlGraphStoreClient } from "./SparqlGraphStoreClient.js";
+import type { SparqlQueryClient } from "./SparqlQueryClient.js";
+import type { SparqlUpdateClient } from "./SparqlUpdateClient.js";
 
 // Re-declare the parts of oxigraph.Store we need in order to avoid an explicit dependency on oxigraph.
 interface Store {

@@ -1,7 +1,7 @@
-import { DataFactory, DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
+import type { DataFactory, DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
 import N3 from "n3";
 import { HttpSparqlBaseClient } from "./HttpSparqlBaseClient.js";
-import { SparqlGraphStoreClient } from "./SparqlGraphStoreClient.js";
+import type { SparqlGraphStoreClient } from "./SparqlGraphStoreClient.js";
 
 export class HttpSparqlGraphStoreClient
   extends HttpSparqlBaseClient<HttpSparqlGraphStoreClient.RequestOptions>

@@ -1,4 +1,4 @@
-import { BlankNode, Literal, NamedNode, Quad } from "@rdfjs/types";
+import type { BlankNode, Literal, NamedNode, Quad } from "@rdfjs/types";
 
 /**
  * SPARQL 1.1 Protocol query operations (https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/#query-operation).
