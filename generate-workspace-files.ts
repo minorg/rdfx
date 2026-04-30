@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.1";
+const VERSION = "0.0.2";
 
 const externalDependencies = {
   "@rdfjs/data-model": "~2.1.1",
