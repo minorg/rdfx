@@ -1,4 +1,5 @@
 import DataFactory from "@rdfjs/data-model";
+import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
 import { LiteralDecoder } from "../src/LiteralDecoder.js";
 

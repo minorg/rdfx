@@ -74,7 +74,7 @@ const workspaces = {
   packages: {
     literal: {
       dependencies: {
-        external: ["@rdfjs/types"],
+        external: ["@rdfjs/types", "purify-ts"],
       },
       devDependencies: {
         external: [

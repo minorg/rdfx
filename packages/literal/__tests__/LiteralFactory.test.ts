@@ -1,5 +1,6 @@
 import DataFactory from "@rdfjs/data-model";
 import type { Literal } from "@rdfjs/types";
+import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, expect, it } from "vitest";
 import { testData } from "../../resource/__tests__/testData.js";
 import { LiteralDecoder } from "../src/LiteralDecoder.js";
@@ -7,7 +8,7 @@ import { LiteralFactory } from "../src/LiteralFactory.js";
 
 describe("LiteralFactory", () => {
   const { literals } = testData;
-  const sut = new LiteralFactory();
+  const sut = new LiteralFactory({ dataFactory: DataFactory });
   const weirdDatatype = DataFactory.namedNode("http://example.com/weird");
 
   function expectEquals(actual: Literal, expected: Literal): void {

@@ -1,4 +1,3 @@
-import DefaultDataFactory from "@rdfjs/data-model";
 import type { DataFactory, Literal, NamedNode } from "@rdfjs/types";
 import { literalDatatypeDefinitions } from "./literalDatatypeDefinitions.js";
 import type { Primitive } from "./Primitive.js";
@@ -14,18 +13,82 @@ class DatatypeRangeError extends RangeError {
  */
 export class LiteralFactory {
   private readonly dataFactory: DataFactory;
+  private readonly xsd: {
+    boolean: NamedNode<"http://www.w3.org/2001/XMLSchema#boolean">;
+    byte: NamedNode<"http://www.w3.org/2001/XMLSchema#byte">;
+    date: NamedNode<"http://www.w3.org/2001/XMLSchema#date">;
+    dateTime: NamedNode<"http://www.w3.org/2001/XMLSchema#dateTime">;
+    dateTimeStamp: NamedNode<"http://www.w3.org/2001/XMLSchema#dateTimeStamp">;
+    decimal: NamedNode<"http://www.w3.org/2001/XMLSchema#decimal">;
+    double: NamedNode<"http://www.w3.org/2001/XMLSchema#double">;
+    float: NamedNode<"http://www.w3.org/2001/XMLSchema#float">;
+    int: NamedNode<"http://www.w3.org/2001/XMLSchema#int">;
+    integer: NamedNode<"http://www.w3.org/2001/XMLSchema#integer">;
+    long: NamedNode<"http://www.w3.org/2001/XMLSchema#long">;
+    short: NamedNode<"http://www.w3.org/2001/XMLSchema#short">;
+    string: NamedNode<"http://www.w3.org/2001/XMLSchema#string">;
+    unsignedByte: NamedNode<"http://www.w3.org/2001/XMLSchema#unsignedByte">;
+    unsignedInt: NamedNode<"http://www.w3.org/2001/XMLSchema#unsignedInt">;
+    unsignedLong: NamedNode<"http://www.w3.org/2001/XMLSchema#unsignedLong">;
+    unsignedShort: NamedNode<"http://www.w3.org/2001/XMLSchema#unsignedShort">;
+  };
 
-  constructor(options?: { dataFactory?: DataFactory }) {
-    this.dataFactory = options?.dataFactory ?? DefaultDataFactory;
+  constructor({ dataFactory }: { dataFactory: DataFactory }) {
+    this.dataFactory = dataFactory;
+    this.xsd = {
+      boolean: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#boolean",
+      ),
+      byte: this.dataFactory.namedNode("http://www.w3.org/2001/XMLSchema#byte"),
+      date: this.dataFactory.namedNode("http://www.w3.org/2001/XMLSchema#date"),
+      dateTime: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#dateTime",
+      ),
+      dateTimeStamp: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#dateTimeStamp",
+      ),
+      decimal: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#decimal",
+      ),
+      double: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#double",
+      ),
+      float: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#float",
+      ),
+      int: this.dataFactory.namedNode("http://www.w3.org/2001/XMLSchema#int"),
+      integer: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#integer",
+      ),
+      long: this.dataFactory.namedNode("http://www.w3.org/2001/XMLSchema#long"),
+      short: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#short",
+      ),
+      string: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#string",
+      ),
+      unsignedByte: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#unsignedByte",
+      ),
+      unsignedInt: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#unsignedInt",
+      ),
+      unsignedLong: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#unsignedLong",
+      ),
+      unsignedShort: this.dataFactory.namedNode(
+        "http://www.w3.org/2001/XMLSchema#unsignedShort",
+      ),
+    };
   }
 
   bigint(value: bigint, datatype?: NamedNode): Literal {
-    return this.numeric(value, datatype ?? xsd.integer);
+    return this.numeric(value, datatype ?? this.xsd.integer);
   }
 
   boolean(value: boolean, datatype?: NamedNode): Literal {
     if (!datatype) {
-      datatype = xsd.boolean;
+      datatype = this.xsd.boolean;
     }
     const datatypeDefinition = literalDatatypeDefinitions[datatype.value];
     if (datatypeDefinition && datatypeDefinition.kind !== "boolean") {
@@ -36,7 +99,7 @@ export class LiteralFactory {
 
   date(value: Date, datatype?: NamedNode): Literal {
     if (!datatype) {
-      datatype = xsd.dateTime;
+      datatype = this.xsd.dateTime;
     }
 
     const datatypeDefinition = literalDatatypeDefinitions[datatype.value];
@@ -82,19 +145,21 @@ export class LiteralFactory {
     if (!datatype) {
       if (Number.isInteger(value)) {
         if (value < 0) {
-          datatype = [xsd.byte, xsd.short, xsd.int].find((checkDatatype) => {
-            const checkDatatypeDefinition =
-              literalDatatypeDefinitions[checkDatatype.value];
-            if (checkDatatypeDefinition?.kind !== "int") {
-              throw new Error("should never happen");
-            }
-            return value >= checkDatatypeDefinition.range[0];
-          });
+          datatype = [this.xsd.byte, this.xsd.short, this.xsd.int].find(
+            (checkDatatype) => {
+              const checkDatatypeDefinition =
+                literalDatatypeDefinitions[checkDatatype.value];
+              if (checkDatatypeDefinition?.kind !== "int") {
+                throw new Error("should never happen");
+              }
+              return value >= checkDatatypeDefinition.range[0];
+            },
+          );
         } else {
           datatype = [
-            xsd.unsignedByte,
-            xsd.unsignedShort,
-            xsd.unsignedInt,
+            this.xsd.unsignedByte,
+            this.xsd.unsignedShort,
+            this.xsd.unsignedInt,
           ].find((checkDatatype) => {
             const checkDatatypeDefinition =
               literalDatatypeDefinitions[checkDatatype.value];
@@ -106,10 +171,10 @@ export class LiteralFactory {
         }
 
         if (!datatype) {
-          datatype = xsd.integer;
+          datatype = this.xsd.integer;
         }
       } else {
-        datatype = xsd.double;
+        datatype = this.xsd.double;
       }
     }
 

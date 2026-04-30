@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@rdfjs/types": "~2.0.1"
+    "@rdfjs/types": "~2.0.1",
+    "purify-ts": "~2.1.4"
   },
   "devDependencies": {
     "@rdfjs/data-model": "~2.1.1",
