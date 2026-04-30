@@ -7,7 +7,12 @@
   "devDependencies": {
     "oxigraph": "0.4.7"
   },
+  "files": [
+    "dist/*.d.ts",
+    "dist/*.js"
+  ],
   "license": "Apache-2.0",
+  "main": "./dist/index.js",
   "name": "@rdfx/sparql-client",
   "packageManager": "npm@11.11.0",
   "repository": {
@@ -18,8 +23,11 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "depcheck": "depcheck .",
-    "dev": "tsc -w --preserveWatchOutput"
+    "dev": "tsc -w --preserveWatchOutput",
+    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run --project @rdfx/sparql-client"
   },
   "type": "module",
+  "types": "./dist/index.d.ts",
   "version": "0.0.1"
 }
