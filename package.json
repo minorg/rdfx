@@ -21,8 +21,7 @@
     "depcheck": "turbo run depcheck",
     "dev": "turbo run dev dev:tests",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "typecheck": "turbo run typecheck"
+    "test:coverage": "vitest run --coverage"
   },
   "workspaces": [
     "packages/*"

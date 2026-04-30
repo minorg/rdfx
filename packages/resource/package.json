@@ -7,45 +7,39 @@
     "@types/rdfjs__term-set": "~2.0.9",
     "purify-ts": "~2.1.4"
   },
-  "description": "Resource abstraction over RDF/JS Datasets",
   "devDependencies": {
-    "@biomejs/biome": "2.3.10",
     "@rdfjs/dataset": "~2.0.2",
     "@tpluscode/rdf-ns-builders": "~4.3.0",
     "@tsconfig/strictest": "~2.0.8",
     "@types/rdfjs__dataset": "~2.0.7",
-    "@vitest/coverage-v8": "~4.0.18",
+    "depcheck": "~1.4.7",
     "housemd": "0.1.3",
     "rimraf": "~6.0.1",
     "ts-invariant": "~0.10.3",
-    "typescript": "5.9.3",
-    "vitest": "~4.0.18"
+    "typescript": "5.9.3"
   },
   "files": [
+    "README.md",
     "dist/*.d.ts",
     "dist/*.js"
   ],
   "license": "Apache-2.0",
-  "main": "dist/index.js",
-  "name": "rdfjs-resource",
+  "main": "./dist/index.js",
+  "name": "@rdfx/resource",
+  "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/minorg/rdfjs-resource"
+    "url": "git+https://github.com/minorg/rdfx.git"
   },
   "scripts": {
     "build": "tsc -b",
-    "build:tests": "tsc -b -p __tests__",
-    "check": "biome check",
-    "check:write": "biome check --write",
-    "check:write:unsafe": "biome check --write --unsafe",
-    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "clean": "rimraf dist",
+    "depcheck": "depcheck .",
     "dev": "tsc -w --preserveWatchOutput",
-    "dev:tests": "tsc -w --preserveWatchOutput -p __tests__",
-    "test": "biome check && vitest run",
-    "test:coverage": "biome check && vitest run --coverage",
-    "test:watch": "vitest watch"
+    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run --project @rdfx/resource"
   },
   "type": "module",
-  "types": "dist/index.d.ts",
-  "version": "3.0.7"
+  "types": "./dist/index.d.ts",
+  "version": "4.0.15"
 }
