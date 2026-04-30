@@ -138,7 +138,6 @@ export class DatasetValues extends Values<Value> {
         const visited: TermSet<Term> = new TermSet();
         const queue: (NamedNode | BlankNode)[] = [focusIdentifier];
         while (queue.length > 0) {
-          // biome-ignore lint/style/noNonNullAssertion: .length > 0
           const node = queue.shift()!;
           if (visited.has(node)) continue;
           visited.add(node);
@@ -189,7 +188,6 @@ export class DatasetValues extends Values<Value> {
         const visited: TermSet<Term> = new TermSet();
         const queue: (NamedNode | BlankNode)[] = [focusIdentifier];
         while (queue.length > 0) {
-          // biome-ignore lint/style/noNonNullAssertion: .length > 0
           const node = queue.shift()!;
           if (visited.has(node)) continue;
           visited.add(node);

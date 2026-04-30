@@ -10,10 +10,12 @@
   "files": {
     "includes": [
       "**",
+      "!.vscode",
       "!**/*.js",
       "!**/*.js.map",
       "!**/*.d.ts",
-      "!**/*.d.ts.map"
+      "!**/*.d.ts.map",
+      "!**/tsconfig.json"
     ]
   },
   "formatter": {

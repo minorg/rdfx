@@ -14,15 +14,18 @@ const externalDependencies = {
   "@rdfjs/types": "~2.0.1",
   "@tpluscode/rdf-ns-builders": "~4.3.0",
   "@tsconfig/strictest": "~2.0.8",
+  "@types/n3": "~1.26.0",
   "@types/rdfjs__data-model": "~2.0.9",
   "@types/rdfjs__dataset": "~2.0.7",
   "@types/rdfjs__term-set": "~2.0.9",
   housemd: "0.1.3",
+  n3: "~1.26.0",
+  oxigraph: "0.4.7",
   "purify-ts": "~2.1.4",
   "ts-invariant": "~0.10.3",
 };
 
-type PackageName = "literal" | "resource";
+type PackageName = "literal" | "resource" | "sparql-client";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -105,6 +108,15 @@ const workspaces = {
           "housemd",
           "ts-invariant",
         ],
+      },
+      tsconfig: packageTsconfig,
+    },
+    "sparql-client": {
+      dependencies: {
+        external: ["@rdfjs/types", "@types/n3", "n3"],
+      },
+      devDependencies: {
+        external: ["oxigraph"],
       },
       tsconfig: packageTsconfig,
     },
