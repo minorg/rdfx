@@ -1,6 +1,6 @@
-import { OxigraphSparqlClient } from "@kos-kit/sparql-client";
 import * as oxigraph from "oxigraph";
 import { beforeEach, describe, it } from "vitest";
+import { OxigraphSparqlClient } from "../src/OxigraphSparqlClient.js";
 
 describe("OxigraphSparqlClient", () => {
   let object: oxigraph.Literal;

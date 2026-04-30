@@ -4,9 +4,9 @@ import createFetchMock from "vitest-fetch-mock";
 const fetchMocker = createFetchMock(vi);
 fetchMocker.enableMocks();
 
-import { HttpSparqlQueryClient } from "@kos-kit/sparql-client";
 import N3 from "n3";
 import { describe, it } from "vitest";
+import { HttpSparqlQueryClient } from "../src/HttpSparqlQueryClient.js";
 
 describe("HttpSparqlQueryClient", () => {
   const sut = new HttpSparqlQueryClient({
