@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "4.0.15";
+const VERSION = "0.0.1";
 
 const externalDependencies = {
   "@rdfjs/data-model": "~2.1.1",
@@ -17,12 +17,9 @@ const externalDependencies = {
   "@types/rdfjs__data-model": "~2.0.9",
   "@types/rdfjs__dataset": "~2.0.7",
   "@types/rdfjs__term-set": "~2.0.9",
-  depcheck: "~1.4.7",
   housemd: "0.1.3",
   "purify-ts": "~2.1.4",
-  rimraf: "~6.0.1",
   "ts-invariant": "~0.10.3",
-  typescript: "5.9.3",
 };
 
 type PackageName = "resource";
@@ -182,16 +179,13 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
               },
               {} as Record<string, string>,
             ),
-            ...(workspace.devDependencies?.external ?? [])
-              .concat("@tsconfig/strictest", "depcheck", "rimraf", "typescript")
-              .toSorted()
-              .reduce(
-                (map, packageName) => {
-                  map[packageName] = externalDependencies[packageName];
-                  return map;
-                },
-                {} as Record<string, string>,
-              ),
+            ...(workspace.devDependencies?.external ?? []).toSorted().reduce(
+              (map, packageName) => {
+                map[packageName] = externalDependencies[packageName];
+                return map;
+              },
+              {} as Record<string, string>,
+            ),
           },
           files: files.size > 0 ? [...files].sort() : undefined,
           homepage: workspace.homepage,

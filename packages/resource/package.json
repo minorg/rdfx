@@ -10,13 +10,9 @@
   "devDependencies": {
     "@rdfjs/dataset": "~2.0.2",
     "@tpluscode/rdf-ns-builders": "~4.3.0",
-    "@tsconfig/strictest": "~2.0.8",
     "@types/rdfjs__dataset": "~2.0.7",
-    "depcheck": "~1.4.7",
     "housemd": "0.1.3",
-    "rimraf": "~6.0.1",
-    "ts-invariant": "~0.10.3",
-    "typescript": "5.9.3"
+    "ts-invariant": "~0.10.3"
   },
   "files": [
     "README.md",
@@ -27,7 +23,6 @@
   "main": "./dist/index.js",
   "name": "@rdfx/resource",
   "packageManager": "npm@11.11.0",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/minorg/rdfx.git"
@@ -42,5 +37,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "4.0.15"
+  "version": "0.0.1"
 }
