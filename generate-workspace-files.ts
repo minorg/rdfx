@@ -22,7 +22,7 @@ const externalDependencies = {
   "ts-invariant": "~0.10.3",
 };
 
-type PackageName = "resource";
+type PackageName = "literal" | "resource";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -58,13 +58,13 @@ const packageTsconfig: Tsconfig = {
     experimentalDecorators: true,
     forceConsistentCasingInFileNames: true,
     lib: ["ES2020"],
-    module: "ES2020",
-    moduleResolution: "node",
+    module: "ES2020" as any,
+    moduleResolution: "node" as any,
     noUncheckedIndexedAccess: false,
     outDir: "dist",
     rootDir: "src",
     sourceMap: true,
-    target: "ES2020",
+    target: "ES2020" as any,
   } satisfies CompilerOptions,
   extends: ["@tsconfig/strictest/tsconfig.json"],
   include: ["src/**/*.ts"],
@@ -72,6 +72,19 @@ const packageTsconfig: Tsconfig = {
 
 const workspaces = {
   packages: {
+    literal: {
+      dependencies: {
+        external: ["@rdfjs/types"],
+      },
+      devDependencies: {
+        external: [
+          "@rdfjs/data-model",
+          "@tpluscode/rdf-ns-builders",
+          "@types/rdfjs__data-model",
+        ],
+      },
+      tsconfig: packageTsconfig,
+    },
     resource: {
       dependencies: {
         external: [

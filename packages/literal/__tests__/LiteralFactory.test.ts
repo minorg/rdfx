@@ -1,10 +1,9 @@
 import DataFactory from "@rdfjs/data-model";
 import type { Literal } from "@rdfjs/types";
 import { describe, expect, it } from "vitest";
+import { testData } from "../../resource/__tests__/testData.js";
 import { LiteralDecoder } from "../src/LiteralDecoder.js";
 import { LiteralFactory } from "../src/LiteralFactory.js";
-import { xsd } from "../src/vocabularies.js";
-import { testData } from "./testData.js";
 
 describe("LiteralFactory", () => {
   const { literals } = testData;

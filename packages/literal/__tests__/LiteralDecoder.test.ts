@@ -1,7 +1,6 @@
 import DataFactory from "@rdfjs/data-model";
 import { describe, it } from "vitest";
 import { LiteralDecoder } from "../src/LiteralDecoder.js";
-import { xsd } from "../src/vocabularies.js";
 
 describe("LiteralDecoder", () => {
   const sut = LiteralDecoder;

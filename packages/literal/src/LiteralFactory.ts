@@ -2,7 +2,6 @@ import DefaultDataFactory from "@rdfjs/data-model";
 import type { DataFactory, Literal, NamedNode } from "@rdfjs/types";
 import { literalDatatypeDefinitions } from "./literalDatatypeDefinitions.js";
 import type { Primitive } from "./Primitive.js";
-import { xsd } from "./vocabularies.js";
 
 class DatatypeRangeError extends RangeError {
   constructor(readonly datatype: NamedNode) {
