@@ -9,12 +9,11 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-
+import { LiteralFactory } from "@rdfx/literal";
 import { Either, Left } from "purify-ts";
 import { DatasetValues } from "./DatasetValues.js";
 import { Identifier as _Identifier, type Identifier } from "./Identifier.js";
 import { ListStructureError as _ListStructureError } from "./ListStructureError.js";
-import { LiteralFactory } from "./LiteralFactory.js";
 import { MistypedTermValueError as _MistypedTermValueError } from "./MistypedTermValueError.js";
 import type { Primitive } from "./Primitive.js";
 import type { PropertyPath } from "./PropertyPath.js";

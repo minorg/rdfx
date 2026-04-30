@@ -6,11 +6,9 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-
+import { LiteralDecoder } from "@rdfx/literal";
 import { Either, Left } from "purify-ts";
-
 import type { Identifier } from "./Identifier.js";
-import { LiteralDecoder } from "./LiteralDecoder.js";
 import { MistypedPrimitiveValueError } from "./MistypedPrimitiveValueError.js";
 import { MistypedTermValueError } from "./MistypedTermValueError.js";
 import type { Primitive } from "./Primitive.js";

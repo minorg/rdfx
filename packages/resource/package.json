@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@rdfx/literal": "0.0.1",
     "@rdfjs/data-model": "~2.1.1",
     "@rdfjs/term-set": "~2.0.3",
     "@rdfjs/types": "~2.0.1",

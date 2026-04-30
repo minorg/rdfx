@@ -95,6 +95,7 @@ const workspaces = {
           "@types/rdfjs__term-set",
           "purify-ts",
         ],
+        internal: ["literal"],
       },
       devDependencies: {
         external: [
