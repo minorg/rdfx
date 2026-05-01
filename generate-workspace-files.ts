@@ -97,6 +97,9 @@ const workspaces = {
           "unbzip2-stream",
         ],
       },
+      devDependencies: {
+        external: ["@rdfjs/dataset", "@types/rdfjs__dataset"],
+      },
       tsconfig: {
         ...packageTsconfig,
         compilerOptions: {

@@ -9,7 +9,10 @@
     "ts-log": "~3.0.2",
     "unbzip2-stream": "~1.4.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@rdfjs/dataset": "~2.0.2",
+    "@types/rdfjs__dataset": "~2.0.7"
+  },
   "files": [
     "dist/*.d.ts",
     "dist/*.js"
