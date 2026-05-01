@@ -25,7 +25,7 @@ const externalDependencies = {
   "ts-invariant": "~0.10.3",
 };
 
-type PackageName = "literal" | "resource" | "sparql-client";
+type PackageName = "fs" | "literal" | "resource" | "sparql-client";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -35,6 +35,7 @@ interface Tsconfig {
   include?: string[];
   // references?: { path: string; prepend?: boolean }[];
 }
+
 interface Workspace {
   bin?: Record<string, string>;
   dependencies?: {
@@ -62,7 +63,7 @@ const packageTsconfig: Tsconfig = {
     forceConsistentCasingInFileNames: true,
     lib: ["ES2020"],
     module: "ES2020" as any,
-    moduleResolution: "node" as any,
+    moduleResolution: "node16" as any,
     noUncheckedIndexedAccess: false,
     outDir: "dist",
     rootDir: "src",
@@ -75,6 +76,18 @@ const packageTsconfig: Tsconfig = {
 
 const workspaces = {
   packages: {
+    fs: {
+      dependencies: {
+        external: ["purify-ts"],
+      },
+      tsconfig: {
+        ...packageTsconfig,
+        compilerOptions: {
+          ...packageTsconfig.compilerOptions,
+          types: ["node"],
+        },
+      },
+    },
     literal: {
       dependencies: {
         external: ["@rdfjs/types", "purify-ts"],
