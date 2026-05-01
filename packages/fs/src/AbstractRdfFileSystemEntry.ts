@@ -1,4 +1,4 @@
-import type { DatasetCore } from "@rdfjs/types";
+import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import type { Either } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 
@@ -11,8 +11,10 @@ export abstract class AbstractRdfFileSystemEntry {
     this.path = path;
   }
 
-  abstract parse(options?: {
-    dataset?: DatasetCore;
-    recursive?: boolean;
-  }): Promise<Either<Error, DatasetCore>>;
+  abstract parse(options?: { recursive?: boolean }): Stream<Quad>;
+
+  abstract parseInto(
+    dataset: DatasetCore,
+    options?: { recursive?: boolean },
+  ): Promise<Either<Error, DatasetCore>>;
 }

@@ -10,6 +10,7 @@ const VERSION = "0.0.2";
 const externalDependencies = {
   "@rdfjs/data-model": "~2.1.1",
   "@rdfjs/dataset": "~2.0.2",
+  "@rdfjs/formats": "~4.0.1",
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/types": "~2.0.1",
   "@tpluscode/rdf-ns-builders": "~4.3.0",
@@ -17,13 +18,16 @@ const externalDependencies = {
   "@types/n3": "~1.26.0",
   "@types/rdfjs__data-model": "~2.0.9",
   "@types/rdfjs__dataset": "~2.0.7",
+  "@types/rdfjs__formats": "~4.0.1",
   "@types/rdfjs__term-set": "~2.0.9",
+  // "@types/readable-stream": "~4.0.23",
   "@types/unbzip2-stream": "~1.4.3",
   housemd: "0.1.3",
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.4.7",
   "purify-ts": "~2.1.4",
+  // "readable-stream": "^4.7.0",
   "ts-invariant": "~0.10.3",
   "ts-log": "~3.0.2",
   "unbzip2-stream": "~1.4.3",
@@ -83,7 +87,9 @@ const workspaces = {
     fs: {
       dependencies: {
         external: [
+          "@rdfjs/formats",
           "@rdfjs/types",
+          "@types/rdfjs__formats",
           "@types/unbzip2-stream",
           "mime",
           "purify-ts",
@@ -95,6 +101,8 @@ const workspaces = {
         ...packageTsconfig,
         compilerOptions: {
           ...packageTsconfig.compilerOptions,
+          module: "Node16" as any,
+          moduleResolution: "node16" as any,
           types: ["node"],
         },
       },

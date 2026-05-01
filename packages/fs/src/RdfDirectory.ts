@@ -1,10 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { fsEither } from "@exlektix/fs";
-import { type DatasetCore, datasetFactory } from "@exlektix/rdf";
+import { Readable } from "node:stream";
+import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { type Either, EitherAsync } from "purify-ts";
-import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry";
-import { RdfFile } from "./RdfFile";
+import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
+import { RdfFile } from "./RdfFile.js";
+import { stat } from "./stat.js";
 
 /**
  * Abstraction for iterating over a directory of files with RDF data in them.
@@ -52,7 +53,7 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
       }
     }
 
-    const statEither = await fsEither.stat(this.path);
+    const statEither = await stat(this.path);
     if (statEither.isLeft()) {
       this.logger.debug(
         "%s does not exist or is not accessible: %s",
@@ -61,28 +62,42 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
       );
       return;
     }
-    let stat = statEither.unsafeCoerce();
+    let stat_ = statEither.unsafeCoerce();
     let thisPath = this.path;
-    if (stat.isSymbolicLink()) {
+    if (stat_.isSymbolicLink()) {
       thisPath = await fs.realpath(this.path);
-      stat = await fs.stat(thisPath);
+      stat_ = await fs.stat(thisPath);
     }
 
-    if (stat.isDirectory()) {
+    if (stat_.isDirectory()) {
       yield* visitDirectory(thisPath);
     } else {
       this.logger.warn("%s is not an (RDF) directory", this.path);
     }
   }
 
-  async parse(options?: {
-    dataset?: DatasetCore;
-    recursive?: boolean;
-  }): Promise<Either<Error, DatasetCore>> {
+  parse(options?: { recursive?: boolean }): Stream<Quad> {
+    const self = this;
+    async function* parseFiles() {
+      for await (const file of self.files(options)) {
+        for await (const quad of file.parse() as unknown as AsyncIterable<Quad>) {
+          yield quad;
+        }
+      }
+    }
+
+    return Readable.from(parseFiles(), {
+      objectMode: true,
+    }) as unknown as Stream<Quad>;
+  }
+
+  override async parseInto(
+    dataset: DatasetCore,
+    options?: { recursive?: boolean },
+  ): Promise<Either<Error, DatasetCore>> {
     return EitherAsync(async ({ liftEither }) => {
-      const dataset = options?.dataset ?? datasetFactory.dataset();
-      for await (const file of this.files({ recursive: options?.recursive })) {
-        await liftEither(await file.parse({ dataset }));
+      for await (const file of this.files(options)) {
+        await liftEither(await file.parseInto(dataset));
       }
       return dataset;
     });

@@ -2,22 +2,16 @@ import fs from "node:fs";
 import * as path from "node:path";
 import type { Readable } from "node:stream";
 import zlib from "node:zlib";
-import type { DatasetCore } from "@rdfjs/types";
+import formats from "@rdfjs/formats";
+import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { Mime } from "mime";
 import otherMimeTypes from "mime/types/other.js";
 import standardMimeTypes from "mime/types/standard.js";
-import {
-  type Either,
-  EitherAsync,
-  Just,
-  Left,
-  type Maybe,
-  Nothing,
-  Right,
-} from "purify-ts";
+import { Either, Just, Left, type Maybe, Nothing, Right } from "purify-ts";
 import type { Logger } from "ts-log";
 import bz2 from "unbzip2-stream";
-import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry";
+import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
+import { RDF_FORMATS, type RdfFormat } from "./RdfFormat.js";
 
 const mime = new Mime(standardMimeTypes, otherMimeTypes, {
   "application/x-brotli": ["br"],
@@ -92,73 +86,34 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
     return Left(new Error(`${filePath} has a non-RDF MIME type: ${mimeType}`));
   }
 
-  async parse(options?: {
-    dataset?: DatasetCore;
-  }): Promise<Either<Error, DatasetCore>> {
-    return EitherAsync(async () => {
-      const dataset = options?.dataset ?? datasetFactory.dataset();
+  override parse(): Stream<Quad> {
+    let rdfFileStream: Readable = fs.createReadStream(this.path);
 
-      this.logger.debug("parsing RDF file %s", this.path);
-      let rdfFileStream: Readable = fs.createReadStream(this.path);
-
-      if (this.format.compressionMethod.isJust()) {
-        switch (this.format.compressionMethod.unsafeCoerce()) {
-          case "application/gzip":
-            rdfFileStream = rdfFileStream.pipe(zlib.createGunzip());
-            break;
-          case "application/x-brotli":
-            rdfFileStream = rdfFileStream.pipe(zlib.createBrotliDecompress());
-            break;
-          case "application/x-bzip2":
-            rdfFileStream = rdfFileStream.pipe(bz2());
-            break;
-        }
-      }
-
-      switch (this.format.rdfFormat) {
-        case "application/ld+json":
-          await new Promise<void>((resolve, reject) => {
-            const streamParser = new JsonLdParser({ dataFactory });
-            streamParser.on("data", (quad) => {
-              dataset.add(quad);
-            });
-            streamParser.on("error", reject);
-            streamParser.on("end", () => {
-              resolve();
-            });
-            streamParser.on("error", reject);
-            rdfFileStream.pipe(streamParser);
-          });
+    if (this.format.compressionMethod.isJust()) {
+      switch (this.format.compressionMethod.unsafeCoerce()) {
+        case "application/gzip":
+          rdfFileStream = rdfFileStream.pipe(zlib.createGunzip());
           break;
-        case "application/n-quads":
-        case "application/n-triples":
-        case "application/trig":
-        case "text/turtle":
-          {
-            await new Promise<void>((resolve, reject) => {
-              const streamParser = new N3StreamParser({
-                factory: dataFactory,
-                format: this.format.rdfFormat,
-              });
-              streamParser.on("data", (quad) => {
-                dataset.add(quad);
-              });
-              streamParser.on("error", reject);
-              streamParser.on("end", () => {
-                resolve();
-              });
-              streamParser.on("error", reject);
-              rdfFileStream.pipe(streamParser);
-            });
-          }
+        case "application/x-brotli":
+          rdfFileStream = rdfFileStream.pipe(zlib.createBrotliDecompress());
+          break;
+        case "application/x-bzip2":
+          rdfFileStream = rdfFileStream.pipe(bz2());
           break;
       }
-      this.logger.debug(
-        "parsed %d quads from RDF file %s",
-        dataset.size,
-        this.path,
-      );
-      return dataset;
+    }
+
+    return formats.parsers.import(this.format.rdfFormat, rdfFileStream)!;
+  }
+
+  override parseInto(
+    dataset: DatasetCore,
+  ): Promise<Either<Error, DatasetCore>> {
+    return new Promise<Either<Error, DatasetCore>>((resolve) => {
+      const stream = this.parse();
+      stream.on("data", (quad) => dataset.add(quad));
+      stream.on("end", () => resolve(Either.of(dataset)));
+      stream.on("error", (error) => resolve(Left(error)));
     });
   }
 }

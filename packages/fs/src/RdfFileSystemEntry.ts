@@ -1,7 +1,7 @@
 import { type Either, EitherAsync } from "purify-ts";
 import type { Logger } from "ts-log";
-import { RdfDirectory } from "./RdfDirectory";
-import { RdfFile } from "./RdfFile";
+import { RdfDirectory } from "./RdfDirectory.js";
+import { RdfFile } from "./RdfFile.js";
 import { stat } from "./stat.js";
 
 export type RdfFileSystemEntry = RdfDirectory | RdfFile;
