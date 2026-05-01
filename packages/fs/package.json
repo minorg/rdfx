@@ -1,6 +1,11 @@
 {
   "dependencies": {
-    "purify-ts": "~2.1.4"
+    "@rdfjs/types": "~2.0.1",
+    "@types/unbzip2-stream": "~1.4.3",
+    "mime": "~4.1.0",
+    "purify-ts": "~2.1.4",
+    "ts-log": "~3.0.2",
+    "unbzip2-stream": "~1.4.3"
   },
   "devDependencies": {},
   "files": [
