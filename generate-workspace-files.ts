@@ -277,7 +277,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
                 }
               : {}),
             test: fs.existsSync(path.join(packageDirectoryPath, "__tests__"))
-              ? `cd ../.. && vitest run --project ${packageName}`
+              ? `cd ../.. && vitest run ${packageDirectoryPath}/__tests__`
               : undefined,
             ...workspace.scripts,
           },
@@ -320,7 +320,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
               target: "ES2020",
             },
             extends: ["@tsconfig/strictest/tsconfig.json"],
-            include: ["./**/*.ts", "../src/**/*"],
+            include: ["./**/*.ts", "../src/**/*", "../../../vitest.d.ts"],
           },
           undefined,
           2,

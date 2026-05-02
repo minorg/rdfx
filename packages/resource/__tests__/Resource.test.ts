@@ -17,13 +17,12 @@ describe("Resource", () => {
 
   describe("add", () => {
     it("default graph", ({ expect }) => {
+      expect.extend;
       const dataset = datasetFactory.dataset();
       const resource = new Resource(dataset, subject);
       resource.add(predicate, literals.string);
-      expect(dataset.size).toStrictEqual(1);
-      expect(
-        [...dataset][0].graph.equals(dataFactory.defaultGraph()),
-      ).toStrictEqual(true);
+      expect(dataset).toBeRdfDatasetOfSize(1);
+      expect([...dataset][0].graph).toEqualRdfTerm(dataFactory.defaultGraph());
       const values = resource
         .values(predicate)
         .chainMap((value) => value.toTerm())

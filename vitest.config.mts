@@ -8,8 +8,10 @@ export default defineConfig({
       // If you want a coverage reports even if your tests are failing, include the reportOnFailure option
       reportOnFailure: true,
     },
-    // include: ["**/__tests__/**/*.test.ts"],
-    projects: ["packages/*"],
+    include: ["**/__tests__/**/*.test.ts"],
+    setupFiles: ["./vitest.setup.mts"],
     passWithNoTests: true,
   },
 });
+
+console.log("Config file ran");
