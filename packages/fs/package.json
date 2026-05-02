@@ -1,0 +1,39 @@
+{
+  "dependencies": {
+    "@rdfjs/formats": "~4.0.1",
+    "@rdfjs/types": "~2.0.1",
+    "@types/rdfjs__formats": "~4.0.1",
+    "@types/unbzip2-stream": "~1.4.3",
+    "mime": "~4.1.0",
+    "purify-ts": "~2.1.4",
+    "ts-log": "~3.0.2",
+    "unbzip2-stream": "~1.4.3"
+  },
+  "devDependencies": {
+    "@rdfjs/dataset": "~2.0.2",
+    "@types/rdfjs__dataset": "~2.0.7"
+  },
+  "files": [
+    "dist/*.d.ts",
+    "dist/*.js"
+  ],
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "name": "@rdfx/fs",
+  "packageManager": "npm@11.11.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minorg/rdfx.git"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist",
+    "depcheck": "depcheck .",
+    "dev": "tsc -w --preserveWatchOutput",
+    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run --project @rdfx/fs"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "0.0.2"
+}
