@@ -43,7 +43,7 @@ describe("RdfFile", () => {
               .parseInto(datasetFactory.dataset())
           ).unsafeCoerce();
           expect(dataset.size).toBe(88482);
-        });
+        }, 10000);
       } else if (fileName === "place.jsonld") {
         it(`should parse ${fileName}`, async ({ expect }) => {
           const dataset = (

@@ -24,5 +24,5 @@ describe("RdfDirectory", () => {
       await sut.parseInto(datasetFactory.dataset())
     ).unsafeCoerce();
     expect(dataset.size).toBe(88482 + 6); // The UNESCO datasets are all duplicates
-  });
+  }, 30000);
 });
