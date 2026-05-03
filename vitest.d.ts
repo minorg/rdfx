@@ -4,6 +4,7 @@ import 'vitest'
 
 declare module 'vitest' {
   interface Matchers<R = unknown> {
+    toBeLeft(expected?: unknown): R
     toBeRdfDatasetContaining: (...actual: RDF.BaseQuad[]) => R;
     toBeRdfDatasetMatching: (match: IQuadTerms<RDF.BaseQuad>, matches?: number) => R;
     toBeRdfDatasetOfSize: (size: number) => R;
