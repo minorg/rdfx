@@ -1,4 +1,4 @@
-import { default as jestRdfMatchers } from "jest-rdf/lib/matchers";
+import { default as jestRdfMatchers } from "jest-rdf/lib/matchers/index.js";
 import * as purifyMatchers from "./purifyMatchers.js";
 
 export const matchers = {
