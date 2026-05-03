@@ -13,5 +13,3 @@ export default defineConfig({
     passWithNoTests: true,
   },
 });
-
-console.log("Config file ran");

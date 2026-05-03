@@ -1,7 +1,7 @@
 import { Either } from "purify-ts";
 import type { Matcher, MatcherResult, MatcherState } from "vitest";
 
-function toBeLeft(
+function toBeLeftStrict(
   context: MatcherState,
   received: Either<unknown, unknown>,
   expected?: unknown,
@@ -34,7 +34,7 @@ function toBeLeft(
   };
 }
 
-export const toBeLeftMatcher: Matcher = function (
+export const toBeLeft: Matcher = function (
   this: MatcherState,
   received: unknown, // must be unknown here
   expected?: unknown,
@@ -45,5 +45,5 @@ export const toBeLeftMatcher: Matcher = function (
       message: () => `expected an Either but received ${String(received)}`,
     };
   }
-  return toBeLeft(this, received, expected);
+  return toBeLeftStrict(this, received, expected);
 };
