@@ -77,9 +77,9 @@ describe("OxigraphSparqlClient", () => {
     );
     expect(result).toHaveLength(1);
     const resultRow = result[0];
-    expect(resultRow["s"]).toEqualRdfTerm(subject);
-    expect(resultRow["p"]).toEqualRdfTerm(predicate);
-    expect(resultRow["o"]).toEqualRdfTerm(object);
+    expect(resultRow["s"].equals(subject)).toStrictEqual(true);
+    expect(resultRow["p"].equals(predicate)).toStrictEqual(true);
+    expect(resultRow["o"].equals(object)).toStrictEqual(true);
   });
 
   it("should query boolean", async ({ expect }) => {
@@ -90,9 +90,9 @@ describe("OxigraphSparqlClient", () => {
     const quads = await sut.queryQuads("CONSTRUCT WHERE { ?s ?p ?o }");
     expect(quads).toHaveLength(1);
     const quad = quads[0]!;
-    expect(quad.subject).equals(subject);
-    expect(quad.predicate).toEqualRdfTerm(predicate);
-    expect(quad.object).toEqualRdfTerm(object);
+    expect(quad.subject.equals(subject)).toStrictEqual(true);
+    expect(quad.predicate.equals(predicate)).toStrictEqual(true);
+    expect(quad.object.equals(object)).toStrictEqual(true);
   });
 
   it("should update the store", ({ expect }) => {
