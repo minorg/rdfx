@@ -22,6 +22,7 @@ const externalDependencies = {
   "@types/rdfjs__term-set": "~2.0.9",
   // "@types/readable-stream": "~4.0.23",
   "@types/unbzip2-stream": "~1.4.3",
+  "jest-rdf": "~2.0.0",
   housemd: "0.1.3",
   mime: "~4.1.0",
   n3: "~1.26.0",
@@ -31,9 +32,10 @@ const externalDependencies = {
   "ts-invariant": "~0.10.3",
   "ts-log": "~3.0.2",
   "unbzip2-stream": "~1.4.3",
+  vitest: "~4.1.5",
 };
 
-type PackageName = "fs" | "literal" | "resource" | "sparql-client";
+type PackageName = "fs" | "literal" | "resource" | "sparql-client" | "testing";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -152,6 +154,12 @@ const workspaces = {
       },
       devDependencies: {
         external: ["oxigraph"],
+      },
+      tsconfig: packageTsconfig,
+    },
+    testing: {
+      dependencies: {
+        external: ["@rdfjs/types", "jest-rdf", "purify-ts", "vitest"],
       },
       tsconfig: packageTsconfig,
     },
@@ -320,7 +328,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
               target: "ES2020",
             },
             extends: ["@tsconfig/strictest/tsconfig.json"],
-            include: ["./**/*.ts", "../src/**/*", "../../../vitest.d.ts"],
+            include: ["./**/*.ts", "../src/**/*"],
           },
           undefined,
           2,

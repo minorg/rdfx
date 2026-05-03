@@ -6,5 +6,5 @@
     "@tsconfig/node24/tsconfig.json",
     "@tsconfig/strictest/tsconfig.json"
   ],
-  "include": ["*.ts", "vitest.setup.mts", "vitest.setup.mts"]
+  "include": ["*.ts"]
 }
