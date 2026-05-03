@@ -2,6 +2,7 @@ import DataFactory from "@rdfjs/data-model";
 import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
 import { LiteralDecoder } from "../src/LiteralDecoder.js";
+import "@rdfx/testing";
 
 describe("LiteralDecoder", () => {
   const sut = LiteralDecoder;
@@ -46,22 +47,18 @@ describe("LiteralDecoder", () => {
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(
-        sut.decodeBigIntLiteral(DataFactory.literal("test")).isLeft(),
-      ).toStrictEqual(true);
+      expect(sut.decodeBigIntLiteral(DataFactory.literal("test"))).toBeLeft();
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
-        sut
-          .decodeBigIntLiteral(
-            DataFactory.literal(
-              "1",
-              DataFactory.namedNode("http://example.com/other"),
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeBigIntLiteral(
+          DataFactory.literal(
+            "1",
+            DataFactory.namedNode("http://example.com/other"),
+          ),
+        ),
+      ).toBeLeft();
     });
   });
 
@@ -91,9 +88,7 @@ describe("LiteralDecoder", () => {
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(
-        sut.decodeBooleanLiteral(DataFactory.literal("true")).isLeft(),
-      ).toStrictEqual(true);
+      expect(sut.decodeBooleanLiteral(DataFactory.literal("true"))).toBeLeft();
     });
   });
 
@@ -116,18 +111,16 @@ describe("LiteralDecoder", () => {
     it("xsd:dateTime", ({ expect }) => {
       const expected = new Date(2026, 1, 1);
       expect(
-        sut
-          .decodeDateLiteral(
-            DataFactory.literal(expected.toISOString(), xsd.dateTime),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeDateLiteral(
+          DataFactory.literal(expected.toISOString(), xsd.dateTime),
+        ),
+      ).toBeLeft();
     });
 
     it("xsd:string", ({ expect }) => {
       expect(
-        sut.decodeDateLiteral(DataFactory.literal("2026-01-01")).isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeDateLiteral(DataFactory.literal("2026-01-01")),
+      ).toBeLeft();
     });
   });
 
@@ -135,15 +128,13 @@ describe("LiteralDecoder", () => {
     it("xsd:date", ({ expect }) => {
       const expected = new Date(2026, 1, 1);
       expect(
-        sut
-          .decodeDateTimeLiteral(
-            DataFactory.literal(
-              expected.toISOString().replace(/T.*$/, ""),
-              xsd.date,
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeDateTimeLiteral(
+          DataFactory.literal(
+            expected.toISOString().replace(/T.*$/, ""),
+            xsd.date,
+          ),
+        ),
+      ).toBeLeft();
     });
 
     it("xsd:dateTime", ({ expect }) => {
@@ -158,8 +149,8 @@ describe("LiteralDecoder", () => {
 
     it("xsd:string", ({ expect }) => {
       expect(
-        sut.decodeDateTimeLiteral(DataFactory.literal("2026-01-01")).isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeDateTimeLiteral(DataFactory.literal("2026-01-01")),
+      ).toBeLeft();
     });
   });
 
@@ -198,34 +189,28 @@ describe("LiteralDecoder", () => {
 
     it("xsd:integer (out of range)", ({ expect }) => {
       expect(
-        sut
-          .decodeFloatLiteral(
-            DataFactory.literal(
-              BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
-              xsd.integer,
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeFloatLiteral(
+          DataFactory.literal(
+            BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
+            xsd.integer,
+          ),
+        ),
+      ).toBeLeft();
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(
-        sut.decodeFloatLiteral(DataFactory.literal("test")).isLeft(),
-      ).toStrictEqual(true);
+      expect(sut.decodeFloatLiteral(DataFactory.literal("test"))).toBeLeft();
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
-        sut
-          .decodeFloatLiteral(
-            DataFactory.literal(
-              "1",
-              DataFactory.namedNode("http://example.com/other"),
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeFloatLiteral(
+          DataFactory.literal(
+            "1",
+            DataFactory.namedNode("http://example.com/other"),
+          ),
+        ),
+      ).toBeLeft();
     });
   });
 
@@ -240,8 +225,8 @@ describe("LiteralDecoder", () => {
 
     it("xsd:double (non-integer)", ({ expect }) => {
       expect(
-        sut.decodeIntLiteral(DataFactory.literal("1.1", xsd.double)).isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeIntLiteral(DataFactory.literal("1.1", xsd.double)),
+      ).toBeLeft();
     });
 
     it("xsd:int", ({ expect }) => {
@@ -260,34 +245,28 @@ describe("LiteralDecoder", () => {
 
     it("xsd:integer (out of range)", ({ expect }) => {
       expect(
-        sut
-          .decodeIntLiteral(
-            DataFactory.literal(
-              BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
-              xsd.integer,
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeIntLiteral(
+          DataFactory.literal(
+            BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
+            xsd.integer,
+          ),
+        ),
+      ).toBeLeft();
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(
-        sut.decodeIntLiteral(DataFactory.literal("test")).isLeft(),
-      ).toStrictEqual(true);
+      expect(sut.decodeIntLiteral(DataFactory.literal("test"))).toBeLeft();
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
-        sut
-          .decodeIntLiteral(
-            DataFactory.literal(
-              "1",
-              DataFactory.namedNode("http://example.com/other"),
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeIntLiteral(
+          DataFactory.literal(
+            "1",
+            DataFactory.namedNode("http://example.com/other"),
+          ),
+        ),
+      ).toBeLeft();
     });
   });
 
@@ -318,34 +297,28 @@ describe("LiteralDecoder", () => {
 
     it("xsd:integer (out of range)", ({ expect }) => {
       expect(
-        sut
-          .decodeNumberLiteral(
-            DataFactory.literal(
-              BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
-              xsd.integer,
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeNumberLiteral(
+          DataFactory.literal(
+            BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
+            xsd.integer,
+          ),
+        ),
+      ).toBeLeft();
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(
-        sut.decodeNumberLiteral(DataFactory.literal("test")).isLeft(),
-      ).toStrictEqual(true);
+      expect(sut.decodeNumberLiteral(DataFactory.literal("test"))).toBeLeft();
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
-        sut
-          .decodeNumberLiteral(
-            DataFactory.literal(
-              "1",
-              DataFactory.namedNode("http://example.com/other"),
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeNumberLiteral(
+          DataFactory.literal(
+            "1",
+            DataFactory.namedNode("http://example.com/other"),
+          ),
+        ),
+      ).toBeLeft();
     });
   });
 
@@ -391,8 +364,8 @@ describe("LiteralDecoder", () => {
 
     it("xsd:decimal", ({ expect }) => {
       expect(
-        sut.decodeIntLiteral(DataFactory.literal("1.0", xsd.decimal)).isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeIntLiteral(DataFactory.literal("1.0", xsd.decimal)),
+      ).toBeLeft();
     });
 
     it("xsd:double", ({ expect }) => {
@@ -430,25 +403,21 @@ describe("LiteralDecoder", () => {
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
-        sut
-          .decodePrimitiveLiteral(
-            DataFactory.literal(
-              "1",
-              DataFactory.namedNode("http://example.com/other"),
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodePrimitiveLiteral(
+          DataFactory.literal(
+            "1",
+            DataFactory.namedNode("http://example.com/other"),
+          ),
+        ),
+      ).toBeLeft();
     });
   });
 
   describe("decodeStringLiteral", () => {
     it("xsd:boolean", ({ expect }) => {
       expect(
-        sut
-          .decodeStringLiteral(DataFactory.literal("true", xsd.boolean))
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeStringLiteral(DataFactory.literal("true", xsd.boolean)),
+      ).toBeLeft();
     });
 
     it("xsd:string", ({ expect }) => {
@@ -459,15 +428,13 @@ describe("LiteralDecoder", () => {
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
-        sut
-          .decodeStringLiteral(
-            DataFactory.literal(
-              "1",
-              DataFactory.namedNode("http://example.com/other"),
-            ),
-          )
-          .isLeft(),
-      ).toStrictEqual(true);
+        sut.decodeStringLiteral(
+          DataFactory.literal(
+            "1",
+            DataFactory.namedNode("http://example.com/other"),
+          ),
+        ),
+      ).toBeLeft();
     });
   });
 });

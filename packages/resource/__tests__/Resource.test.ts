@@ -7,6 +7,7 @@ import { Resource } from "../src/Resource.js";
 import { ResourceSet } from "../src/ResourceSet.js";
 import { houseMdDataset } from "./houseMdDataset.js";
 import { testData } from "./testData.js";
+import "@rdfx/testing";
 
 describe("Resource", () => {
   const { graph, literals, objects, predicate, subject } = testData;
@@ -17,33 +18,32 @@ describe("Resource", () => {
 
   describe("add", () => {
     it("default graph", ({ expect }) => {
+      expect.extend;
       const dataset = datasetFactory.dataset();
       const resource = new Resource(dataset, subject);
       resource.add(predicate, literals.string);
-      expect(dataset.size).toStrictEqual(1);
-      expect(
-        [...dataset][0].graph.equals(dataFactory.defaultGraph()),
-      ).toStrictEqual(true);
+      expect(dataset).toBeRdfDatasetOfSize(1);
+      expect([...dataset][0].graph).toEqualRdfTerm(dataFactory.defaultGraph());
       const values = resource
         .values(predicate)
         .chainMap((value) => value.toTerm())
         .unsafeCoerce()
         .toArray();
       expect(values).toHaveLength(1);
-      expect(values[0].equals(literals.string)).toBe(true);
+      expect(values[0]).toEqualRdfTerm(literals.string);
     });
 
     it("named graph", ({ expect }) => {
       const dataset = datasetFactory.dataset();
       const resource = new Resource(dataset, subject);
       resource.add(predicate, literals.string, graph);
-      expect(dataset.size).toStrictEqual(1);
-      expect([...dataset][0].graph.equals(graph)).toStrictEqual(true);
+      expect(dataset).toBeRdfDatasetOfSize(1);
+      expect([...dataset][0].graph).toEqualRdfTerm(graph);
       const values = [...resource.values(predicate, { graph })].map(
         (value) => value.term,
       );
       expect(values).toHaveLength(1);
-      expect(values[0].equals(literals.string)).toBe(true);
+      expect(values[0]).toEqualRdfTerm(literals.string);
     });
 
     it("inverse path", ({ expect }) => {
@@ -51,10 +51,10 @@ describe("Resource", () => {
       const object = objects["namedNode"] as NamedNode;
       const objectResource = new Resource(dataset, object);
       objectResource.add({ path: predicate, termType: "InversePath" }, subject);
-      expect(dataset.size).toStrictEqual(1);
-      expect(
-        [...dataset][0].equals(dataFactory.quad(subject, predicate, object)),
-      ).toStrictEqual(true);
+      expect(dataset).toBeRdfDatasetOfSize(1);
+      expect([...dataset][0]).toEqualRdfQuad(
+        dataFactory.quad(subject, predicate, object),
+      );
     });
   });
 
@@ -63,7 +63,7 @@ describe("Resource", () => {
       const dataset = datasetFactory.dataset();
       const resource = new Resource(dataset, subject);
       resource.addList(predicate, [literals.string, literals.int]);
-      expect(dataset.size).toStrictEqual(5);
+      expect(dataset).toBeRdfDatasetOfSize(5);
       expect([...resource.values(predicate)]).toHaveLength(1);
       const list = resource
         .value(predicate)
@@ -105,7 +105,7 @@ describe("Resource", () => {
             ),
         });
         if (terms.length === 0) {
-          expect(listResource.identifier.equals(rdf.nil)).toStrictEqual(true);
+          expect(listResource.identifier).toEqualRdfTerm(rdf.nil);
         } else {
           expect(resource.dataset.size).not.toEqual(0);
         }
@@ -129,7 +129,7 @@ describe("Resource", () => {
           .toArray();
         expect(deserializedTerms).toHaveLength(terms.length);
         terms.forEach((term, termI) => {
-          expect(term.equals(deserializedTerms[termI])).toStrictEqual(true);
+          expect(term).toEqualRdfTerm(deserializedTerms[termI]);
         });
       });
     }
@@ -158,7 +158,7 @@ describe("Resource", () => {
       resource.delete(predicate, literals.int);
       const values = [...resource.values(predicate)].map((value) => value.term);
       expect(values).toHaveLength(1);
-      expect(values[0].equals(literals.string)).toBe(true);
+      expect(values[0]).toEqualRdfTerm(literals.string);
     });
 
     it("all values", () => {
@@ -199,13 +199,13 @@ describe("Resource", () => {
       const object = objects["namedNode"] as NamedNode;
       const subjectResource = new Resource(dataset, subject);
       subjectResource.add(predicate, object);
-      expect(dataset.size).toStrictEqual(1);
-      expect(
-        [...dataset][0].equals(dataFactory.quad(subject, predicate, object)),
-      ).toStrictEqual(true);
+      expect(dataset).toBeRdfDatasetOfSize(1);
+      expect([...dataset][0]).toEqualRdfQuad(
+        dataFactory.quad(subject, predicate, object),
+      );
       const objectResource = new Resource(dataset, object);
       objectResource.delete({ path: predicate, termType: "InversePath" });
-      expect(dataset.size).toStrictEqual(0);
+      expect(dataset).toBeRdfDatasetOfSize(0);
     });
 
     it("inverse path (with value)", ({ expect }) => {
@@ -213,16 +213,16 @@ describe("Resource", () => {
       const object = objects["namedNode"] as NamedNode;
       const subjectResource = new Resource(dataset, subject);
       subjectResource.add(predicate, object);
-      expect(dataset.size).toStrictEqual(1);
-      expect(
-        [...dataset][0].equals(dataFactory.quad(subject, predicate, object)),
-      ).toStrictEqual(true);
+      expect(dataset).toBeRdfDatasetOfSize(1);
+      expect([...dataset][0]).toEqualRdfQuad(
+        dataFactory.quad(subject, predicate, object),
+      );
       const objectResource = new Resource(dataset, object);
       objectResource.delete(
         { path: predicate, termType: "InversePath" },
         subject,
       );
-      expect(dataset.size).toStrictEqual(0);
+      expect(dataset).toBeRdfDatasetOfSize(0);
     });
   });
 
@@ -310,7 +310,7 @@ describe("Resource", () => {
     expect(resource.dataset.size).toStrictEqual(1);
     const values = [...resource.values(predicate)].map((value) => value.term);
     expect(values).toHaveLength(1);
-    expect(values[0].equals(literals.int)).toBe(true);
+    expect(values[0]).toEqualRdfTerm(literals.int);
   });
 
   describe("toList", () => {
@@ -408,9 +408,8 @@ describe("Resource", () => {
             .value({ path: predicate, termType: "InversePath" })
             .unsafeCoerce()
             .toIdentifier()
-            .unsafeCoerce()
-            .equals(testResource.identifier),
-        ).toBe(true);
+            .unsafeCoerce(),
+        ).toEqualRdfTerm(testResource.identifier);
       }
     });
   });
@@ -440,7 +439,7 @@ describe("Resource", () => {
       // Values in a specific graph
       const actualValues = testResource.values(predicate, { graph }).toArray();
       expect(actualValues).toHaveLength(1);
-      expect(actualValues[0].term.equals(literals.string)).toStrictEqual(true);
+      expect(actualValues[0].term).toEqualRdfTerm(literals.string);
     });
 
     it("unique (default graph)", ({ expect }) => {
@@ -470,12 +469,9 @@ describe("Resource", () => {
           ...resourceValue.values({ termType: "InversePath", path: predicate }),
         ];
         expect(valuesOf).toHaveLength(1);
-        expect(
-          valuesOf[0]
-            .toIdentifier()
-            .unsafeCoerce()
-            .equals(testResource.identifier),
-        ).toBe(true);
+        expect(valuesOf[0].toIdentifier().unsafeCoerce()).toEqualRdfTerm(
+          testResource.identifier,
+        );
       }
     });
   });

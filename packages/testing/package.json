@@ -1,19 +1,18 @@
 {
   "dependencies": {
     "@rdfjs/types": "~2.0.1",
-    "@types/n3": "~1.26.0",
-    "n3": "~1.26.0"
+    "jest-rdf": "~2.0.0",
+    "purify-ts": "~2.1.4",
+    "vitest": "~4.1.5"
   },
-  "devDependencies": {
-    "oxigraph": "0.4.7"
-  },
+  "devDependencies": {},
   "files": [
     "dist/*.d.ts",
     "dist/*.js"
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/sparql-client",
+  "name": "@rdfx/testing",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -23,9 +22,7 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "depcheck": "depcheck .",
-    "dev": "tsc -w --preserveWatchOutput",
-    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/sparql-client/__tests__"
+    "dev": "tsc -w --preserveWatchOutput"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

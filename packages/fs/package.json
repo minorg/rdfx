@@ -31,7 +31,7 @@
     "depcheck": "depcheck .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run --project @rdfx/fs"
+    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/fs/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

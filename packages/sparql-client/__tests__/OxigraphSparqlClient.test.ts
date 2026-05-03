@@ -1,6 +1,7 @@
 import * as oxigraph from "oxigraph";
 import { beforeEach, describe, it } from "vitest";
 import { OxigraphSparqlClient } from "../src/OxigraphSparqlClient.js";
+import "@rdfx/testing";
 
 describe("OxigraphSparqlClient", () => {
   let object: oxigraph.Literal;
@@ -46,9 +47,9 @@ describe("OxigraphSparqlClient", () => {
     const quads = await sut.getGraph(oxigraph.defaultGraph());
     expect(quads).toHaveLength(1);
     const quad = quads[0]!;
-    expect(quad.subject.equals(subject)).toStrictEqual(true);
-    expect(quad.predicate.equals(predicate)).toStrictEqual(true);
-    expect(quad.object.equals(object)).toStrictEqual(true);
+    expect(quad.subject).toEqualRdfTerm(subject);
+    expect(quad.predicate).toEqualRdfTerm(predicate);
+    expect(quad.object).toEqualRdfTerm(object);
   });
 
   it("should post a graph", async ({ expect }) => {
@@ -66,9 +67,9 @@ describe("OxigraphSparqlClient", () => {
     const quads = [...store.match()];
     expect(quads).toHaveLength(1);
     const quad = quads[0]!;
-    expect(quad.subject.equals(subject)).toStrictEqual(true);
-    expect(quad.predicate.equals(predicate)).toStrictEqual(true);
-    expect(quad.object.equals(oxigraph.literal("test2"))).toStrictEqual(true);
+    expect(quad.subject).toEqualRdfTerm(subject);
+    expect(quad.predicate).toEqualRdfTerm(predicate);
+    expect(quad.object).toEqualRdfTerm(oxigraph.literal("test2"));
   });
 
   it("should query bindings", async ({ expect }) => {
