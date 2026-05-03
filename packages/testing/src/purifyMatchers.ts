@@ -1,7 +1,7 @@
-import type { Either } from "purify-ts";
+import { Either } from "purify-ts";
 import type { Matcher, MatcherResult, MatcherState } from "vitest";
 
-export function toBeLeft(
+function toBeLeft(
   context: MatcherState,
   received: Either<unknown, unknown>,
   expected?: unknown,
@@ -36,8 +36,14 @@ export function toBeLeft(
 
 export const toBeLeftMatcher: Matcher = function (
   this: MatcherState,
-  received: Either<unknown, unknown>,
+  received: unknown, // must be unknown here
   expected?: unknown,
 ): MatcherResult {
+  if (!Either.isEither(received)) {
+    return {
+      pass: false,
+      message: () => `expected an Either but received ${String(received)}`,
+    };
+  }
   return toBeLeft(this, received, expected);
 };
