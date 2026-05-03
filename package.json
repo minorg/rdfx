@@ -31,6 +31,10 @@
     "test:coverage": "vitest run --coverage"
   },
   "workspaces": [
-    "packages/*"
+    "packages/fs",
+    "packages/literal",
+    "packages/resource",
+    "packages/sparql-client",
+    "packages/testing"
   ]
 }

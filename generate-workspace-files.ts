@@ -7,21 +7,28 @@ import type { CompilerOptions } from "typescript";
 
 const VERSION = "0.0.3";
 
+const vitestVersion = "~4.1.5";
+
 const externalDependencies = {
+  "@biomejs/biome": "2.3.10",
   "@rdfjs/data-model": "~2.1.1",
   "@rdfjs/dataset": "~2.0.2",
   "@rdfjs/formats": "~4.0.1",
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/types": "~2.0.1",
   "@tpluscode/rdf-ns-builders": "~4.3.0",
+  "@tsconfig/node24": "^24",
   "@tsconfig/strictest": "~2.0.8",
   "@types/n3": "~1.26.0",
+  "@types/node": "^24",
   "@types/rdfjs__data-model": "~2.0.9",
   "@types/rdfjs__dataset": "~2.0.7",
   "@types/rdfjs__formats": "~4.0.1",
   "@types/rdfjs__term-set": "~2.0.9",
   // "@types/readable-stream": "~4.0.23",
   "@types/unbzip2-stream": "~1.4.3",
+  "@vitest/coverage-v8": vitestVersion,
+  depcheck: "~1.4.7",
   "jest-rdf": "~2.0.0",
   housemd: "0.1.3",
   mime: "~4.1.0",
@@ -29,10 +36,15 @@ const externalDependencies = {
   oxigraph: "0.4.7",
   "purify-ts": "~2.1.4",
   // "readable-stream": "^4.7.0",
+  rimraf: "~6.0.1",
   "ts-invariant": "~0.10.3",
   "ts-log": "~3.0.2",
+  tsx: "~4.16.2",
+  turbo: "~2.5.5",
+  typescript: "5.9.3",
   "unbzip2-stream": "~1.4.3",
-  vitest: "~4.1.5",
+  vitest: vitestVersion,
+  "vitest-fetch-mock": "~0.4.5",
 };
 
 type PackageName = "fs" | "literal" | "resource" | "sparql-client" | "testing";
@@ -337,3 +349,61 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
     }
   }
 }
+
+// Root package.json
+fs.writeFileSync(
+  path.join(myDirPath, "package.json"),
+  JSON.stringify(
+    {
+      devDependencies: (
+        [
+          "@biomejs/biome",
+          "@tsconfig/node24",
+          "@tsconfig/strictest",
+          "@types/node",
+          "@vitest/coverage-v8",
+          "depcheck",
+          "rimraf",
+          "tsx",
+          "turbo",
+          "typescript",
+          "vitest",
+          "vitest-fetch-mock",
+        ] satisfies readonly (keyof typeof externalDependencies)[]
+      )
+        .toSorted()
+        .reduce(
+          (map, packageName) => {
+            map[packageName] = externalDependencies[packageName];
+            return map;
+          },
+          {} as Record<string, string>,
+        ),
+      name: "rdfx",
+      optionalDependencies: {
+        "@biomejs/cli-linux-x64": externalDependencies["@biomejs/biome"],
+      },
+      packageManager: "npm@11.11.0",
+      private: true,
+      scripts: {
+        build: "turbo run build",
+        check: "biome check",
+        "check:write": "biome check --write",
+        "check:write:unsafe": "biome check --write --unsafe",
+        clean: "turbo run clean",
+        depcheck: "turbo run depcheck",
+        dev: "turbo run dev dev:tests",
+        test: "vitest run",
+        "test:coverage": "vitest run --coverage",
+      },
+      workspaces: Object.entries(workspaces).flatMap(
+        ([workspacesDirectoryName, workspaces_]) =>
+          Object.keys(workspaces_).map(
+            (workspaceName) => `${workspacesDirectoryName}/${workspaceName}`,
+          ),
+      ),
+    },
+    undefined,
+    2,
+  ),
+);
