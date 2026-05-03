@@ -5,6 +5,7 @@ import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
 import { Resource } from "../src/Resource.js";
 import { testData } from "./testData.js";
+import "@rdfx/testing";
 
 describe("Value", () => {
   const { objects, predicate, subject } = testData;

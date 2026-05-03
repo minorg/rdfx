@@ -1,6 +1,7 @@
 import * as oxigraph from "oxigraph";
 import { beforeEach, describe, it } from "vitest";
 import { OxigraphSparqlClient } from "../src/OxigraphSparqlClient.js";
+import "@rdfx/testing";
 
 describe("OxigraphSparqlClient", () => {
   let object: oxigraph.Literal;

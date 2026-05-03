@@ -7,6 +7,7 @@ import { Resource } from "../src/Resource.js";
 import { ResourceSet } from "../src/ResourceSet.js";
 import { houseMdDataset } from "./houseMdDataset.js";
 import { testData } from "./testData.js";
+import "@rdfx/testing";
 
 describe("Resource", () => {
   const { graph, literals, objects, predicate, subject } = testData;
