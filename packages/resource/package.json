@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@rdfx/literal": "0.0.5",
+    "@rdfx/literal": "0.0.6",
     "@rdfjs/data-model": "~2.1.1",
     "@rdfjs/term-set": "~2.0.3",
     "@rdfjs/types": "~2.0.1",
@@ -38,5 +38,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.5"
+  "version": "0.0.6"
 }
