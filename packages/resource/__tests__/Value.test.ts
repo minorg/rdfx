@@ -141,7 +141,7 @@ describe("Value", () => {
       value.toIri().toMaybe().toList(),
     );
     expect(values).toHaveLength(1);
-    expect(values[0].equals(objects["namedNode"])).toStrictEqual(true);
+    expect(values[0]).toEqualRdfTerm(objects["namedNode"]);
 
     const specificIris: readonly NamedNode<"http://example.com/namedNodeObject">[] =
       [...testResource.values(predicate)].flatMap((value) =>
