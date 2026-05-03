@@ -20,5 +20,4 @@ declare module "vitest" {
   }
 }
 
-export { default as jestRdfMatchers } from "jest-rdf/lib/matchers";
-export * as purifyMatchers from "./purifyMatchers.js";
+export { matchers } from "./matchers.js";
