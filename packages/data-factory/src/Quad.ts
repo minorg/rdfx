@@ -5,15 +5,15 @@ import { Term } from "./Term.js";
  * An instance of DefaultGraph represents the default graph.
  * It's only allowed to assign a DefaultGraph to the .graph property of a Quad.
  */
-export class Quad extends Term implements RDF.BaseQuad {
+export class Quad extends Term implements RDF.Quad {
   public readonly termType = "Quad";
   public readonly value = "";
 
   public constructor(
-    readonly subject: RDF.Term,
-    readonly predicate: RDF.Term,
-    readonly object: RDF.Term,
-    readonly graph: RDF.Term,
+    readonly subject: RDF.Quad["subject"],
+    readonly predicate: RDF.Quad["predicate"],
+    readonly object: RDF.Quad["object"],
+    readonly graph: RDF.Quad["graph"],
   ) {
     super();
   }
