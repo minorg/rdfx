@@ -13,7 +13,12 @@ import { Variable } from "./Variable.js";
 export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
   implements RDF.DataFactory<TQ>
 {
+  private static readonly XSD_STRING: RDF.NamedNode = new NamedNode(
+    "http://www.w3.org/2001/XMLSchema#string",
+  );
+
   private readonly blankNodePrefix: string;
+
   private blankNodeCounter = 0;
 
   public constructor(options?: {
@@ -70,7 +75,7 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
         if (original.language) {
           return <any>this.literal(original.value, original.language);
         }
-        if (!original.datatype.equals(Literal.XSD_STRING)) {
+        if (!original.datatype.equals(DataFactory.XSD_STRING)) {
           return <any>(
             this.literal(original.value, this.fromTerm(original.datatype))
           );
