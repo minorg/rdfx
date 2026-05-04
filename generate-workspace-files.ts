@@ -47,7 +47,13 @@ const externalDependencies = {
   "vitest-fetch-mock": "~0.4.5",
 };
 
-type PackageName = "fs" | "literal" | "resource" | "sparql-client" | "testing";
+type PackageName =
+  | "data-factory"
+  | "fs"
+  | "literal"
+  | "resource"
+  | "sparql-client"
+  | "testing";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -98,6 +104,15 @@ const packageTsconfig: Tsconfig = {
 
 const workspaces = {
   packages: {
+    "data-factory": {
+      dependencies: {
+        external: ["@rdfjs/types"],
+      },
+      devDependencies: {
+        internal: ["testing"],
+      },
+      tsconfig: packageTsconfig,
+    },
     fs: {
       dependencies: {
         external: [

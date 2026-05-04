@@ -31,6 +31,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "workspaces": [
+    "packages/data-factory",
     "packages/fs",
     "packages/literal",
     "packages/resource",
