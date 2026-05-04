@@ -1,4 +1,5 @@
 import type * as RDF from "@rdfjs/types";
+
 import { NamedNode } from "./NamedNode";
 
 /**
@@ -7,24 +8,19 @@ import { NamedNode } from "./NamedNode";
  * or datatype.
  */
 export class Literal implements RDF.Literal {
-  public readonly termType = "Literal";
-  public readonly language: string;
-  public readonly datatype: RDF.NamedNode;
-  public readonly direction: "ltr" | "rtl" | "";
-
-  // eslint-disable-next-line ts/naming-convention
-  public static readonly RDF_LANGUAGE_STRING: RDF.NamedNode = new NamedNode(
+  private static readonly RDF_DIRECTIONAL_LANGUAGE_STRING: RDF.NamedNode =
+    new NamedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString");
+  private static readonly RDF_LANGUAGE_STRING: RDF.NamedNode = new NamedNode(
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
   );
-
-  // eslint-disable-next-line ts/naming-convention
-  public static readonly RDF_DIRECTIONAL_LANGUAGE_STRING: RDF.NamedNode =
-    new NamedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString");
-
-  // eslint-disable-next-line ts/naming-convention
-  public static readonly XSD_STRING: RDF.NamedNode = new NamedNode(
+  private static readonly XSD_STRING: RDF.NamedNode = new NamedNode(
     "http://www.w3.org/2001/XMLSchema#string",
   );
+
+  public readonly datatype: RDF.NamedNode;
+  public readonly direction: "ltr" | "rtl" | "";
+  public readonly language: string;
+  public readonly termType = "Literal";
 
   public constructor(
     readonly value: string,

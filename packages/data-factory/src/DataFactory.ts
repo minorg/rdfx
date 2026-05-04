@@ -63,32 +63,24 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
     //  https://github.com/microsoft/TypeScript/issues/26933
     switch (original.termType) {
       case "NamedNode":
-        // eslint-disable-next-line ts/no-unsafe-return
         return <any>this.namedNode(original.value);
       case "BlankNode":
-        // eslint-disable-next-line ts/no-unsafe-return
         return <any>this.blankNode(original.value);
       case "Literal":
         if (original.language) {
-          // eslint-disable-next-line ts/no-unsafe-return
           return <any>this.literal(original.value, original.language);
         }
         if (!original.datatype.equals(Literal.XSD_STRING)) {
-          // eslint-disable-next-line ts/no-unsafe-return
           return <any>(
             this.literal(original.value, this.fromTerm(original.datatype))
           );
         }
-        // eslint-disable-next-line ts/no-unsafe-return
         return <any>this.literal(original.value);
       case "Variable":
-        // eslint-disable-next-line ts/no-unsafe-return
         return <any>this.variable(original.value);
       case "DefaultGraph":
-        // eslint-disable-next-line ts/no-unsafe-return
         return <any>this.defaultGraph();
       case "Quad":
-        // eslint-disable-next-line ts/no-unsafe-return
         return <any>(
           this.quad(
             <TQ["subject"]>this.fromTerm((<TQ>(<unknown>original)).subject),
