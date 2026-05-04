@@ -16,6 +16,7 @@
     "ts-invariant": "~0.10.3"
   },
   "files": [
+    "LICENSE",
     "README.md",
     "dist/*.d.ts",
     "dist/*.js"

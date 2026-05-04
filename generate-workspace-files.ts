@@ -211,6 +211,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
     fs.mkdirSync(packageDirectoryPath, { recursive: true });
 
     const files = new Set<string>();
+    files.add("LICENSE");
     if (fs.existsSync(path.join(packageDirectoryPath, "README.md"))) {
       files.add("README.md");
     }

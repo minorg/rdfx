@@ -6,6 +6,7 @@
     "@rdfx/testing": "0.0.7"
   },
   "files": [
+    "LICENSE",
     "README.md",
     "dist/*.d.ts",
     "dist/*.js"

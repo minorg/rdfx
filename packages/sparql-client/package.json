@@ -8,6 +8,7 @@
     "oxigraph": "0.4.7"
   },
   "files": [
+    "LICENSE",
     "dist/*.d.ts",
     "dist/*.js"
   ],
