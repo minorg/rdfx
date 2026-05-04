@@ -1,12 +1,11 @@
 import type * as RDF from "@rdfjs/types";
+
 import { BlankNode } from "./BlankNode.js";
 import { DefaultGraph } from "./DefaultGraph.js";
 import { Literal } from "./Literal.js";
 import { NamedNode } from "./NamedNode.js";
 import { Quad } from "./Quad.js";
 import { Variable } from "./Variable.js";
-
-let dataFactoryCounter = 0;
 
 /**
  * A factory for instantiating RDF terms and quads.
@@ -17,19 +16,12 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
   private readonly blankNodePrefix: string;
   private blankNodeCounter = 0;
 
-  public constructor(options?: IDataFactoryOptions) {
+  public constructor(options?: {
+    blankNodePrefix?: string;
+  }) {
     options = options ?? {};
     this.blankNodePrefix =
       options.blankNodePrefix ?? `df_${dataFactoryCounter++}_`;
-  }
-
-  /**
-   * @param value The IRI for the named node.
-   * @return A new instance of NamedNode.
-   * @see NamedNode
-   */
-  public namedNode<TIri extends string = string>(value: TIri): NamedNode<TIri> {
-    return new NamedNode(value);
   }
 
   /**
@@ -46,36 +38,6 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
   }
 
   /**
-   * @param value              The literal value.
-   * @param languageOrDatatype The optional language, datatype, or directional language.
-   *                           If `languageOrDatatype` is a NamedNode,
-   *                           then it is used for the value of `NamedNode.datatype`.
-   *                           If `languageOrDatatype` is a NamedNode, it is used for the value
-   *                           of `NamedNode.language`.
-   *                           Otherwise, it is used as a directional language,
-   *                           from which the language is set to `languageOrDatatype.language`
-   *                           and the direction to `languageOrDatatype.direction`.
-   * @return A new instance of Literal.
-   * @see Literal
-   */
-  public literal(
-    value: string,
-    languageOrDatatype?: string | RDF.NamedNode | RDF.DirectionalLanguage,
-  ): Literal {
-    return new Literal(value, languageOrDatatype);
-  }
-
-  /**
-   * This method is optional.
-   * @param value The variable name
-   * @return A new instance of Variable.
-   * @see Variable
-   */
-  public variable(value: string): Variable {
-    return new Variable(value);
-  }
-
-  /**
    * @return An instance of DefaultGraph.
    */
   public defaultGraph(): DefaultGraph {
@@ -83,22 +45,12 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
   }
 
   /**
-   * @param subject   The quad subject term.
-   * @param predicate The quad predicate term.
-   * @param object    The quad object term.
-   * @param graph     The quad graph term.
-   * @return A new instance of Quad.
-   * @see Quad
+   * Create a deep copy of the given quad using this data factory.
+   * @param original An RDF quad.
+   * @return A deep copy of the given quad.
    */
-  public quad(
-    subject: TQ["subject"],
-    predicate: TQ["predicate"],
-    object: TQ["object"],
-    graph?: TQ["graph"],
-  ): TQ & Quad {
-    return <TQ>(
-      new Quad(subject, predicate, object, graph ?? this.defaultGraph())
-    );
+  public fromQuad(original: TQ): TQ {
+    return this.fromTerm(original);
   }
 
   /**
@@ -149,22 +101,62 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
   }
 
   /**
-   * Create a deep copy of the given quad using this data factory.
-   * @param original An RDF quad.
-   * @return A deep copy of the given quad.
+   * @param value              The literal value.
+   * @param languageOrDatatype The optional language, datatype, or directional language.
+   *                           If `languageOrDatatype` is a NamedNode,
+   *                           then it is used for the value of `NamedNode.datatype`.
+   *                           If `languageOrDatatype` is a NamedNode, it is used for the value
+   *                           of `NamedNode.language`.
+   *                           Otherwise, it is used as a directional language,
+   *                           from which the language is set to `languageOrDatatype.language`
+   *                           and the direction to `languageOrDatatype.direction`.
+   * @return A new instance of Literal.
+   * @see Literal
    */
-  public fromQuad(original: TQ): TQ {
-    return this.fromTerm(original);
+  public literal(
+    value: string,
+    languageOrDatatype?: string | RDF.NamedNode | RDF.DirectionalLanguage,
+  ): Literal {
+    return new Literal(value, languageOrDatatype);
   }
 
   /**
-   * Reset the internal blank node counter.
+   * @param value The IRI for the named node.
+   * @return A new instance of NamedNode.
+   * @see NamedNode
    */
-  public resetBlankNodeCounter(): void {
-    this.blankNodeCounter = 0;
+  public namedNode<TIri extends string = string>(value: TIri): NamedNode<TIri> {
+    return new NamedNode(value);
+  }
+
+  /**
+   * @param subject   The quad subject term.
+   * @param predicate The quad predicate term.
+   * @param object    The quad object term.
+   * @param graph     The quad graph term.
+   * @return A new instance of Quad.
+   * @see Quad
+   */
+  public quad(
+    subject: TQ["subject"],
+    predicate: TQ["predicate"],
+    object: TQ["object"],
+    graph?: TQ["graph"],
+  ): TQ & Quad {
+    return <TQ>(
+      new Quad(subject, predicate, object, graph ?? this.defaultGraph())
+    );
+  }
+
+  /**
+   * This method is optional.
+   * @param value The variable name
+   * @return A new instance of Variable.
+   * @see Variable
+   */
+  public variable(value: string): Variable {
+    return new Variable(value);
   }
 }
 
-export interface IDataFactoryOptions {
-  blankNodePrefix?: string;
-}
+let dataFactoryCounter = 0;

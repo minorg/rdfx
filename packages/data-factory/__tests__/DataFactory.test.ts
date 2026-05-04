@@ -43,14 +43,6 @@ describe("DataFactory", () => {
       expect(factory.blankNode().value).toBe("test_2");
     });
 
-    it("should generate a blank node label without a given label and consider resets on the factory", () => {
-      expect(factory.blankNode().value).toBe("test_0");
-      expect(factory.blankNode().value).toBe("test_1");
-      factory.resetBlankNodeCounter();
-      expect(factory.blankNode().value).toBe("test_0");
-      expect(factory.blankNode().value).toBe("test_1");
-    });
-
     it("should handle equals", () => {
       const term = factory.blankNode("a");
       expect(term.equals(null)).toBe(false);
