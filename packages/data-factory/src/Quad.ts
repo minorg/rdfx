@@ -1,10 +1,11 @@
 import type * as RDF from "@rdfjs/types";
+import { Term } from "./Term.js";
 
 /**
  * An instance of DefaultGraph represents the default graph.
  * It's only allowed to assign a DefaultGraph to the .graph property of a Quad.
  */
-export class Quad implements RDF.BaseQuad {
+export class Quad extends Term implements RDF.BaseQuad {
   public readonly termType = "Quad";
   public readonly value = "";
 
@@ -13,7 +14,9 @@ export class Quad implements RDF.BaseQuad {
     readonly predicate: RDF.Term,
     readonly object: RDF.Term,
     readonly graph: RDF.Term,
-  ) {}
+  ) {
+    super();
+  }
 
   public equals(other?: RDF.Term | null): boolean {
     // `|| !other.termType` is for backwards-compatibility with old factories without RDF* support.

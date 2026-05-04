@@ -1,13 +1,14 @@
 import type * as RDF from "@rdfjs/types";
 
-import { NamedNode } from "./NamedNode";
+import { NamedNode } from "./NamedNode.js";
+import { Term } from "./Term.js";
 
 /**
  * A term that represents an RDF literal,
  * containing a string with an optional language tag and optional direction
  * or datatype.
  */
-export class Literal implements RDF.Literal {
+export class Literal extends Term implements RDF.Literal {
   private static readonly RDF_DIRECTIONAL_LANGUAGE_STRING: RDF.NamedNode =
     new NamedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString");
   private static readonly RDF_LANGUAGE_STRING: RDF.NamedNode = new NamedNode(
@@ -26,6 +27,7 @@ export class Literal implements RDF.Literal {
     readonly value: string,
     languageOrDatatype?: string | RDF.NamedNode | RDF.DirectionalLanguage,
   ) {
+    super();
     if (typeof languageOrDatatype === "string") {
       this.language = languageOrDatatype;
       this.datatype = Literal.RDF_LANGUAGE_STRING;

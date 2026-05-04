@@ -10,9 +10,7 @@ import { Variable } from "./Variable.js";
 /**
  * A factory for instantiating RDF terms and quads.
  */
-export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
-  implements RDF.DataFactory<TQ>
-{
+export class DataFactory implements RDF.DataFactory<Quad, RDF.Quad> {
   private static readonly XSD_STRING: RDF.NamedNode = new NamedNode(
     "http://www.w3.org/2001/XMLSchema#string",
   );
@@ -54,8 +52,8 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
    * @param original An RDF quad.
    * @return A deep copy of the given quad.
    */
-  public fromQuad(original: TQ): TQ {
-    return this.fromTerm(original);
+  public fromQuad(original: RDF.Quad): Quad {
+    return this.fromTerm(original) as Quad;
   }
 
   /**
@@ -88,10 +86,12 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
       case "Quad":
         return <any>(
           this.quad(
-            <TQ["subject"]>this.fromTerm((<TQ>(<unknown>original)).subject),
-            <TQ["predicate"]>this.fromTerm((<TQ>(<unknown>original)).predicate),
-            <TQ["object"]>this.fromTerm((<TQ>(<unknown>original)).object),
-            <TQ["graph"]>this.fromTerm((<TQ>(<unknown>original)).graph),
+            <Quad["subject"]>this.fromTerm((<Quad>(<unknown>original)).subject),
+            <Quad["predicate"]>(
+              this.fromTerm((<Quad>(<unknown>original)).predicate)
+            ),
+            <Quad["object"]>this.fromTerm((<Quad>(<unknown>original)).object),
+            <Quad["graph"]>this.fromTerm((<Quad>(<unknown>original)).graph),
           )
         );
     }
@@ -135,14 +135,12 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
    * @see Quad
    */
   public quad(
-    subject: TQ["subject"],
-    predicate: TQ["predicate"],
-    object: TQ["object"],
-    graph?: TQ["graph"],
-  ): TQ & Quad {
-    return <TQ>(
-      new Quad(subject, predicate, object, graph ?? this.defaultGraph())
-    );
+    subject: Quad["subject"],
+    predicate: Quad["predicate"],
+    object: Quad["object"],
+    graph?: Quad["graph"],
+  ): Quad {
+    return new Quad(subject, predicate, object, graph ?? this.defaultGraph());
   }
 
   /**
