@@ -1,19 +1,21 @@
 {
   "dependencies": {
-    "@rdfjs/types": "~2.0.1",
-    "jest-rdf": "~2.0.0",
-    "purify-ts": "~2.1.4",
-    "vitest": "~4.1.5"
+    "@rdfjs/to-ntriples": "~3.0.1",
+    "@rdfjs/types": "~2.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@rdfx/testing": "0.0.8",
+    "@types/rdfjs__to-ntriples": "~3.0.0"
+  },
   "files": [
     "LICENSE",
+    "README.md",
     "dist/*.d.ts",
     "dist/*.js"
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/testing",
+  "name": "@rdfx/data-factory",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -23,7 +25,9 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "depcheck": "depcheck .",
-    "dev": "tsc -w --preserveWatchOutput"
+    "dev": "tsc -w --preserveWatchOutput",
+    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/data-factory/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

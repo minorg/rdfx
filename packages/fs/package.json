@@ -14,6 +14,7 @@
     "@types/rdfjs__dataset": "~2.0.7"
   },
   "files": [
+    "LICENSE",
     "dist/*.d.ts",
     "dist/*.js"
   ],
@@ -35,5 +36,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.7"
+  "version": "0.0.8"
 }

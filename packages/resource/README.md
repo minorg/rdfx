@@ -1,6 +1,8 @@
-# rdfjs-resource
+# @rdfx/resource
 
-Resource abstraction over [RDF/JS Datasets](https://rdf.js.org/dataset-spec/), inspired by similar abstractions in 
+Resource abstraction over [RDF/JS Datasets](https://rdf.js.org/dataset-spec/).
+
+Inspired by similar abstractions in
 
 * [Apache Jena](https://www.javadoc.io/doc/org.apache.jena/jena-core/3.3.0/org/apache/jena/rdf/model/Resource.html)
 * [rdflib](https://rdflib.readthedocs.io/en/stable/_modules/rdflib/resource.html)

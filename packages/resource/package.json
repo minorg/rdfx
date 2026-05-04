@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@rdfx/literal": "0.0.7",
+    "@rdfx/literal": "0.0.8",
     "@rdfjs/data-model": "~2.1.1",
     "@rdfjs/term-set": "~2.0.3",
     "@rdfjs/types": "~2.0.1",
@@ -16,6 +16,7 @@
     "ts-invariant": "~0.10.3"
   },
   "files": [
+    "LICENSE",
     "README.md",
     "dist/*.d.ts",
     "dist/*.js"
@@ -38,5 +39,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.7"
+  "version": "0.0.8"
 }

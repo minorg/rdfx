@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.7";
+const VERSION = "0.0.8";
 
 const vitestVersion = "~4.1.5";
 
@@ -15,6 +15,7 @@ const externalDependencies = {
   "@rdfjs/dataset": "~2.0.2",
   "@rdfjs/formats": "~4.0.1",
   "@rdfjs/term-set": "~2.0.3",
+  "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
   "@tpluscode/rdf-ns-builders": "~4.3.0",
   "@tsconfig/node24": "^24",
@@ -25,6 +26,7 @@ const externalDependencies = {
   "@types/rdfjs__dataset": "~2.0.7",
   "@types/rdfjs__formats": "~4.0.1",
   "@types/rdfjs__term-set": "~2.0.9",
+  "@types/rdfjs__to-ntriples": "~3.0.0",
   // "@types/readable-stream": "~4.0.23",
   "@types/unbzip2-stream": "~1.4.3",
   "@vitest/coverage-v8": vitestVersion,
@@ -47,7 +49,13 @@ const externalDependencies = {
   "vitest-fetch-mock": "~0.4.5",
 };
 
-type PackageName = "fs" | "literal" | "resource" | "sparql-client" | "testing";
+type PackageName =
+  | "data-factory"
+  | "fs"
+  | "literal"
+  | "resource"
+  | "sparql-client"
+  | "testing";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -98,6 +106,16 @@ const packageTsconfig: Tsconfig = {
 
 const workspaces = {
   packages: {
+    "data-factory": {
+      dependencies: {
+        external: ["@rdfjs/to-ntriples", "@rdfjs/types"],
+      },
+      devDependencies: {
+        external: ["@types/rdfjs__to-ntriples"],
+        internal: ["testing"],
+      },
+      tsconfig: packageTsconfig,
+    },
     fs: {
       dependencies: {
         external: [
@@ -196,6 +214,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
     fs.mkdirSync(packageDirectoryPath, { recursive: true });
 
     const files = new Set<string>();
+    files.add("LICENSE");
     if (fs.existsSync(path.join(packageDirectoryPath, "README.md"))) {
       files.add("README.md");
     }
@@ -392,7 +411,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run dev dev:tests",
+        dev: "turbo run --concurrency 12 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },
