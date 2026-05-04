@@ -1,23 +1,26 @@
-import type * as RDF from '@rdfjs/types';
-import { BlankNode } from './BlankNode';
-import { DefaultGraph } from './DefaultGraph';
-import { Literal } from './Literal';
-import { NamedNode } from './NamedNode';
-import { Quad } from './Quad';
-import { Variable } from './Variable';
+import type * as RDF from "@rdfjs/types";
+import { BlankNode } from "./BlankNode.js";
+import { DefaultGraph } from "./DefaultGraph.js";
+import { Literal } from "./Literal.js";
+import { NamedNode } from "./NamedNode.js";
+import { Quad } from "./Quad.js";
+import { Variable } from "./Variable.js";
 
 let dataFactoryCounter = 0;
 
 /**
  * A factory for instantiating RDF terms and quads.
  */
-export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad> implements RDF.DataFactory<TQ> {
+export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad>
+  implements RDF.DataFactory<TQ>
+{
   private readonly blankNodePrefix: string;
   private blankNodeCounter = 0;
 
   public constructor(options?: IDataFactoryOptions) {
     options = options ?? {};
-    this.blankNodePrefix = options.blankNodePrefix ?? `df_${dataFactoryCounter++}_`;
+    this.blankNodePrefix =
+      options.blankNodePrefix ?? `df_${dataFactoryCounter++}_`;
   }
 
   /**
@@ -37,7 +40,9 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad> implements RDF.Data
    * @see BlankNode
    */
   public blankNode(value?: string): BlankNode {
-    return new BlankNode(value ?? `${this.blankNodePrefix}${this.blankNodeCounter++}`);
+    return new BlankNode(
+      value ?? `${this.blankNodePrefix}${this.blankNodeCounter++}`,
+    );
   }
 
   /**
@@ -53,7 +58,10 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad> implements RDF.Data
    * @return A new instance of Literal.
    * @see Literal
    */
-  public literal(value: string, languageOrDatatype?: string | RDF.NamedNode | RDF.DirectionalLanguage): Literal {
+  public literal(
+    value: string,
+    languageOrDatatype?: string | RDF.NamedNode | RDF.DirectionalLanguage,
+  ): Literal {
     return new Literal(value, languageOrDatatype);
   }
 
@@ -83,12 +91,14 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad> implements RDF.Data
    * @see Quad
    */
   public quad(
-    subject: TQ['subject'],
-    predicate: TQ['predicate'],
-    object: TQ['object'],
-    graph?: TQ['graph'],
+    subject: TQ["subject"],
+    predicate: TQ["predicate"],
+    object: TQ["object"],
+    graph?: TQ["graph"],
   ): TQ & Quad {
-    return <TQ> new Quad(subject, predicate, object, graph ?? this.defaultGraph());
+    return <TQ>(
+      new Quad(subject, predicate, object, graph ?? this.defaultGraph())
+    );
   }
 
   /**
@@ -100,36 +110,40 @@ export class DataFactory<TQ extends RDF.BaseQuad = RDF.Quad> implements RDF.Data
     // TODO: remove nasty any casts when this TS bug has been fixed:
     //  https://github.com/microsoft/TypeScript/issues/26933
     switch (original.termType) {
-      case 'NamedNode':
+      case "NamedNode":
         // eslint-disable-next-line ts/no-unsafe-return
-        return <any> this.namedNode(original.value);
-      case 'BlankNode':
+        return <any>this.namedNode(original.value);
+      case "BlankNode":
         // eslint-disable-next-line ts/no-unsafe-return
-        return <any> this.blankNode(original.value);
-      case 'Literal':
+        return <any>this.blankNode(original.value);
+      case "Literal":
         if (original.language) {
           // eslint-disable-next-line ts/no-unsafe-return
-          return <any> this.literal(original.value, original.language);
+          return <any>this.literal(original.value, original.language);
         }
         if (!original.datatype.equals(Literal.XSD_STRING)) {
           // eslint-disable-next-line ts/no-unsafe-return
-          return <any> this.literal(original.value, this.fromTerm(original.datatype));
+          return <any>(
+            this.literal(original.value, this.fromTerm(original.datatype))
+          );
         }
         // eslint-disable-next-line ts/no-unsafe-return
-        return <any> this.literal(original.value);
-      case 'Variable':
+        return <any>this.literal(original.value);
+      case "Variable":
         // eslint-disable-next-line ts/no-unsafe-return
-        return <any> this.variable(original.value);
-      case 'DefaultGraph':
+        return <any>this.variable(original.value);
+      case "DefaultGraph":
         // eslint-disable-next-line ts/no-unsafe-return
-        return <any> this.defaultGraph();
-      case 'Quad':
+        return <any>this.defaultGraph();
+      case "Quad":
         // eslint-disable-next-line ts/no-unsafe-return
-        return <any> this.quad(
-          <TQ['subject']> this.fromTerm((<TQ> <unknown> original).subject),
-          <TQ['predicate']> this.fromTerm((<TQ> <unknown> original).predicate),
-          <TQ['object']> this.fromTerm((<TQ> <unknown> original).object),
-          <TQ['graph']> this.fromTerm((<TQ> <unknown> original).graph),
+        return <any>(
+          this.quad(
+            <TQ["subject"]>this.fromTerm((<TQ>(<unknown>original)).subject),
+            <TQ["predicate"]>this.fromTerm((<TQ>(<unknown>original)).predicate),
+            <TQ["object"]>this.fromTerm((<TQ>(<unknown>original)).object),
+            <TQ["graph"]>this.fromTerm((<TQ>(<unknown>original)).graph),
+          )
         );
     }
   }

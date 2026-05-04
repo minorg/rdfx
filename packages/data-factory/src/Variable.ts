@@ -1,10 +1,10 @@
-import type * as RDF from '@rdfjs/types';
+import type * as RDF from "@rdfjs/types";
 
 /**
  * A term that represents a variable.
  */
 export class Variable implements RDF.Variable {
-  public readonly termType = 'Variable';
+  public readonly termType = "Variable";
   public readonly value: string;
 
   public constructor(value: string) {
@@ -12,6 +12,8 @@ export class Variable implements RDF.Variable {
   }
 
   public equals(other?: RDF.Term | null): boolean {
-    return !!other && other.termType === 'Variable' && other.value === this.value;
+    return (
+      !!other && other.termType === "Variable" && other.value === this.value
+    );
   }
 }
