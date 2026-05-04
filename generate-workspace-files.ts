@@ -15,6 +15,7 @@ const externalDependencies = {
   "@rdfjs/dataset": "~2.0.2",
   "@rdfjs/formats": "~4.0.1",
   "@rdfjs/term-set": "~2.0.3",
+  "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
   "@tpluscode/rdf-ns-builders": "~4.3.0",
   "@tsconfig/node24": "^24",
@@ -25,6 +26,7 @@ const externalDependencies = {
   "@types/rdfjs__dataset": "~2.0.7",
   "@types/rdfjs__formats": "~4.0.1",
   "@types/rdfjs__term-set": "~2.0.9",
+  "@types/rdfjs__to-ntriples": "~3.0.0",
   // "@types/readable-stream": "~4.0.23",
   "@types/unbzip2-stream": "~1.4.3",
   "@vitest/coverage-v8": vitestVersion,
@@ -106,9 +108,10 @@ const workspaces = {
   packages: {
     "data-factory": {
       dependencies: {
-        external: ["@rdfjs/types"],
+        external: ["@rdfjs/to-ntriples", "@rdfjs/types"],
       },
       devDependencies: {
+        external: ["@types/rdfjs__to-ntriples"],
         internal: ["testing"],
       },
       tsconfig: packageTsconfig,

@@ -1,9 +1,11 @@
 {
   "dependencies": {
+    "@rdfjs/to-ntriples": "~3.0.1",
     "@rdfjs/types": "~2.0.1"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.7"
+    "@rdfx/testing": "0.0.7",
+    "@types/rdfjs__to-ntriples": "~3.0.0"
   },
   "files": [
     "LICENSE",

@@ -14,22 +14,6 @@ describe("DataFactory", () => {
     const _otherFactory: RDF.DataFactory = factory;
   });
 
-  describe("namedNode", () => {
-    it("should produce a valid named node", () => {
-      const namedNode: RDF.NamedNode = factory.namedNode("ex:a");
-      expect(namedNode.termType).toBe("NamedNode");
-      expect(namedNode.value).toBe("ex:a");
-    });
-
-    it("should handle equals", () => {
-      const term = factory.namedNode("ex:a");
-      expect(term.equals(null)).toBe(false);
-      expect(term.equals()).toBe(false);
-      expect(term.equals(factory.blankNode())).toBe(false);
-      expect(term.equals(factory.namedNode("ex:a"))).toBe(true);
-    });
-  });
-
   describe("blankNode", () => {
     it("should produce a valid blank node for a given label", () => {
       const blankNode: RDF.BlankNode = factory.blankNode("a");
@@ -57,6 +41,49 @@ describe("DataFactory", () => {
       const termC = new DataFactory().blankNode();
       expect(termA.equals(termB)).toBe(false);
       expect(termB.equals(termC)).toBe(false);
+    });
+
+    it("should convert to JSON", () => {
+      const term = factory.blankNode();
+      expect(term.toJSON()).toEqual({
+        termType: "BlankNode",
+        value: term.value,
+      });
+    });
+
+    it("should convert to a string", () => {
+      const term = factory.blankNode();
+      expect(term.toString()).toStrictEqual(`_:${term.value}`);
+    });
+  });
+
+  describe("defaultGraph", () => {
+    it("should produce a valid default graph", () => {
+      const defaultGraph: RDF.DefaultGraph = factory.defaultGraph();
+      expect(defaultGraph.termType).toBe("DefaultGraph");
+      expect(defaultGraph.value).toBe("");
+    });
+
+    it("should produce a singleton", () => {
+      expect(factory.defaultGraph()).toBe(factory.defaultGraph());
+    });
+
+    it("should handle equals", () => {
+      const term = factory.defaultGraph();
+      expect(term.equals(null)).toBe(false);
+      expect(term.equals()).toBe(false);
+      expect(term.equals(factory.blankNode())).toBe(false);
+      expect(term.equals(factory.defaultGraph())).toBe(true);
+    });
+
+    it("should convert to JSON", () => {
+      expect(factory.defaultGraph().toJSON()).toEqual({
+        termType: "DefaultGraph",
+      });
+    });
+
+    it("should convert to a string", () => {
+      expect(factory.defaultGraph().toString()).toStrictEqual("");
     });
   });
 
@@ -264,41 +291,80 @@ describe("DataFactory", () => {
           ),
       ).toBe(false);
     });
+
+    it("should convert to JSON", () => {
+      expect(factory.literal("test").toJSON()).toEqual({
+        datatype: "http://www.w3.org/2001/XMLSchema#string",
+        direction: "",
+        language: "",
+        termType: "Literal",
+        value: "test",
+      });
+
+      expect(factory.literal("test", "en").toJSON()).toEqual({
+        datatype: "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+        direction: "",
+        language: "en",
+        termType: "Literal",
+        value: "test",
+      });
+
+      expect(
+        factory
+          .literal(
+            "1",
+            factory.namedNode("http://www.w3.org/2001/XMLSchema#int"),
+          )
+          .toJSON(),
+      ).toEqual({
+        datatype: "http://www.w3.org/2001/XMLSchema#int",
+        direction: "",
+        language: "",
+        termType: "Literal",
+        value: "1",
+      });
+    });
+
+    it("should convert to a string", () => {
+      expect(factory.literal("test").toString()).toStrictEqual('"test"');
+      expect(factory.literal("test", "en").toString()).toStrictEqual(
+        '"test"@en',
+      );
+      expect(
+        factory
+          .literal(
+            "1",
+            factory.namedNode("http://www.w3.org/2001/XMLSchema#int"),
+          )
+          .toString(),
+      ).toStrictEqual('"1"^^<http://www.w3.org/2001/XMLSchema#int>');
+    });
   });
 
-  describe("variable", () => {
-    it("should produce a valid variable", () => {
-      const variable: RDF.Variable = factory.variable("a");
-      expect(variable.termType).toBe("Variable");
-      expect(variable.value).toBe("a");
+  describe("namedNode", () => {
+    it("should produce a valid named node", () => {
+      const namedNode: RDF.NamedNode = factory.namedNode("ex:a");
+      expect(namedNode.termType).toBe("NamedNode");
+      expect(namedNode.value).toBe("ex:a");
     });
 
     it("should handle equals", () => {
-      const term = factory.variable("a");
+      const term = factory.namedNode("ex:a");
       expect(term.equals(null)).toBe(false);
       expect(term.equals()).toBe(false);
       expect(term.equals(factory.blankNode())).toBe(false);
-      expect(term.equals(factory.variable("a"))).toBe(true);
-    });
-  });
-
-  describe("defaultGraph", () => {
-    it("should produce a valid default graph", () => {
-      const defaultGraph: RDF.DefaultGraph = factory.defaultGraph();
-      expect(defaultGraph.termType).toBe("DefaultGraph");
-      expect(defaultGraph.value).toBe("");
+      expect(term.equals(factory.namedNode("ex:a"))).toBe(true);
     });
 
-    it("should produce a singleton", () => {
-      expect(factory.defaultGraph()).toBe(factory.defaultGraph());
+    it("should convert to JSON", () => {
+      expect(factory.namedNode("ex:a").toJSON()).toEqual({
+        termType: "NamedNode",
+        value: "ex:a",
+      });
     });
 
-    it("should handle equals", () => {
-      const term = factory.defaultGraph();
-      expect(term.equals(null)).toBe(false);
-      expect(term.equals()).toBe(false);
-      expect(term.equals(factory.blankNode())).toBe(false);
-      expect(term.equals(factory.defaultGraph())).toBe(true);
+    it("should convert to a string", () => {
+      expect(factory.namedNode("ex:a").toString()).toStrictEqual("<ex:a>");
     });
   });
 
@@ -662,6 +728,77 @@ describe("DataFactory", () => {
       expect(inputDeep.object).not.toBe(outputDeep.object);
       expect(inputDeep.graph).toEqualRdfTerm(outputDeep.graph);
       expect(inputDeep.graph).not.toBe(outputDeep.graph);
+    });
+
+    it("should convert to JSON", () => {
+      expect(
+        factory
+          .quad(
+            factory.namedNode("ex:s"),
+            factory.namedNode("ex:p"),
+            factory.namedNode("ex:o"),
+            factory.namedNode("ex:g"),
+          )
+          .toJSON(),
+      ).toEqual({
+        graph: {
+          termType: "NamedNode",
+          value: "ex:g",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "ex:o",
+        },
+        predicate: {
+          termType: "NamedNode",
+          value: "ex:p",
+        },
+        subject: {
+          termType: "NamedNode",
+          value: "ex:s",
+        },
+        termType: "Quad",
+      });
+    });
+
+    it("should convert to a string", () => {
+      expect(
+        factory
+          .quad(
+            factory.namedNode("ex:s"),
+            factory.namedNode("ex:p"),
+            factory.namedNode("ex:o"),
+            factory.namedNode("ex:g"),
+          )
+          .toString(),
+      ).toStrictEqual("<ex:s> <ex:p> <ex:o> <ex:g> .");
+    });
+  });
+
+  describe("variable", () => {
+    it("should produce a valid variable", () => {
+      const variable: RDF.Variable = factory.variable("a");
+      expect(variable.termType).toBe("Variable");
+      expect(variable.value).toBe("a");
+    });
+
+    it("should handle equals", () => {
+      const term = factory.variable("a");
+      expect(term.equals(null)).toBe(false);
+      expect(term.equals()).toBe(false);
+      expect(term.equals(factory.blankNode())).toBe(false);
+      expect(term.equals(factory.variable("a"))).toBe(true);
+    });
+
+    it("should convert to JSON", () => {
+      expect(factory.variable("test").toJSON()).toEqual({
+        termType: "Variable",
+        value: "test",
+      });
+    });
+
+    it("should convert to a string", () => {
+      expect(factory.variable("test").toString()).toStrictEqual("?test");
     });
   });
 });

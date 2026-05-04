@@ -2,14 +2,8 @@ import type * as RDF from "@rdfjs/types";
 
 export function termToJson(term: RDF.Term): Record<string, unknown> {
   switch (term.termType) {
-    case "NamedNode":
-    case "BlankNode":
-    case "Variable":
     case "DefaultGraph":
-      return {
-        termType: term.termType,
-        value: term.value,
-      };
+      return { termType: term.termType };
 
     case "Literal":
       return {
@@ -19,6 +13,15 @@ export function termToJson(term: RDF.Term): Record<string, unknown> {
         language: term.language,
         value: term.value,
       };
+
+    case "NamedNode":
+    case "BlankNode":
+    case "Variable":
+      return {
+        termType: term.termType,
+        value: term.value,
+      };
+
     case "Quad":
       return {
         termType: term.termType,
