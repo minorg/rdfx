@@ -7,11 +7,8 @@ export class NamedNode<TIri extends string = string>
   implements RDF.NamedNode<TIri>
 {
   public readonly termType = "NamedNode";
-  public readonly value: TIri;
 
-  public constructor(value: TIri) {
-    this.value = value;
-  }
+  public constructor(readonly value: TIri) {}
 
   public equals(other?: RDF.Term | null): boolean {
     return (

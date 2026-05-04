@@ -5,11 +5,8 @@ import type * as RDF from "@rdfjs/types";
  */
 export class BlankNode implements RDF.BlankNode {
   public readonly termType = "BlankNode";
-  public readonly value: string;
 
-  public constructor(value: string) {
-    this.value = value;
-  }
+  public constructor(readonly value: string) {}
 
   public equals(other?: RDF.Term | null): boolean {
     return (

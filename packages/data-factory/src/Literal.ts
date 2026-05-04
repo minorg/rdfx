@@ -8,7 +8,6 @@ import { NamedNode } from "./NamedNode";
  */
 export class Literal implements RDF.Literal {
   public readonly termType = "Literal";
-  public readonly value: string;
   public readonly language: string;
   public readonly datatype: RDF.NamedNode;
   public readonly direction: "ltr" | "rtl" | "";
@@ -28,10 +27,9 @@ export class Literal implements RDF.Literal {
   );
 
   public constructor(
-    value: string,
+    readonly value: string,
     languageOrDatatype?: string | RDF.NamedNode | RDF.DirectionalLanguage,
   ) {
-    this.value = value;
     if (typeof languageOrDatatype === "string") {
       this.language = languageOrDatatype;
       this.datatype = Literal.RDF_LANGUAGE_STRING;

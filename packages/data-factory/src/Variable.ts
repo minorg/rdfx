@@ -5,11 +5,8 @@ import type * as RDF from "@rdfjs/types";
  */
 export class Variable implements RDF.Variable {
   public readonly termType = "Variable";
-  public readonly value: string;
 
-  public constructor(value: string) {
-    this.value = value;
-  }
+  public constructor(readonly value: string) {}
 
   public equals(other?: RDF.Term | null): boolean {
     return (

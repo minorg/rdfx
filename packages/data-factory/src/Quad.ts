@@ -7,22 +7,13 @@ import type * as RDF from "@rdfjs/types";
 export class Quad implements RDF.BaseQuad {
   public readonly termType = "Quad";
   public readonly value = "";
-  public readonly subject: RDF.Term;
-  public readonly predicate: RDF.Term;
-  public readonly object: RDF.Term;
-  public readonly graph: RDF.Term;
 
   public constructor(
-    subject: RDF.Term,
-    predicate: RDF.Term,
-    object: RDF.Term,
-    graph: RDF.Term,
-  ) {
-    this.subject = subject;
-    this.predicate = predicate;
-    this.object = object;
-    this.graph = graph;
-  }
+    readonly subject: RDF.Term,
+    readonly predicate: RDF.Term,
+    readonly object: RDF.Term,
+    readonly graph: RDF.Term,
+  ) {}
 
   public equals(other?: RDF.Term | null): boolean {
     // `|| !other.termType` is for backwards-compatibility with old factories without RDF* support.
