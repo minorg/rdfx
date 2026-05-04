@@ -1,3 +1,6 @@
+import type * as RDF from "@rdfjs/types";
+import { termToJson } from "./termToJson.js";
+
 export abstract class Term {
   abstract readonly termType:
     | "BlankNode"
@@ -9,9 +12,6 @@ export abstract class Term {
   abstract readonly value: string;
 
   toJSON() {
-    return {
-      termType: this.termType,
-      value: this.value,
-    };
+    return termToJson(this as unknown as RDF.Term);
   }
 }
