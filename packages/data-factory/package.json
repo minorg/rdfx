@@ -4,7 +4,7 @@
     "@rdfjs/types": "~2.0.1"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.7",
+    "@rdfx/testing": "0.0.8",
     "@types/rdfjs__to-ntriples": "~3.0.0"
   },
   "files": [
@@ -31,5 +31,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.7"
+  "version": "0.0.8"
 }
