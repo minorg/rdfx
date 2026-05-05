@@ -344,13 +344,13 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
 
     fs.writeFileSync(
       path.resolve(packageDirectoryPath, "tsconfig.json"),
-      JSON.stringify(workspace.tsconfig, undefined, 2),
+      `${JSON.stringify(workspace.tsconfig, undefined, 2)}\n`,
     );
 
     if (testsDirectoryPath !== null) {
       fs.writeFileSync(
         path.join(testsDirectoryPath, "tsconfig.json"),
-        JSON.stringify(
+        `${JSON.stringify(
           {
             compilerOptions: {
               exactOptionalPropertyTypes: false,
@@ -368,7 +368,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
           },
           undefined,
           2,
-        ),
+        )}\n`,
       );
     }
   }
@@ -377,7 +377,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
 // Root package.json
 fs.writeFileSync(
   path.join(myDirPath, "package.json"),
-  JSON.stringify(
+  `${JSON.stringify(
     {
       devDependencies: (
         [
@@ -429,5 +429,5 @@ fs.writeFileSync(
     },
     undefined,
     2,
-  ),
+  )}\n`,
 );

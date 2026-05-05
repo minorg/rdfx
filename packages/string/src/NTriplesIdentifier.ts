@@ -1,7 +1,7 @@
 import type { DataFactory } from "@rdfjs/types";
 import { Either, Left } from "purify-ts";
 import type { Identifier } from "./Identifier.js";
-import { NTriplesTerm } from "./NTriplesTerm";
+import { NTriplesTerm } from "./NTriplesTerm.js";
 
 export namespace NTriplesIdentifier {
   export function parser(
