@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.9",
-    "@rdfx/literal": "0.0.9",
-    "@rdfx/string": "0.0.9",
+    "@rdfx/data-factory": "0.0.10",
+    "@rdfx/literal": "0.0.10",
+    "@rdfx/string": "0.0.10",
     "@rdfjs/term-set": "~2.0.3",
     "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__term-set": "~2.0.9",
@@ -40,5 +40,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.9"
+  "version": "0.0.10"
 }
