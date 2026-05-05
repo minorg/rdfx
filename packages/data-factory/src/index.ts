@@ -1,4 +1,4 @@
-import { DataFactory } from "./DataFactory";
+import { DataFactory } from "./DataFactory.js";
 
 export * from "./DataFactory.js";
 
