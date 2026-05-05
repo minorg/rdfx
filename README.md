@@ -11,6 +11,7 @@ TypeScript libraries for working with [RDF](https://www.w3.org/RDF/).
 * [`@rdfx/literal`](packages/literal): decoder and factory between [RDF/JS Literals](https://rdf.js.org/data-model-spec/#literal-interface) and JavaScript/TypeScript types
 * [`@rdfx/resource`](packages/resource): resource abstraction over [RDF/JS Datasets](https://rdf.js.org/dataset-spec/)
 * [`@rdfx/sparql-client`](packages/sparql-client): [SPARQL](https://www.w3.org/TR/sparql11-protocol/) client
+* [`@rdfx/string`](packages/string): utilities for converting between strings and [RDF/JS terms](https://rdf.js.org/data-model-spec/#term-interface)
 * [`@rdfx/testing`](packages/testing): testing utilities
 
 ## Installation

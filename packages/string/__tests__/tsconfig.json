@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": false,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "ES2020"
+    ],
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "noUncheckedIndexedAccess": false,
+    "target": "ES2020"
+  },
+  "extends": [
+    "@tsconfig/strictest/tsconfig.json"
+  ],
+  "include": [
+    "./**/*.ts",
+    "../src/**/*"
+  ]
+}

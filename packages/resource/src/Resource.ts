@@ -12,7 +12,7 @@ import defaultDataFactory from "@rdfx/data-factory";
 import { LiteralFactory } from "@rdfx/literal";
 import { Either, Left } from "purify-ts";
 import { DatasetValues } from "./DatasetValues.js";
-import { Identifier as _Identifier, type Identifier } from "./Identifier.js";
+import type { Identifier as _Identifier, Identifier } from "./Identifier.js";
 import { ListStructureError as _ListStructureError } from "./ListStructureError.js";
 import { MistypedTermValueError as _MistypedTermValueError } from "./MistypedTermValueError.js";
 import type { Primitive } from "./Primitive.js";
@@ -639,7 +639,6 @@ type InversePath = {
 };
 
 export namespace Resource {
-  export const Identifier = _Identifier;
   export type Identifier = _Identifier;
 
   export const ListStructureError = _ListStructureError;

@@ -1,11 +1,10 @@
 {
   "dependencies": {
-    "@rdfjs/to-ntriples": "~3.0.1",
+    "@rdfx/string": "0.0.10",
     "@rdfjs/types": "~2.0.1"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.9",
-    "@types/rdfjs__to-ntriples": "~3.0.0"
+    "@rdfx/testing": "0.0.10"
   },
   "files": [
     "LICENSE",
@@ -31,5 +30,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.9"
+  "version": "0.0.10"
 }

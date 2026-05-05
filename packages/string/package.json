@@ -1,20 +1,11 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.10",
-    "@rdfx/literal": "0.0.10",
-    "@rdfx/string": "0.0.10",
-    "@rdfjs/term-set": "~2.0.3",
+    "@rdfjs/to-ntriples": "~3.0.1",
     "@rdfjs/types": "~2.0.1",
-    "@types/rdfjs__term-set": "~2.0.9",
     "purify-ts": "~2.1.4"
   },
   "devDependencies": {
-    "@rdfjs/dataset": "~2.0.2",
-    "@tpluscode/rdf-ns-builders": "~4.3.0",
-    "@types/rdfjs__dataset": "~2.0.7",
-    "@types/rdfjs__to-ntriples": "~3.0.0",
-    "housemd": "0.1.3",
-    "ts-invariant": "~0.10.3"
+    "@types/rdfjs__to-ntriples": "~3.0.0"
   },
   "files": [
     "LICENSE",
@@ -24,7 +15,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/resource",
+  "name": "@rdfx/string",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -36,7 +27,7 @@
     "depcheck": "depcheck .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/resource/__tests__"
+    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/string/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

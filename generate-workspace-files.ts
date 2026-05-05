@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.9";
+const VERSION = "0.0.10";
 
 const vitestVersion = "~4.1.5";
 
@@ -53,6 +53,7 @@ type PackageName =
   | "literal"
   | "resource"
   | "sparql-client"
+  | "string"
   | "testing";
 
 interface Tsconfig {
@@ -106,10 +107,10 @@ const workspaces = {
   packages: {
     "data-factory": {
       dependencies: {
-        external: ["@rdfjs/to-ntriples", "@rdfjs/types"],
+        external: ["@rdfjs/types"],
+        internal: ["string"],
       },
       devDependencies: {
-        external: ["@types/rdfjs__to-ntriples"],
         internal: ["testing"],
       },
       tsconfig: packageTsconfig,
@@ -154,12 +155,11 @@ const workspaces = {
       dependencies: {
         external: [
           "@rdfjs/term-set",
-          "@rdfjs/to-ntriples",
           "@rdfjs/types",
           "@types/rdfjs__term-set",
           "purify-ts",
         ],
-        internal: ["data-factory", "literal"],
+        internal: ["data-factory", "literal", "string"],
       },
       devDependencies: {
         external: [
@@ -179,6 +179,16 @@ const workspaces = {
       },
       devDependencies: {
         external: ["oxigraph"],
+      },
+      tsconfig: packageTsconfig,
+    },
+    string: {
+      dependencies: {
+        external: ["@rdfjs/to-ntriples", "@rdfjs/types", "purify-ts"],
+      },
+      devDependencies: {
+        external: ["@types/rdfjs__to-ntriples"],
+        // internal: ["data-factory"], // Don't declare a circular dependency
       },
       tsconfig: packageTsconfig,
     },
@@ -406,7 +416,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 12 dev dev:tests",
+        dev: "turbo run --concurrency 14 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },
