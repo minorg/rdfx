@@ -11,7 +11,6 @@ const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
   "@biomejs/biome": "2.3.10",
-  "@rdfjs/data-model": "~2.1.1",
   "@rdfjs/dataset": "~2.0.2",
   "@rdfjs/formats": "~4.0.1",
   "@rdfjs/term-set": "~2.0.3",
@@ -22,7 +21,6 @@ const externalDependencies = {
   "@tsconfig/strictest": "~2.0.8",
   "@types/n3": "~1.26.0",
   "@types/node": "^24",
-  "@types/rdfjs__data-model": "~2.0.9",
   "@types/rdfjs__dataset": "~2.0.7",
   "@types/rdfjs__formats": "~4.0.1",
   "@types/rdfjs__term-set": "~2.0.9",
@@ -147,31 +145,28 @@ const workspaces = {
         external: ["@rdfjs/types", "purify-ts"],
       },
       devDependencies: {
-        external: [
-          "@rdfjs/data-model",
-          "@tpluscode/rdf-ns-builders",
-          "@types/rdfjs__data-model",
-        ],
+        external: ["@tpluscode/rdf-ns-builders"],
+        internal: ["data-factory"],
       },
       tsconfig: packageTsconfig,
     },
     resource: {
       dependencies: {
         external: [
-          "@rdfjs/data-model",
           "@rdfjs/term-set",
+          "@rdfjs/to-ntriples",
           "@rdfjs/types",
-          "@types/rdfjs__data-model",
           "@types/rdfjs__term-set",
           "purify-ts",
         ],
-        internal: ["literal"],
+        internal: ["data-factory", "literal"],
       },
       devDependencies: {
         external: [
           "@rdfjs/dataset",
           "@tpluscode/rdf-ns-builders",
           "@types/rdfjs__dataset",
+          "@types/rdfjs__to-ntriples",
           "housemd",
           "ts-invariant",
         ],

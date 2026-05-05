@@ -5,7 +5,6 @@ import type {
   Quad,
   Variable,
 } from "@rdfjs/types";
-import { Identifier } from "./Identifier.js";
 import { MistypedValueError } from "./MistypedValueError.js";
 import { PropertyPath } from "./PropertyPath.js";
 import type { Resource } from "./Resource.js";
@@ -28,7 +27,7 @@ export class MistypedTermValueError extends MistypedValueError<
       actualValue,
       expectedValueType,
       focusResource,
-      message: `expected ${Identifier.toString(focusResource.identifier)} ${PropertyPath.toString(propertyPath)} to be a ${expectedValueType}, was ${actualValue.termType}`,
+      message: `expected ${focusResource.identifier} ${PropertyPath.toString(propertyPath)} to be a ${expectedValueType}, was ${actualValue.termType}`,
       propertyPath,
     });
   }

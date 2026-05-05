@@ -4,9 +4,8 @@
     "purify-ts": "~2.1.4"
   },
   "devDependencies": {
-    "@rdfjs/data-model": "~2.1.1",
-    "@tpluscode/rdf-ns-builders": "~4.3.0",
-    "@types/rdfjs__data-model": "~2.0.9"
+    "@rdfx/data-factory": "0.0.8",
+    "@tpluscode/rdf-ns-builders": "~4.3.0"
   },
   "files": [
     "LICENSE",

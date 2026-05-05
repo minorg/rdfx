@@ -1,4 +1,3 @@
-import DefaultDataFactory from "@rdfjs/data-model";
 import TermSet from "@rdfjs/term-set";
 import type {
   DataFactory,
@@ -7,6 +6,7 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
+import defaultDataFactory from "@rdfx/data-factory";
 import type { Identifier } from "./Identifier.js";
 import { Resource } from "./Resource.js";
 import { rdf, rdfs } from "./vocabularies.js";
@@ -25,7 +25,7 @@ export class ResourceSet {
       graph?: Exclude<Quad_Graph, Variable>;
     },
   ) {
-    this.dataFactory = options?.dataFactory ?? DefaultDataFactory;
+    this.dataFactory = options?.dataFactory ?? defaultDataFactory;
     this.graph = options?.graph;
   }
 

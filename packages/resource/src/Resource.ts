@@ -1,4 +1,3 @@
-import DefaultDataFactory from "@rdfjs/data-model";
 import TermSet from "@rdfjs/term-set";
 import type {
   BlankNode,
@@ -9,6 +8,7 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
+import defaultDataFactory from "@rdfx/data-factory";
 import { LiteralFactory } from "@rdfx/literal";
 import { Either, Left } from "purify-ts";
 import { DatasetValues } from "./DatasetValues.js";
@@ -40,7 +40,7 @@ export class Resource<
       dataFactory?: DataFactory;
     },
   ) {
-    this.dataFactory = options?.dataFactory ?? DefaultDataFactory;
+    this.dataFactory = options?.dataFactory ?? defaultDataFactory;
     this.literalFactory = new LiteralFactory({ dataFactory: this.dataFactory });
   }
 

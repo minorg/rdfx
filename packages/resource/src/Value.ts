@@ -1,3 +1,4 @@
+import toNT from "@rdfjs/to-ntriples";
 import type {
   BlankNode,
   DataFactory,
@@ -14,7 +15,7 @@ import { MistypedTermValueError } from "./MistypedTermValueError.js";
 import type { Primitive } from "./Primitive.js";
 import type { PropertyPath } from "./PropertyPath.js";
 import { Resource } from "./Resource.js";
-import { Term } from "./Term.js";
+import type { Term } from "./Term.js";
 import { Values } from "./Values.js";
 
 export class Value<TermT extends Term = Term> {
@@ -198,7 +199,7 @@ export class Value<TermT extends Term = Term> {
     if (this.term.termType !== "Literal") {
       return Left(
         this.newMistypedTermValueError(
-          in_ ? in_.map((_) => Term.toString(_)).join(" | ") : "Literal",
+          in_ ? in_.map(toNT).join(" | ") : "Literal",
         ),
       );
     }
@@ -206,7 +207,7 @@ export class Value<TermT extends Term = Term> {
     if (in_ && !in_.some((check) => check.equals(this.term))) {
       return Left(
         this.newMistypedTermValueError(
-          in_ ? in_.map((_) => Term.toString(_)).join(" | ") : "Literal",
+          in_ ? in_.map(toNT).join(" | ") : "Literal",
         ),
       );
     }
@@ -355,7 +356,7 @@ export class Value<TermT extends Term = Term> {
       return Left(
         new MistypedTermValueError({
           actualValue: value,
-          expectedValueType: in_.map(Term.toString).join(" | "),
+          expectedValueType: in_.map(toNT).join(" | "),
           focusResource: this.focusResource,
           propertyPath: this.propertyPath,
         }),

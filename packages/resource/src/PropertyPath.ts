@@ -1,6 +1,6 @@
-import dataFactory from "@rdfjs/data-model";
 import datasetFactory from "@rdfjs/dataset";
 import type { NamedNode, Quad_Graph, Variable } from "@rdfjs/types";
+import dataFactory from "@rdfx/data-factory";
 
 import { Either, Left } from "purify-ts";
 import { Resource } from "./Resource.js";
@@ -155,7 +155,7 @@ export namespace PropertyPath {
         default:
           return Left(
             new Error(
-              `non-BlankNode/NamedNode property path object on path ${Resource.Identifier.toString(resource.identifier)}: ${quad.object.termType} ${quad.object.value}`,
+              `non-BlankNode/NamedNode property path object on path ${resource.identifier}: ${quad.object.termType} ${quad.object.value}`,
             ),
           );
       }
@@ -209,7 +209,7 @@ export namespace PropertyPath {
 
     return Left(
       new Error(
-        `unrecognized or ill-formed SHACL property path ${Resource.Identifier.toString(resource.identifier)}`,
+        `unrecognized or ill-formed SHACL property path ${resource.identifier}`,
       ),
     );
   }

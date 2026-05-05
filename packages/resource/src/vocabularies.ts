@@ -1,94 +1,94 @@
-import DataFactory from "@rdfjs/data-model";
+import dataFactory from "@rdfx/data-factory";
 
 export namespace rdf {
-  export const first = DataFactory.namedNode(
+  export const first = dataFactory.namedNode(
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
   );
-  export const nil = DataFactory.namedNode(
+  export const nil = dataFactory.namedNode(
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
   );
-  export const rest = DataFactory.namedNode(
+  export const rest = dataFactory.namedNode(
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
   );
-  export const type = DataFactory.namedNode(
+  export const type = dataFactory.namedNode(
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
   );
 }
 
 export namespace rdfs {
-  export const subClassOf = DataFactory.namedNode(
+  export const subClassOf = dataFactory.namedNode(
     "http://www.w3.org/2000/01/rdf-schema#subClassOf",
   );
 }
 
 export namespace sh {
-  export const alternativePath = DataFactory.namedNode(
+  export const alternativePath = dataFactory.namedNode(
     "http://www.w3.org/ns/shacl#alternativePath",
   );
-  export const inversePath = DataFactory.namedNode(
+  export const inversePath = dataFactory.namedNode(
     "http://www.w3.org/ns/shacl#inversePath",
   );
-  export const oneOrMorePath = DataFactory.namedNode(
+  export const oneOrMorePath = dataFactory.namedNode(
     "http://www.w3.org/ns/shacl#oneOrMorePath",
   );
-  export const zeroOrMorePath = DataFactory.namedNode(
+  export const zeroOrMorePath = dataFactory.namedNode(
     "http://www.w3.org/ns/shacl#zeroOrMorePath",
   );
-  export const zeroOrOnePath = DataFactory.namedNode(
+  export const zeroOrOnePath = dataFactory.namedNode(
     "http://www.w3.org/ns/shacl#zeroOrOnePath",
   );
 }
 
 export namespace xsd {
-  export const boolean = DataFactory.namedNode(
+  export const boolean = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#boolean",
   );
-  export const byte = DataFactory.namedNode(
+  export const byte = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#byte",
   );
-  export const date = DataFactory.namedNode(
+  export const date = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#date",
   );
-  export const dateTime = DataFactory.namedNode(
+  export const dateTime = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#dateTime",
   );
-  export const dateTimeStamp = DataFactory.namedNode(
+  export const dateTimeStamp = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#dateTimeStamp",
   );
-  export const decimal = DataFactory.namedNode(
+  export const decimal = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#decimal",
   );
-  export const double = DataFactory.namedNode(
+  export const double = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#double",
   );
-  export const float = DataFactory.namedNode(
+  export const float = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#float",
   );
-  export const int = DataFactory.namedNode(
+  export const int = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#int",
   );
-  export const integer = DataFactory.namedNode(
+  export const integer = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#integer",
   );
-  export const long = DataFactory.namedNode(
+  export const long = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#long",
   );
-  export const short = DataFactory.namedNode(
+  export const short = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#short",
   );
-  export const string = DataFactory.namedNode(
+  export const string = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#string",
   );
-  export const unsignedByte = DataFactory.namedNode(
+  export const unsignedByte = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#unsignedByte",
   );
-  export const unsignedInt = DataFactory.namedNode(
+  export const unsignedInt = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#unsignedInt",
   );
-  export const unsignedLong = DataFactory.namedNode(
+  export const unsignedLong = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#unsignedLong",
   );
-  export const unsignedShort = DataFactory.namedNode(
+  export const unsignedShort = dataFactory.namedNode(
     "http://www.w3.org/2001/XMLSchema#unsignedShort",
   );
 }

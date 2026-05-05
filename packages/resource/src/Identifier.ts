@@ -24,14 +24,4 @@ export namespace Identifier {
     }
     throw new RangeError(identifier);
   }
-
-  // biome-ignore lint/suspicious/noShadowRestrictedNames: allow toString
-  export function toString(identifier: Identifier) {
-    switch (identifier.termType) {
-      case "BlankNode":
-        return `_:${identifier.value}`;
-      case "NamedNode":
-        return `<${identifier.value}>`;
-    }
-  }
 }

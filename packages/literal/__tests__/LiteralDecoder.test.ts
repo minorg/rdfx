@@ -1,4 +1,4 @@
-import DataFactory from "@rdfjs/data-model";
+import dataFactory from "@rdfx/data-factory";
 import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
 import { LiteralDecoder } from "../src/LiteralDecoder.js";
@@ -11,7 +11,7 @@ describe("LiteralDecoder", () => {
     it("xsd:double", ({ expect }) => {
       expect(
         sut
-          .decodeBigIntLiteral(DataFactory.literal("1.0", xsd.double))
+          .decodeBigIntLiteral(dataFactory.literal("1.0", xsd.double))
           .unsafeCoerce(),
       ).toStrictEqual(1n);
     });
@@ -19,7 +19,7 @@ describe("LiteralDecoder", () => {
     it("xsd:int", ({ expect }) => {
       expect(
         sut
-          .decodeBigIntLiteral(DataFactory.literal("1", xsd.int))
+          .decodeBigIntLiteral(dataFactory.literal("1", xsd.int))
           .unsafeCoerce(),
       ).toStrictEqual(1n);
     });
@@ -29,7 +29,7 @@ describe("LiteralDecoder", () => {
       expect(
         sut
           .decodeBigIntLiteral(
-            DataFactory.literal(expected.toString(), xsd.integer),
+            dataFactory.literal(expected.toString(), xsd.integer),
           )
           .unsafeCoerce(),
       ).toStrictEqual(expected);
@@ -40,22 +40,22 @@ describe("LiteralDecoder", () => {
       expect(
         sut
           .decodeBigIntLiteral(
-            DataFactory.literal(expected.toString(), xsd.long),
+            dataFactory.literal(expected.toString(), xsd.long),
           )
           .unsafeCoerce(),
       ).toStrictEqual(expected);
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(sut.decodeBigIntLiteral(DataFactory.literal("test"))).toBeLeft();
+      expect(sut.decodeBigIntLiteral(dataFactory.literal("test"))).toBeLeft();
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
         sut.decodeBigIntLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             "1",
-            DataFactory.namedNode("http://example.com/other"),
+            dataFactory.namedNode("http://example.com/other"),
           ),
         ),
       ).toBeLeft();
@@ -66,29 +66,29 @@ describe("LiteralDecoder", () => {
     it("xsd:boolean", ({ expect }) => {
       expect(
         sut
-          .decodeBooleanLiteral(DataFactory.literal("true", xsd.boolean))
+          .decodeBooleanLiteral(dataFactory.literal("true", xsd.boolean))
           .unsafeCoerce(),
       ).toStrictEqual(true);
       expect(
         sut
-          .decodeBooleanLiteral(DataFactory.literal("1", xsd.boolean))
+          .decodeBooleanLiteral(dataFactory.literal("1", xsd.boolean))
           .unsafeCoerce(),
       ).toStrictEqual(true);
 
       expect(
         sut
-          .decodeBooleanLiteral(DataFactory.literal("false", xsd.boolean))
+          .decodeBooleanLiteral(dataFactory.literal("false", xsd.boolean))
           .unsafeCoerce(),
       ).toStrictEqual(false);
       expect(
         sut
-          .decodeBooleanLiteral(DataFactory.literal("0", xsd.boolean))
+          .decodeBooleanLiteral(dataFactory.literal("0", xsd.boolean))
           .unsafeCoerce(),
       ).toStrictEqual(false);
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(sut.decodeBooleanLiteral(DataFactory.literal("true"))).toBeLeft();
+      expect(sut.decodeBooleanLiteral(dataFactory.literal("true"))).toBeLeft();
     });
   });
 
@@ -97,7 +97,7 @@ describe("LiteralDecoder", () => {
       const expected = new Date(2026, 1, 1);
       const actual = sut
         .decodeDateLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             expected.toISOString().replace(/T.*$/, ""),
             xsd.date,
           ),
@@ -112,14 +112,14 @@ describe("LiteralDecoder", () => {
       const expected = new Date(2026, 1, 1);
       expect(
         sut.decodeDateLiteral(
-          DataFactory.literal(expected.toISOString(), xsd.dateTime),
+          dataFactory.literal(expected.toISOString(), xsd.dateTime),
         ),
       ).toBeLeft();
     });
 
     it("xsd:string", ({ expect }) => {
       expect(
-        sut.decodeDateLiteral(DataFactory.literal("2026-01-01")),
+        sut.decodeDateLiteral(dataFactory.literal("2026-01-01")),
       ).toBeLeft();
     });
   });
@@ -129,7 +129,7 @@ describe("LiteralDecoder", () => {
       const expected = new Date(2026, 1, 1);
       expect(
         sut.decodeDateTimeLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             expected.toISOString().replace(/T.*$/, ""),
             xsd.date,
           ),
@@ -141,7 +141,7 @@ describe("LiteralDecoder", () => {
       const expected = new Date();
       const actual = sut
         .decodeDateTimeLiteral(
-          DataFactory.literal(expected.toISOString(), xsd.dateTime),
+          dataFactory.literal(expected.toISOString(), xsd.dateTime),
         )
         .unsafeCoerce();
       expect(actual.getTime()).toStrictEqual(expected.getTime());
@@ -149,7 +149,7 @@ describe("LiteralDecoder", () => {
 
     it("xsd:string", ({ expect }) => {
       expect(
-        sut.decodeDateTimeLiteral(DataFactory.literal("2026-01-01")),
+        sut.decodeDateTimeLiteral(dataFactory.literal("2026-01-01")),
       ).toBeLeft();
     });
   });
@@ -158,7 +158,7 @@ describe("LiteralDecoder", () => {
     it("xsd:double", ({ expect }) => {
       expect(
         sut
-          .decodeFloatLiteral(DataFactory.literal("1.1", xsd.double))
+          .decodeFloatLiteral(dataFactory.literal("1.1", xsd.double))
           .unsafeCoerce(),
       ).toStrictEqual(1.1);
     });
@@ -166,7 +166,7 @@ describe("LiteralDecoder", () => {
     it("xsd:float", ({ expect }) => {
       expect(
         sut
-          .decodeFloatLiteral(DataFactory.literal("1.1", xsd.float))
+          .decodeFloatLiteral(dataFactory.literal("1.1", xsd.float))
           .unsafeCoerce(),
       ).toStrictEqual(1.1);
     });
@@ -174,7 +174,7 @@ describe("LiteralDecoder", () => {
     it("xsd:int", ({ expect }) => {
       expect(
         sut
-          .decodeFloatLiteral(DataFactory.literal("1", xsd.int))
+          .decodeFloatLiteral(dataFactory.literal("1", xsd.int))
           .unsafeCoerce(),
       ).toStrictEqual(1);
     });
@@ -182,7 +182,7 @@ describe("LiteralDecoder", () => {
     it("xsd:integer (in range)", ({ expect }) => {
       expect(
         sut
-          .decodeFloatLiteral(DataFactory.literal("1", xsd.integer))
+          .decodeFloatLiteral(dataFactory.literal("1", xsd.integer))
           .unsafeCoerce(),
       ).toStrictEqual(1);
     });
@@ -190,7 +190,7 @@ describe("LiteralDecoder", () => {
     it("xsd:integer (out of range)", ({ expect }) => {
       expect(
         sut.decodeFloatLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
             xsd.integer,
           ),
@@ -199,15 +199,15 @@ describe("LiteralDecoder", () => {
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(sut.decodeFloatLiteral(DataFactory.literal("test"))).toBeLeft();
+      expect(sut.decodeFloatLiteral(dataFactory.literal("test"))).toBeLeft();
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
         sut.decodeFloatLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             "1",
-            DataFactory.namedNode("http://example.com/other"),
+            dataFactory.namedNode("http://example.com/other"),
           ),
         ),
       ).toBeLeft();
@@ -218,27 +218,27 @@ describe("LiteralDecoder", () => {
     it("xsd:double (integer)", ({ expect }) => {
       expect(
         sut
-          .decodeIntLiteral(DataFactory.literal("1", xsd.double))
+          .decodeIntLiteral(dataFactory.literal("1", xsd.double))
           .unsafeCoerce(),
       ).toStrictEqual(1);
     });
 
     it("xsd:double (non-integer)", ({ expect }) => {
       expect(
-        sut.decodeIntLiteral(DataFactory.literal("1.1", xsd.double)),
+        sut.decodeIntLiteral(dataFactory.literal("1.1", xsd.double)),
       ).toBeLeft();
     });
 
     it("xsd:int", ({ expect }) => {
       expect(
-        sut.decodeIntLiteral(DataFactory.literal("1", xsd.int)).unsafeCoerce(),
+        sut.decodeIntLiteral(dataFactory.literal("1", xsd.int)).unsafeCoerce(),
       ).toStrictEqual(1);
     });
 
     it("xsd:integer (in range)", ({ expect }) => {
       expect(
         sut
-          .decodeIntLiteral(DataFactory.literal("1", xsd.integer))
+          .decodeIntLiteral(dataFactory.literal("1", xsd.integer))
           .unsafeCoerce(),
       ).toStrictEqual(1);
     });
@@ -246,7 +246,7 @@ describe("LiteralDecoder", () => {
     it("xsd:integer (out of range)", ({ expect }) => {
       expect(
         sut.decodeIntLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
             xsd.integer,
           ),
@@ -255,15 +255,15 @@ describe("LiteralDecoder", () => {
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(sut.decodeIntLiteral(DataFactory.literal("test"))).toBeLeft();
+      expect(sut.decodeIntLiteral(dataFactory.literal("test"))).toBeLeft();
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
         sut.decodeIntLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             "1",
-            DataFactory.namedNode("http://example.com/other"),
+            dataFactory.namedNode("http://example.com/other"),
           ),
         ),
       ).toBeLeft();
@@ -274,7 +274,7 @@ describe("LiteralDecoder", () => {
     it("xsd:double", ({ expect }) => {
       expect(
         sut
-          .decodeNumberLiteral(DataFactory.literal("1.1", xsd.double))
+          .decodeNumberLiteral(dataFactory.literal("1.1", xsd.double))
           .unsafeCoerce(),
       ).toStrictEqual(1.1);
     });
@@ -282,7 +282,7 @@ describe("LiteralDecoder", () => {
     it("xsd:int", ({ expect }) => {
       expect(
         sut
-          .decodeNumberLiteral(DataFactory.literal("1", xsd.int))
+          .decodeNumberLiteral(dataFactory.literal("1", xsd.int))
           .unsafeCoerce(),
       ).toStrictEqual(1);
     });
@@ -290,7 +290,7 @@ describe("LiteralDecoder", () => {
     it("xsd:integer (in range)", ({ expect }) => {
       expect(
         sut
-          .decodeNumberLiteral(DataFactory.literal("1", xsd.integer))
+          .decodeNumberLiteral(dataFactory.literal("1", xsd.integer))
           .unsafeCoerce(),
       ).toStrictEqual(1);
     });
@@ -298,7 +298,7 @@ describe("LiteralDecoder", () => {
     it("xsd:integer (out of range)", ({ expect }) => {
       expect(
         sut.decodeNumberLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             BigInt(Number.MAX_SAFE_INTEGER + 1).toString(),
             xsd.integer,
           ),
@@ -307,15 +307,15 @@ describe("LiteralDecoder", () => {
     });
 
     it("xsd:string", ({ expect }) => {
-      expect(sut.decodeNumberLiteral(DataFactory.literal("test"))).toBeLeft();
+      expect(sut.decodeNumberLiteral(dataFactory.literal("test"))).toBeLeft();
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
         sut.decodeNumberLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             "1",
-            DataFactory.namedNode("http://example.com/other"),
+            dataFactory.namedNode("http://example.com/other"),
           ),
         ),
       ).toBeLeft();
@@ -326,7 +326,7 @@ describe("LiteralDecoder", () => {
     it("xsd:boolean", ({ expect }) => {
       expect(
         sut
-          .decodePrimitiveLiteral(DataFactory.literal("true", xsd.boolean))
+          .decodePrimitiveLiteral(dataFactory.literal("true", xsd.boolean))
           .unsafeCoerce(),
       ).toStrictEqual(true);
     });
@@ -335,7 +335,7 @@ describe("LiteralDecoder", () => {
       const expected = new Date(2026, 1, 1);
       const actual = sut
         .decodePrimitiveLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             expected.toISOString().replace(/T.*$/, ""),
             xsd.date,
           ),
@@ -355,7 +355,7 @@ describe("LiteralDecoder", () => {
       const expected = new Date();
       const actual = sut
         .decodePrimitiveLiteral(
-          DataFactory.literal(expected.toISOString(), xsd.dateTime),
+          dataFactory.literal(expected.toISOString(), xsd.dateTime),
         )
         .unsafeCoerce();
       expect(actual).toBeInstanceOf(Date);
@@ -364,14 +364,14 @@ describe("LiteralDecoder", () => {
 
     it("xsd:decimal", ({ expect }) => {
       expect(
-        sut.decodeIntLiteral(DataFactory.literal("1.0", xsd.decimal)),
+        sut.decodeIntLiteral(dataFactory.literal("1.0", xsd.decimal)),
       ).toBeLeft();
     });
 
     it("xsd:double", ({ expect }) => {
       expect(
         sut
-          .decodePrimitiveLiteral(DataFactory.literal("1.1", xsd.double))
+          .decodePrimitiveLiteral(dataFactory.literal("1.1", xsd.double))
           .unsafeCoerce(),
       ).toStrictEqual(1.1);
     });
@@ -379,7 +379,7 @@ describe("LiteralDecoder", () => {
     it("xsd:int", ({ expect }) => {
       expect(
         sut
-          .decodePrimitiveLiteral(DataFactory.literal("1", xsd.int))
+          .decodePrimitiveLiteral(dataFactory.literal("1", xsd.int))
           .unsafeCoerce(),
       ).toStrictEqual(1);
     });
@@ -389,7 +389,7 @@ describe("LiteralDecoder", () => {
       expect(
         sut
           .decodePrimitiveLiteral(
-            DataFactory.literal(expected.toString(), xsd.integer),
+            dataFactory.literal(expected.toString(), xsd.integer),
           )
           .unsafeCoerce(),
       ).toStrictEqual(expected);
@@ -397,16 +397,16 @@ describe("LiteralDecoder", () => {
 
     it("xsd:string", ({ expect }) => {
       expect(
-        sut.decodePrimitiveLiteral(DataFactory.literal("test")).unsafeCoerce(),
+        sut.decodePrimitiveLiteral(dataFactory.literal("test")).unsafeCoerce(),
       ).toStrictEqual("test");
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
         sut.decodePrimitiveLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             "1",
-            DataFactory.namedNode("http://example.com/other"),
+            dataFactory.namedNode("http://example.com/other"),
           ),
         ),
       ).toBeLeft();
@@ -416,22 +416,22 @@ describe("LiteralDecoder", () => {
   describe("decodeStringLiteral", () => {
     it("xsd:boolean", ({ expect }) => {
       expect(
-        sut.decodeStringLiteral(DataFactory.literal("true", xsd.boolean)),
+        sut.decodeStringLiteral(dataFactory.literal("true", xsd.boolean)),
       ).toBeLeft();
     });
 
     it("xsd:string", ({ expect }) => {
       expect(
-        sut.decodeStringLiteral(DataFactory.literal("true")).unsafeCoerce(),
+        sut.decodeStringLiteral(dataFactory.literal("true")).unsafeCoerce(),
       ).toStrictEqual("true");
     });
 
     it("unrecognized datatype", ({ expect }) => {
       expect(
         sut.decodeStringLiteral(
-          DataFactory.literal(
+          dataFactory.literal(
             "1",
-            DataFactory.namedNode("http://example.com/other"),
+            dataFactory.namedNode("http://example.com/other"),
           ),
         ),
       ).toBeLeft();

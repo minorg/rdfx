@@ -1,4 +1,4 @@
-import dataFactory from "@rdfjs/data-model";
+import dataFactory from "@rdfx/data-factory";
 import { schema } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
 import { ResourceSet } from "../src/ResourceSet.js";

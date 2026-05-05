@@ -1,6 +1,6 @@
-import dataFactory from "@rdfjs/data-model";
 import datasetFactory from "@rdfjs/dataset";
 import type { Quad_Object } from "@rdfjs/types";
+import dataFactory from "@rdfx/data-factory";
 
 const dataset = datasetFactory.dataset();
 

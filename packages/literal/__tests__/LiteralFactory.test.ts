@@ -1,5 +1,5 @@
-import DataFactory from "@rdfjs/data-model";
 import type { Literal } from "@rdfjs/types";
+import dataFactory from "@rdfx/data-factory";
 import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, expect, it } from "vitest";
 import { testData } from "../../resource/__tests__/testData.js";
@@ -8,8 +8,8 @@ import { LiteralFactory } from "../src/LiteralFactory.js";
 
 describe("LiteralFactory", () => {
   const { literals } = testData;
-  const sut = new LiteralFactory({ dataFactory: DataFactory });
-  const weirdDatatype = DataFactory.namedNode("http://example.com/weird");
+  const sut = new LiteralFactory({ dataFactory: dataFactory });
+  const weirdDatatype = dataFactory.namedNode("http://example.com/weird");
 
   function expectEquals(actual: Literal, expected: Literal): void {
     expect(actual.value).toStrictEqual(expected.value);
@@ -42,32 +42,32 @@ describe("LiteralFactory", () => {
 
   describe("bigint", () => {
     it("no datatype", () => {
-      expectEquals(sut.bigint(1n), DataFactory.literal("1", xsd.integer));
-      expectEquals(sut.bigint(-1n), DataFactory.literal("-1", xsd.integer));
+      expectEquals(sut.bigint(1n), dataFactory.literal("1", xsd.integer));
+      expectEquals(sut.bigint(-1n), dataFactory.literal("-1", xsd.integer));
     });
 
     it("xsd:decimal", () => {
       expectEquals(
         sut.bigint(1n, xsd.decimal),
-        DataFactory.literal("1", xsd.decimal),
+        dataFactory.literal("1", xsd.decimal),
       );
     });
 
     it("xsd:double", () => {
       expectEquals(
         sut.bigint(1n, xsd.double),
-        DataFactory.literal("1e0", xsd.double),
+        dataFactory.literal("1e0", xsd.double),
       );
     });
 
     it("xsd:int", () => {
-      expectEquals(sut.bigint(1n, xsd.int), DataFactory.literal("1", xsd.int));
+      expectEquals(sut.bigint(1n, xsd.int), dataFactory.literal("1", xsd.int));
     });
 
     it("xsd:integer", () => {
       expectEquals(
         sut.bigint(1n, xsd.integer),
-        DataFactory.literal("1", xsd.integer),
+        dataFactory.literal("1", xsd.integer),
       );
     });
 
@@ -79,7 +79,7 @@ describe("LiteralFactory", () => {
       expect(() =>
         sut.bigint(
           1000n,
-          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#byte"),
+          dataFactory.namedNode("http://www.w3.org/2001/XMLSchema#byte"),
         ),
       ).toThrowError(RangeError);
     });
@@ -87,7 +87,7 @@ describe("LiteralFactory", () => {
     it("weird datatype", () => {
       expectEquals(
         sut.bigint(1n, weirdDatatype),
-        DataFactory.literal("1", weirdDatatype),
+        dataFactory.literal("1", weirdDatatype),
       );
     });
   });
@@ -96,15 +96,15 @@ describe("LiteralFactory", () => {
     it("no datatype", () => {
       expectEquals(
         sut.boolean(false),
-        DataFactory.literal("false", xsd.boolean),
+        dataFactory.literal("false", xsd.boolean),
       );
-      expectEquals(sut.boolean(true), DataFactory.literal("true", xsd.boolean));
+      expectEquals(sut.boolean(true), dataFactory.literal("true", xsd.boolean));
     });
 
     it("xsd:boolean", () => {
       expectEquals(
         sut.boolean(true, xsd.boolean),
-        DataFactory.literal("true", xsd.boolean),
+        dataFactory.literal("true", xsd.boolean),
       );
     });
 
@@ -115,7 +115,7 @@ describe("LiteralFactory", () => {
     it("weird datatype", () => {
       expectEquals(
         sut.boolean(true, weirdDatatype),
-        DataFactory.literal("true", weirdDatatype),
+        dataFactory.literal("true", weirdDatatype),
       );
     });
   });
@@ -124,21 +124,21 @@ describe("LiteralFactory", () => {
     it("no datatype", () => {
       expectEquals(
         sut.date(new Date(Date.UTC(2026, 0, 1, 0, 0, 0))),
-        DataFactory.literal("2026-01-01T00:00:00.000Z", xsd.dateTime),
+        dataFactory.literal("2026-01-01T00:00:00.000Z", xsd.dateTime),
       );
     });
 
     it("xsd:date", () => {
       expectEquals(
         sut.date(new Date(Date.UTC(2026, 0, 1)), xsd.date),
-        DataFactory.literal("2026-01-01", xsd.date),
+        dataFactory.literal("2026-01-01", xsd.date),
       );
     });
 
     it("xsd:dateTime", () => {
       expectEquals(
         sut.date(new Date(Date.UTC(2026, 0, 1, 12, 30, 1, 1)), xsd.dateTime),
-        DataFactory.literal("2026-01-01T12:30:01.001Z", xsd.dateTime),
+        dataFactory.literal("2026-01-01T12:30:01.001Z", xsd.dateTime),
       );
     });
 
@@ -151,39 +151,39 @@ describe("LiteralFactory", () => {
     it("weird datatype", () => {
       expectEquals(
         sut.date(new Date(2026, 0, 1), weirdDatatype),
-        DataFactory.literal(new Date(2026, 0, 1).toISOString(), weirdDatatype),
+        dataFactory.literal(new Date(2026, 0, 1).toISOString(), weirdDatatype),
       );
     });
   });
 
   describe("number", () => {
     it("no datatype: -1", () => {
-      expectEquals(sut.number(-1), DataFactory.literal("-1", xsd.byte));
+      expectEquals(sut.number(-1), dataFactory.literal("-1", xsd.byte));
     });
 
     it("no datatype: 1", () => {
-      expectEquals(sut.number(1), DataFactory.literal("1", xsd.unsignedByte));
+      expectEquals(sut.number(1), dataFactory.literal("1", xsd.unsignedByte));
     });
 
     it("no datatype: double", () => {
-      expectEquals(sut.number(1.1), DataFactory.literal("1.1e0", xsd.double));
+      expectEquals(sut.number(1.1), dataFactory.literal("1.1e0", xsd.double));
     });
 
     it("no datatype: NaN", () => {
-      expectEquals(sut.number(NaN), DataFactory.literal("NaN", xsd.double));
+      expectEquals(sut.number(NaN), dataFactory.literal("NaN", xsd.double));
     });
 
     it("no datatype: Infinity", () => {
       expectEquals(
         sut.number(Infinity),
-        DataFactory.literal("INF", xsd.double),
+        dataFactory.literal("INF", xsd.double),
       );
     });
 
     it("no datatype: -Infinity", () => {
       expectEquals(
         sut.number(-Infinity),
-        DataFactory.literal("-INF", xsd.double),
+        dataFactory.literal("-INF", xsd.double),
       );
     });
 
@@ -201,7 +201,7 @@ describe("LiteralFactory", () => {
       it(datatype.value, () => {
         expectEquals(
           sut.number(1, datatype),
-          DataFactory.literal("1", datatype),
+          dataFactory.literal("1", datatype),
         );
       });
     }
@@ -210,7 +210,7 @@ describe("LiteralFactory", () => {
       it(datatype.value, () => {
         expectEquals(
           sut.number(1, datatype),
-          DataFactory.literal("1e0", datatype),
+          dataFactory.literal("1e0", datatype),
         );
       });
     }
@@ -219,7 +219,7 @@ describe("LiteralFactory", () => {
       expect(() =>
         sut.number(
           1000,
-          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#byte"),
+          dataFactory.namedNode("http://www.w3.org/2001/XMLSchema#byte"),
         ),
       ).toThrowError(RangeError);
     });
@@ -227,65 +227,65 @@ describe("LiteralFactory", () => {
     it("weird datatype", () => {
       expectEquals(
         sut.number(1, weirdDatatype),
-        DataFactory.literal("1", weirdDatatype),
+        dataFactory.literal("1", weirdDatatype),
       );
     });
   });
 
   describe("primitive", () => {
     it("no datatype: bigint", () => {
-      expectEquals(sut.primitive(1n), DataFactory.literal("1", xsd.integer));
+      expectEquals(sut.primitive(1n), dataFactory.literal("1", xsd.integer));
     });
 
     it("no datatype: boolean", () => {
       expectEquals(
         sut.primitive(true),
-        DataFactory.literal("true", xsd.boolean),
+        dataFactory.literal("true", xsd.boolean),
       );
     });
 
     it("no datatype: Date", () => {
       expectEquals(
         sut.primitive(new Date(Date.UTC(2026, 0, 1))),
-        DataFactory.literal("2026-01-01T00:00:00.000Z", xsd.dateTime),
+        dataFactory.literal("2026-01-01T00:00:00.000Z", xsd.dateTime),
       );
     });
 
     it("no datatype: number", () => {
       expectEquals(
         sut.primitive(1.1),
-        DataFactory.literal("1.1e0", xsd.double),
+        dataFactory.literal("1.1e0", xsd.double),
       );
     });
 
     it("no datatype: string", () => {
-      expectEquals(sut.primitive("test"), DataFactory.literal("test"));
+      expectEquals(sut.primitive("test"), dataFactory.literal("test"));
     });
 
     it("weird datatype", () => {
       expectEquals(
         sut.primitive(1, weirdDatatype),
-        DataFactory.literal("1", weirdDatatype),
+        dataFactory.literal("1", weirdDatatype),
       );
     });
   });
 
   describe("string", () => {
     it("no datatype", () => {
-      expectEquals(sut.string("test"), DataFactory.literal("test", xsd.string));
+      expectEquals(sut.string("test"), dataFactory.literal("test", xsd.string));
     });
 
     it("xsd:string", () => {
       expectEquals(
         sut.string("test", xsd.string),
-        DataFactory.literal("test", xsd.string),
+        dataFactory.literal("test", xsd.string),
       );
     });
 
     it("weird datatype", () => {
       expectEquals(
         sut.primitive(1, weirdDatatype),
-        DataFactory.literal("1", weirdDatatype),
+        dataFactory.literal("1", weirdDatatype),
       );
     });
   });

@@ -1,4 +1,3 @@
-import { Identifier } from "./Identifier.js";
 import { MistypedValueError } from "./MistypedValueError.js";
 import type { Primitive } from "./Primitive.js";
 import { PropertyPath } from "./PropertyPath.js";
@@ -20,7 +19,7 @@ export class MistypedPrimitiveValueError extends MistypedValueError<Primitive> {
       actualValue,
       expectedValueType,
       focusResource,
-      message: `expected ${Identifier.toString(focusResource.identifier)} ${PropertyPath.toString(propertyPath)} to be a ${expectedValueType}, was ${typeof actualValue}`,
+      message: `expected ${focusResource.identifier} ${PropertyPath.toString(propertyPath)} to be a ${expectedValueType}, was ${typeof actualValue}`,
       propertyPath,
     });
   }
