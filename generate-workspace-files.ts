@@ -188,7 +188,7 @@ const workspaces = {
       },
       devDependencies: {
         external: ["@types/rdfjs__to-ntriples"],
-        internal: ["data-factory"],
+        // internal: ["data-factory"], // Don't declare a circular dependency
       },
       tsconfig: packageTsconfig,
     },
