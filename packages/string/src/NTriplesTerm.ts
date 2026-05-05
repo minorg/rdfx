@@ -45,7 +45,7 @@ function parseLiteralLanguage(literalValue: string): Either<Error, string> {
 }
 
 function parseLiteralType(literalValue: string): Either<Error, string> {
-  const match = /^"[^]*"(?:\^\^([^"]+)|(@)[^"@]+)?$/u.exec(literalValue);
+  const match = /^"[^]*"(?:\^\^<([^>]+)>|(@)[^"@]+)?$/u.exec(literalValue);
   if (!match) {
     return Left(new Error(`${literalValue} is not a literal`));
   }
@@ -85,7 +85,10 @@ export namespace NTriplesTerm {
             parseLiteralLanguage(value).chain((literalLanguage) =>
               literalLanguage.length === 0
                 ? parseLiteralType(value).map((literalType) =>
-                    dataFactory.literal(literalValue, literalType),
+                    dataFactory.literal(
+                      literalValue,
+                      dataFactory.namedNode(literalType),
+                    ),
                   )
                 : parseLiteralDirection(value).map((literalDirection) =>
                     dataFactory.literal(literalValue, {
