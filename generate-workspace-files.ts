@@ -107,7 +107,7 @@ const workspaces = {
   packages: {
     "data-factory": {
       dependencies: {
-        external: ["@rdfjs/to-ntriples", "@rdfjs/types"],
+        external: ["@rdfjs/types"],
       },
       devDependencies: {
         external: ["@types/rdfjs__to-ntriples"],
@@ -184,6 +184,13 @@ const workspaces = {
       tsconfig: packageTsconfig,
     },
     string: {
+      dependencies: {
+        external: ["@rdfjs/to-ntriples", "@rdfjs/types", "purify-ts"],
+      },
+      devDependencies: {
+        external: ["@types/rdfjs__to-ntriples"],
+        internal: ["data-factory"],
+      },
       tsconfig: packageTsconfig,
     },
     testing: {

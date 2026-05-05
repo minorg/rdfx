@@ -1,6 +1,11 @@
 {
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "@rdfjs/types": "~2.0.1",
+    "purify-ts": "~2.1.4"
+  },
+  "devDependencies": {
+    "@rdfx/data-factory": "0.0.9"
+  },
   "files": [
     "LICENSE",
     "README.md",
