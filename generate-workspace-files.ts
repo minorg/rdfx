@@ -53,6 +53,7 @@ type PackageName =
   | "literal"
   | "resource"
   | "sparql-client"
+  | "string"
   | "testing";
 
 interface Tsconfig {
@@ -180,6 +181,9 @@ const workspaces = {
       devDependencies: {
         external: ["oxigraph"],
       },
+      tsconfig: packageTsconfig,
+    },
+    string: {
       tsconfig: packageTsconfig,
     },
     testing: {

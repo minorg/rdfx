@@ -36,6 +36,7 @@
     "packages/literal",
     "packages/resource",
     "packages/sparql-client",
+    "packages/string",
     "packages/testing"
   ]
 }
