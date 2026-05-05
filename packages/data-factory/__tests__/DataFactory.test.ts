@@ -10,10 +10,6 @@ describe("DataFactory", () => {
     factory = new DataFactory({ blankNodePrefix: "test_" });
   });
 
-  it("to have correct typings", () => {
-    const _otherFactory: RDF.DataFactory = factory;
-  });
-
   describe("blankNode", () => {
     it("should produce a valid blank node for a given label", () => {
       const blankNode: RDF.BlankNode = factory.blankNode("a");

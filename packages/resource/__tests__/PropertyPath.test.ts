@@ -1,4 +1,4 @@
-import DataFactory from "@rdfjs/data-model";
+import dataFactory from "@rdfx/data-factory";
 import { sh } from "@tpluscode/rdf-ns-builders";
 import { invariant } from "ts-invariant";
 import { describe, expect, it } from "vitest";
@@ -13,7 +13,7 @@ describe("PropertyPath", () => {
     name: string,
     expectPropertyPath: (propertyPath: PropertyPath) => void,
   ): void {
-    const identifier = DataFactory.namedNode(
+    const identifier = dataFactory.namedNode(
       `http://example.com/${name}PropertyShape`,
     );
 
