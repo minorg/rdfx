@@ -154,6 +154,7 @@ const workspaces = {
       dependencies: {
         external: [
           "@rdfjs/term-set",
+          "@rdfjs/to-ntriples",
           "@rdfjs/types",
           "@types/rdfjs__term-set",
           "purify-ts",
@@ -165,6 +166,7 @@ const workspaces = {
           "@rdfjs/dataset",
           "@tpluscode/rdf-ns-builders",
           "@types/rdfjs__dataset",
+          "@types/rdfjs__to-ntriples",
           "housemd",
           "ts-invariant",
         ],
