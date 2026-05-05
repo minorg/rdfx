@@ -2,8 +2,8 @@
   "dependencies": {
     "@rdfx/data-factory": "0.0.9",
     "@rdfx/literal": "0.0.9",
+    "@rdfx/string": "0.0.9",
     "@rdfjs/term-set": "~2.0.3",
-    "@rdfjs/to-ntriples": "~3.0.1",
     "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__term-set": "~2.0.9",
     "purify-ts": "~2.1.4"

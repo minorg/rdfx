@@ -1,4 +1,3 @@
-import toNT from "@rdfjs/to-ntriples";
 import type {
   BlankNode,
   DataFactory,
@@ -8,6 +7,7 @@ import type {
   Variable,
 } from "@rdfjs/types";
 import { LiteralDecoder } from "@rdfx/literal";
+import { NTriplesTerm } from "@rdfx/string";
 import { Either, Left } from "purify-ts";
 import type { Identifier } from "./Identifier.js";
 import { MistypedPrimitiveValueError } from "./MistypedPrimitiveValueError.js";
@@ -199,7 +199,7 @@ export class Value<TermT extends Term = Term> {
     if (this.term.termType !== "Literal") {
       return Left(
         this.newMistypedTermValueError(
-          in_ ? in_.map(toNT).join(" | ") : "Literal",
+          in_ ? in_.map(NTriplesTerm.stringify).join(" | ") : "Literal",
         ),
       );
     }
@@ -207,7 +207,7 @@ export class Value<TermT extends Term = Term> {
     if (in_ && !in_.some((check) => check.equals(this.term))) {
       return Left(
         this.newMistypedTermValueError(
-          in_ ? in_.map(toNT).join(" | ") : "Literal",
+          in_ ? in_.map(NTriplesTerm.stringify).join(" | ") : "Literal",
         ),
       );
     }
@@ -356,7 +356,7 @@ export class Value<TermT extends Term = Term> {
       return Left(
         new MistypedTermValueError({
           actualValue: value,
-          expectedValueType: in_.map(toNT).join(" | "),
+          expectedValueType: in_.map(NTriplesTerm.stringify).join(" | "),
           focusResource: this.focusResource,
           propertyPath: this.propertyPath,
         }),

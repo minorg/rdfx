@@ -1,5 +1,5 @@
-import toNT from "@rdfjs/to-ntriples";
 import type * as RDF from "@rdfjs/types";
+import { NTriplesTerm } from "@rdfx/string";
 import { termToJson } from "./termToJson.js";
 
 export abstract class Term {
@@ -17,6 +17,6 @@ export abstract class Term {
   }
 
   toString(): string {
-    return toNT(this as unknown as RDF.Term);
+    return NTriplesTerm.stringify(this as unknown as RDF.Term);
   }
 }

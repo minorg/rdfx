@@ -1,10 +1,12 @@
 {
   "dependencies": {
+    "@rdfjs/to-ntriples": "~3.0.1",
     "@rdfjs/types": "~2.0.1",
     "purify-ts": "~2.1.4"
   },
   "devDependencies": {
-    "@rdfx/data-factory": "0.0.9"
+    "@rdfx/data-factory": "0.0.9",
+    "@types/rdfjs__to-ntriples": "~3.0.0"
   },
   "files": [
     "LICENSE",
