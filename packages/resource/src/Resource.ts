@@ -8,14 +8,13 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-import defaultDataFactory from "@rdfx/data-factory";
-import { LiteralFactory } from "@rdfx/literal";
+
 import { Either, Left } from "purify-ts";
+
 import { DatasetValues } from "./DatasetValues.js";
 import type { Identifier as _Identifier, Identifier } from "./Identifier.js";
 import { ListStructureError as _ListStructureError } from "./ListStructureError.js";
 import { MistypedTermValueError as _MistypedTermValueError } from "./MistypedTermValueError.js";
-import type { Primitive } from "./Primitive.js";
 import type { PropertyPath } from "./PropertyPath.js";
 import type { Term } from "./Term.js";
 import { Value as _Value } from "./Value.js";
@@ -29,35 +28,39 @@ import { rdf, rdfs } from "./vocabularies.js";
 export class Resource<
   IdentifierT extends Resource.Identifier = Resource.Identifier,
 > {
-  private readonly dataFactory: DataFactory;
-  private readonly graph?: Graph;
-  private readonly literalFactory: LiteralFactory;
+  readonly dataFactory: DataFactory;
+  readonly dataset: DatasetCore;
+  readonly identifier: IdentifierT;
 
-  constructor(
-    readonly dataset: DatasetCore,
-    readonly identifier: IdentifierT,
-    options?: {
-      dataFactory?: DataFactory;
-    },
-  ) {
-    this.dataFactory = options?.dataFactory ?? defaultDataFactory;
-    this.literalFactory = new LiteralFactory({ dataFactory: this.dataFactory });
+  constructor({
+    dataFactory,
+    dataset,
+    identifier,
+  }: {
+    dataFactory: DataFactory;
+    dataset: DatasetCore;
+    identifier: IdentifierT;
+  }) {
+    this.dataFactory = dataFactory;
+    this.dataset = dataset;
+    this.identifier = identifier;
   }
 
   /**
    * Add zero or more values to this resource.
    */
-
   add(
     propertyPath: InversePath,
     value: AddableSubject | readonly AddableSubject[],
     graph?: Graph,
   ): this;
+
   add(
     propertyPath: NamedNode,
     value: AddableObject | readonly AddableObject[],
     graph?: Graph,
   ): this;
+
   add(
     propertyPath: InversePath | NamedNode,
     value:
@@ -67,15 +70,9 @@ export class Resource<
       | readonly AddableSubject[],
     graph?: Graph,
   ): this {
-    if (!graph) {
-      graph = this.graph;
-    }
-
     switch (propertyPath.termType) {
       case "InversePath":
-        for (const subject of this.addableSubjectsToTerms(
-          value as AddableSubject | readonly AddableSubject[],
-        )) {
+        for (const subject of Array.isArray(value) ? value : [value]) {
           this.dataset.add(
             this.dataFactory.quad(
               subject,
@@ -87,7 +84,7 @@ export class Resource<
         }
         break;
       case "NamedNode":
-        for (const object of this.addableObjectsToTerms(value)) {
+        for (const object of Array.isArray(value) ? value : [value]) {
           this.dataset.add(
             this.dataFactory.quad(this.identifier, propertyPath, object, graph),
           );
@@ -111,19 +108,21 @@ export class Resource<
   ): Resource {
     const itemsArray = [...items];
     if (itemsArray.length === 0) {
-      return new Resource(this.dataset, rdf.nil, {
+      return new Resource({
         dataFactory: this.dataFactory,
+        dataset: this.dataset,
+        identifier: rdf.nil,
       });
     }
 
     const mintSubListIdentifier =
       options?.mintSubListIdentifier ?? (() => this.dataFactory.blankNode());
 
-    const listResource = new Resource(
-      this.dataset,
-      mintSubListIdentifier(itemsArray[0], 0),
-      { dataFactory: this.dataFactory },
-    );
+    const listResource = new Resource({
+      dataFactory: this.dataFactory,
+      dataset: this.dataset,
+      identifier: mintSubListIdentifier(itemsArray[0], 0),
+    });
     listResource.addListItems(itemsArray, {
       graph: options?.graph,
       mintSubListIdentifier,
@@ -150,7 +149,7 @@ export class Resource<
   ): this {
     const addSubListResourceValues =
       options?.addSubListResourceValues ?? (() => {});
-    const graph = options?.graph ?? this.graph;
+    const graph = options?.graph;
     const mintSubListIdentifier =
       options?.mintSubListIdentifier ?? (() => this.dataFactory.blankNode());
 
@@ -159,11 +158,11 @@ export class Resource<
     for (const item of items) {
       if (itemIndex > 0) {
         // If currentHead !== this, then create a new head and point the current head's rdf:rest at it
-        const newHead = new Resource(
-          this.dataset,
-          mintSubListIdentifier(item, itemIndex),
-          { dataFactory: this.dataFactory },
-        );
+        const newHead = new Resource({
+          dataset: this.dataset,
+          dataFactory: this.dataFactory,
+          identifier: mintSubListIdentifier(item, itemIndex),
+        });
         addSubListResourceValues(newHead);
         currentHead.add(rdf.rest, newHead.identifier, graph);
         currentHead = newHead;
@@ -190,11 +189,13 @@ export class Resource<
     value?: AddableSubject | readonly AddableSubject[],
     graph?: Graph,
   ): this;
+
   delete(
     propertyPath: NamedNode,
     value?: AddableObject | readonly AddableObject[],
     graph?: Graph,
   ): this;
+
   delete(
     propertyPath: InversePath | NamedNode,
     value?:
@@ -204,16 +205,10 @@ export class Resource<
       | readonly AddableSubject[],
     graph?: Graph,
   ): this {
-    if (!graph) {
-      graph = this.graph;
-    }
-
     switch (propertyPath.termType) {
       case "InversePath": {
         if (value) {
-          for (const subject of this.addableSubjectsToTerms(
-            value as AddableSubject | readonly AddableSubject[],
-          )) {
+          for (const subject of Array.isArray(value) ? value : [value]) {
             for (const quad of [
               ...this.dataset.match(
                 subject,
@@ -242,7 +237,7 @@ export class Resource<
       }
       case "NamedNode": {
         if (value) {
-          for (const object of this.addableObjectsToTerms(value)) {
+          for (const object of Array.isArray(value) ? value : [value]) {
             for (const quad of [
               ...this.dataset.match(
                 this.identifier,
@@ -281,7 +276,7 @@ export class Resource<
     return isInstanceOfRecursive({
       class_,
       dataset: this.dataset,
-      graph: options?.graph ?? this.graph,
+      graph: options?.graph,
       instance: this.identifier,
       visitedClasses: new TermSet<NamedNode>(),
     });
@@ -354,7 +349,7 @@ export class Resource<
     return isSubClassOfRecursive({
       class_,
       dataset: this.dataset,
-      graph: options?.graph ?? this.graph,
+      graph: options?.graph,
       thisIdentifier: this.identifier,
       visitedClasses: new TermSet<NamedNode>(),
     });
@@ -421,11 +416,13 @@ export class Resource<
     value: AddableSubject | readonly AddableSubject[],
     graph?: Graph,
   ): this;
+
   set(
     propertyPath: NamedNode,
     value: AddableObject | readonly AddableObject[],
     graph?: Graph,
   ): this;
+
   set(
     propertyPath: InversePath | NamedNode,
     value:
@@ -469,7 +466,7 @@ export class Resource<
       );
     }
 
-    const graph = options?.graph ?? this.graph;
+    const graph = options?.graph;
 
     const firstObjects = [
       ...new TermSet(
@@ -562,8 +559,10 @@ export class Resource<
         term: firstObject,
       }).toValues(),
     ).chain((items) =>
-      new Resource(this.dataset, restObject, {
+      new Resource({
         dataFactory: this.dataFactory,
+        dataset: this.dataset,
+        identifier: restObject,
       })
         .toList({ graph })
         .map((restItems) => items.concat(...restItems)),
@@ -590,49 +589,19 @@ export class Resource<
     return new DatasetValues({
       dataFactory: this.dataFactory,
       focusResource: this,
-      graph: options?.graph ?? this.graph ?? null,
+      graph: options?.graph ?? null,
       propertyPath,
       unique: !!options?.unique,
     });
   }
-
-  private addableObjectToTerm(object: AddableObject): Term {
-    switch (typeof object) {
-      case "bigint":
-        return this.literalFactory.bigint(object);
-      case "boolean":
-        return this.literalFactory.boolean(object);
-      case "number":
-        return this.literalFactory.number(object);
-      case "string":
-        return this.literalFactory.string(object);
-      case "object":
-        return object;
-    }
-  }
-
-  private addableObjectsToTerms(
-    objects: AddableObject | readonly AddableObject[],
-  ): readonly Term[] {
-    if (Array.isArray(objects)) {
-      return objects.map((value) => this.addableObjectToTerm(value));
-    }
-    return [this.addableObjectToTerm(objects as AddableObject)];
-  }
-
-  private addableSubjectsToTerms(
-    subjects: AddableSubject | readonly AddableSubject[],
-  ): readonly AddableSubject[] {
-    if (Array.isArray(subjects)) {
-      return subjects;
-    }
-    return [subjects as AddableSubject];
-  }
 }
 
+type AddableObject = BlankNode | Literal | NamedNode;
+
 type AddableSubject = BlankNode | NamedNode;
-type AddableObject = BlankNode | Literal | NamedNode | Exclude<Primitive, Date>;
+
 type Graph = Exclude<Quad_Graph, Variable>;
+
 type InversePath = {
   readonly path: NamedNode;
   readonly termType: "InversePath";

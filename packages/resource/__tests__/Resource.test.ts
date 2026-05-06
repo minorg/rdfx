@@ -1,9 +1,9 @@
 import datasetFactory from "@rdfjs/dataset";
-import type { NamedNode } from "@rdfjs/types";
+import type { DatasetCore, NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { rdf, rdfs, schema, skos } from "@tpluscode/rdf-ns-builders";
 import { describe, expect, it } from "vitest";
-import { Resource } from "../src/Resource.js";
+import type { Resource } from "../src/Resource.js";
 import { ResourceSet } from "../src/ResourceSet.js";
 import { houseMdDataset } from "./houseMdDataset.js";
 import { testData } from "./testData.js";
@@ -11,16 +11,32 @@ import "@rdfx/testing";
 
 describe("Resource", () => {
   const { graph, literals, objects, predicate, subject } = testData;
-  const testResource = new Resource(datasetFactory.dataset(), subject);
-  for (const object of Object.values(objects)) {
-    testResource.add(predicate, object);
+
+  function createResource<IdentifierT extends Resource.Identifier>(
+    identifier: IdentifierT,
+  ): Resource<IdentifierT> {
+    return createResourceSet().resource(identifier);
+  }
+
+  function createResourceSet(dataset?: DatasetCore): ResourceSet {
+    return new ResourceSet({
+      dataFactory,
+      dataset: dataset ?? datasetFactory.dataset(),
+    });
+  }
+
+  function createTestResource(): Resource<NamedNode> {
+    const testResource = createResource(subject);
+    for (const object of Object.values(objects)) {
+      testResource.add(predicate, object);
+    }
+    return testResource;
   }
 
   describe("add", () => {
     it("default graph", ({ expect }) => {
-      expect.extend;
       const dataset = datasetFactory.dataset();
-      const resource = new Resource(dataset, subject);
+      const resource = createResourceSet(dataset).resource(subject);
       resource.add(predicate, literals.string);
       expect(dataset).toBeRdfDatasetOfSize(1);
       expect([...dataset][0].graph).toEqualRdfTerm(dataFactory.defaultGraph());
@@ -35,7 +51,7 @@ describe("Resource", () => {
 
     it("named graph", ({ expect }) => {
       const dataset = datasetFactory.dataset();
-      const resource = new Resource(dataset, subject);
+      const resource = createResourceSet(dataset).resource(subject);
       resource.add(predicate, literals.string, graph);
       expect(dataset).toBeRdfDatasetOfSize(1);
       expect([...dataset][0].graph).toEqualRdfTerm(graph);
@@ -49,7 +65,7 @@ describe("Resource", () => {
     it("inverse path", ({ expect }) => {
       const dataset = datasetFactory.dataset();
       const object = objects["namedNode"] as NamedNode;
-      const objectResource = new Resource(dataset, object);
+      const objectResource = createResourceSet(dataset).resource(object);
       objectResource.add({ path: predicate, termType: "InversePath" }, subject);
       expect(dataset).toBeRdfDatasetOfSize(1);
       expect([...dataset][0]).toEqualRdfQuad(
@@ -61,7 +77,7 @@ describe("Resource", () => {
   describe("addList", () => {
     it("simple", () => {
       const dataset = datasetFactory.dataset();
-      const resource = new Resource(dataset, subject);
+      const resource = createResourceSet(dataset).resource(subject);
       resource.addList(predicate, [literals.string, literals.int]);
       expect(dataset).toBeRdfDatasetOfSize(5);
       expect([...resource.values(predicate)]).toHaveLength(1);
@@ -97,7 +113,7 @@ describe("Resource", () => {
       ],
     ]) {
       it(`list of ${terms.length} terms`, ({ expect }) => {
-        const resource = new Resource(datasetFactory.dataset(), subject);
+        const resource = createResource(subject);
         const listResource = resource.addList(predicate, terms, {
           mintSubListIdentifier: (_, itemIndex) =>
             dataFactory.namedNode(
@@ -136,7 +152,7 @@ describe("Resource", () => {
 
     it("named graph", ({ expect }) => {
       const dataset = datasetFactory.dataset();
-      const resource = new Resource(dataset, subject);
+      const resource = createResourceSet(dataset).resource(subject);
       resource.addList(predicate, [literals.string, literals.int], { graph });
       expect(
         [...dataset].filter((quad) =>
@@ -151,7 +167,7 @@ describe("Resource", () => {
 
   describe("delete", () => {
     it("one value", () => {
-      const resource = new Resource(datasetFactory.dataset(), subject);
+      const resource = createResource(subject);
       resource.add(predicate, literals.string);
       resource.add(predicate, literals.int);
       expect([...resource.values(predicate)]).toHaveLength(2);
@@ -162,7 +178,7 @@ describe("Resource", () => {
     });
 
     it("all values", () => {
-      const resource = new Resource(datasetFactory.dataset(), subject);
+      const resource = createResource(subject);
       resource.add(predicate, literals.string);
       resource.add(predicate, literals.int);
       expect([...resource.values(predicate)]).toHaveLength(2);
@@ -171,7 +187,7 @@ describe("Resource", () => {
     });
 
     it("named graph", ({ expect }) => {
-      const testResource = new Resource(datasetFactory.dataset(), subject);
+      const testResource = createResource(subject);
       testResource.add(predicate, literals.string, graph);
       testResource.add(predicate, literals.string);
       testResource.add(predicate, literals.boolean); // In default graph
@@ -197,13 +213,13 @@ describe("Resource", () => {
     it("inverse path (no value)", ({ expect }) => {
       const dataset = datasetFactory.dataset();
       const object = objects["namedNode"] as NamedNode;
-      const subjectResource = new Resource(dataset, subject);
+      const subjectResource = createResourceSet(dataset).resource(subject);
       subjectResource.add(predicate, object);
       expect(dataset).toBeRdfDatasetOfSize(1);
       expect([...dataset][0]).toEqualRdfQuad(
         dataFactory.quad(subject, predicate, object),
       );
-      const objectResource = new Resource(dataset, object);
+      const objectResource = createResourceSet(dataset).resource(object);
       objectResource.delete({ path: predicate, termType: "InversePath" });
       expect(dataset).toBeRdfDatasetOfSize(0);
     });
@@ -211,13 +227,13 @@ describe("Resource", () => {
     it("inverse path (with value)", ({ expect }) => {
       const dataset = datasetFactory.dataset();
       const object = objects["namedNode"] as NamedNode;
-      const subjectResource = new Resource(dataset, subject);
+      const subjectResource = createResourceSet(dataset).resource(subject);
       subjectResource.add(predicate, object);
       expect(dataset).toBeRdfDatasetOfSize(1);
       expect([...dataset][0]).toEqualRdfQuad(
         dataFactory.quad(subject, predicate, object),
       );
-      const objectResource = new Resource(dataset, object);
+      const objectResource = createResourceSet(dataset).resource(object);
       objectResource.delete(
         { path: predicate, termType: "InversePath" },
         subject,
@@ -229,17 +245,21 @@ describe("Resource", () => {
   describe("isInstanceOf", () => {
     const dataset = datasetFactory.dataset();
     const class_ = skos.Concept;
-    const classInstance = new Resource(dataset, dataFactory.blankNode());
+    const classInstance = createResourceSet(dataset).resource(
+      dataFactory.blankNode(),
+    );
     classInstance.add(rdf.type, class_);
     const subClass = dataFactory.namedNode(
       "http://example.com/ConceptSubclass",
     );
-    const subClassInstance = new Resource(dataset, dataFactory.blankNode());
+    const subClassInstance = createResourceSet(dataset).resource(
+      dataFactory.blankNode(),
+    );
     subClassInstance.add(rdf.type, subClass);
     dataset.add(dataFactory.quad(subClass, rdfs.subClassOf, class_));
 
     it("third party data", ({ expect }) => {
-      const houseMdResourceSet = new ResourceSet(houseMdDataset);
+      const houseMdResourceSet = createResourceSet(houseMdDataset);
       const houseMdResource = houseMdResourceSet.resource(
         dataFactory.namedNode(
           "https://housemd.rdf-ext.org/person/allison-cameron",
@@ -266,21 +286,21 @@ describe("Resource", () => {
 
     it("should handle the negative case", () => {
       expect(
-        new Resource(dataset, dataFactory.blankNode()).isInstanceOf(class_),
+        createResourceSet(dataset)
+          .resource(dataFactory.blankNode())
+          .isInstanceOf(class_),
       ).toStrictEqual(false);
     });
   });
 
   it("isSubClassOf (positive case)", () => {
-    const dataset = datasetFactory.dataset();
+    const resourceSet = createResourceSet();
     const class_ = skos.Concept;
-    const subClass = new Resource(
-      dataset,
+    const subClass = resourceSet.resource(
       dataFactory.namedNode("http://example.com/subClass"),
     );
     subClass.add(rdfs.subClassOf, class_);
-    const subSubClass = new Resource(
-      dataset,
+    const subSubClass = resourceSet.resource(
       dataFactory.namedNode("http://example.com/subSubClass"),
     );
     subSubClass.add(rdfs.subClassOf, subClass.identifier);
@@ -288,14 +308,12 @@ describe("Resource", () => {
   });
 
   it("isSubClassOf (negative case)", () => {
-    const dataset = datasetFactory.dataset();
+    const resourceSet = createResourceSet();
     const class1 = skos.Concept;
-    const class2 = new Resource(
-      dataset,
+    const class2 = resourceSet.resource(
       dataFactory.namedNode("http://example.com/subClass"),
     );
-    const subClass = new Resource(
-      dataset,
+    const subClass = resourceSet.resource(
       dataFactory.namedNode("http://example.com/subSubClass"),
     );
     subClass.add(rdfs.subClassOf, class2.identifier);
@@ -303,7 +321,7 @@ describe("Resource", () => {
   });
 
   it("set", () => {
-    const resource = new Resource(datasetFactory.dataset(), subject);
+    const resource = createResource(subject);
     resource.add(predicate, literals.string);
     expect(resource.dataset.size).toStrictEqual(1);
     resource.set(predicate, literals.int);
@@ -315,10 +333,7 @@ describe("Resource", () => {
 
   describe("toList", () => {
     it("should read an empty list", ({ expect }) => {
-      const resource = new Resource(
-        datasetFactory.dataset(),
-        dataFactory.blankNode(),
-      );
+      const resource = createResource(dataFactory.blankNode());
       resource.add(predicate, rdf.nil);
       expect(
         resource
@@ -331,11 +346,8 @@ describe("Resource", () => {
     });
 
     it("should read a list with one literal", ({ expect }) => {
-      const resource = new Resource(
-        datasetFactory.dataset(),
-        dataFactory.blankNode(),
-      );
-      resource.addList(predicate, ["test"]);
+      const resource = createResource(dataFactory.blankNode());
+      resource.addList(predicate, [dataFactory.literal("test")]);
       const list = resource
         .value(predicate)
         .chain((_) => _.toList())
@@ -348,11 +360,11 @@ describe("Resource", () => {
     });
 
     it("should read a list with two literals", ({ expect }) => {
-      const resource = new Resource(
-        datasetFactory.dataset(),
-        dataFactory.blankNode(),
-      );
-      resource.addList(predicate, ["test1", "test2"]);
+      const resource = createResource(dataFactory.blankNode());
+      resource.addList(predicate, [
+        dataFactory.literal("test1"),
+        dataFactory.literal("test2"),
+      ]);
       const list = resource
         .value(predicate)
         .chain((_) => _.toList())
@@ -367,6 +379,8 @@ describe("Resource", () => {
   });
 
   describe("value", () => {
+    const testResource = createTestResource();
+
     it("missing", ({ expect }) => {
       expect(
         testResource
@@ -415,6 +429,8 @@ describe("Resource", () => {
   });
 
   describe("values", () => {
+    const testResource = createTestResource();
+
     it("every added value present", ({ expect }) => {
       const values = [...testResource.values(predicate)];
       expect(values).toHaveLength(Object.keys(objects).length);
@@ -424,7 +440,7 @@ describe("Resource", () => {
     });
 
     it("named graph", ({ expect }) => {
-      const testResource = new Resource(datasetFactory.dataset(), subject);
+      const testResource = createResource(subject);
       testResource.add(predicate, literals.string, graph);
       testResource.add(predicate, literals.boolean); // In default graph
       testResource.add(
@@ -450,7 +466,7 @@ describe("Resource", () => {
 
     it("unique (multiple graphs", ({ expect }) => {
       // Same object, different graphs
-      const testResource = new Resource(datasetFactory.dataset(), subject);
+      const testResource = createResource(subject);
       testResource.add(predicate, literals.string);
       testResource.add(predicate, literals.string, graph);
       expect(testResource.values(predicate).toArray()).toHaveLength(2);

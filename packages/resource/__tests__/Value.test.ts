@@ -3,13 +3,16 @@ import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
-import { Resource } from "../src/Resource.js";
 import { testData } from "./testData.js";
 import "@rdfx/testing";
+import { ResourceSet } from "../src/ResourceSet.js";
 
 describe("Value", () => {
   const { objects, predicate, subject } = testData;
-  const testResource = new Resource(datasetFactory.dataset(), subject);
+  function createResourceSet(): ResourceSet {
+    return new ResourceSet({ dataFactory, dataset: datasetFactory.dataset() });
+  }
+  const testResource = createResourceSet().resource(subject);
   for (const object of Object.values(objects)) {
     testResource.add(predicate, object);
   }

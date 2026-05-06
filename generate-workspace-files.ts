@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.11";
+const VERSION = "0.0.12";
 
 const vitestVersion = "~4.1.5";
 
@@ -159,7 +159,7 @@ const workspaces = {
           "@types/rdfjs__term-set",
           "purify-ts",
         ],
-        internal: ["data-factory", "literal", "string"],
+        internal: ["literal", "string"],
       },
       devDependencies: {
         external: [
@@ -170,6 +170,7 @@ const workspaces = {
           "housemd",
           "ts-invariant",
         ],
+        internal: ["data-factory"],
       },
       tsconfig: packageTsconfig,
     },

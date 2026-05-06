@@ -7,7 +7,10 @@ import { ResourceSet } from "../src/ResourceSet.js";
 import { propertyPathsDataset } from "./propertyPathsDataset.js";
 
 describe("PropertyPath", () => {
-  const resourceSet = new ResourceSet(propertyPathsDataset);
+  const resourceSet = new ResourceSet({
+    dataFactory,
+    dataset: propertyPathsDataset,
+  });
 
   function testPropertyPath(
     name: string,
