@@ -335,7 +335,7 @@ describe("Resource", () => {
         datasetFactory.dataset(),
         dataFactory.blankNode(),
       );
-      resource.addList(predicate, ["test"]);
+      resource.addList(predicate, [dataFactory.literal("test")]);
       const list = resource
         .value(predicate)
         .chain((_) => _.toList())
@@ -352,7 +352,10 @@ describe("Resource", () => {
         datasetFactory.dataset(),
         dataFactory.blankNode(),
       );
-      resource.addList(predicate, ["test1", "test2"]);
+      resource.addList(predicate, [
+        dataFactory.literal("test1"),
+        dataFactory.literal("test2"),
+      ]);
       const list = resource
         .value(predicate)
         .chain((_) => _.toList())

@@ -9,13 +9,11 @@ import type {
   Variable,
 } from "@rdfjs/types";
 import defaultDataFactory from "@rdfx/data-factory";
-import { LiteralFactory } from "@rdfx/literal";
 import { Either, Left } from "purify-ts";
 import { DatasetValues } from "./DatasetValues.js";
 import type { Identifier as _Identifier, Identifier } from "./Identifier.js";
 import { ListStructureError as _ListStructureError } from "./ListStructureError.js";
 import { MistypedTermValueError as _MistypedTermValueError } from "./MistypedTermValueError.js";
-import type { Primitive } from "./Primitive.js";
 import type { PropertyPath } from "./PropertyPath.js";
 import type { Term } from "./Term.js";
 import { Value as _Value } from "./Value.js";
@@ -31,7 +29,6 @@ export class Resource<
 > {
   private readonly dataFactory: DataFactory;
   private readonly graph?: Graph;
-  private readonly literalFactory: LiteralFactory;
 
   constructor(
     readonly dataset: DatasetCore,
@@ -41,7 +38,6 @@ export class Resource<
     },
   ) {
     this.dataFactory = options?.dataFactory ?? defaultDataFactory;
-    this.literalFactory = new LiteralFactory({ dataFactory: this.dataFactory });
   }
 
   /**
@@ -73,9 +69,7 @@ export class Resource<
 
     switch (propertyPath.termType) {
       case "InversePath":
-        for (const subject of this.addableSubjectsToTerms(
-          value as AddableSubject | readonly AddableSubject[],
-        )) {
+        for (const subject of Array.isArray(value) ? value : [value]) {
           this.dataset.add(
             this.dataFactory.quad(
               subject,
@@ -87,7 +81,7 @@ export class Resource<
         }
         break;
       case "NamedNode":
-        for (const object of this.addableObjectsToTerms(value)) {
+        for (const object of Array.isArray(value) ? value : [value]) {
           this.dataset.add(
             this.dataFactory.quad(this.identifier, propertyPath, object, graph),
           );
@@ -211,9 +205,7 @@ export class Resource<
     switch (propertyPath.termType) {
       case "InversePath": {
         if (value) {
-          for (const subject of this.addableSubjectsToTerms(
-            value as AddableSubject | readonly AddableSubject[],
-          )) {
+          for (const subject of Array.isArray(value) ? value : [value]) {
             for (const quad of [
               ...this.dataset.match(
                 subject,
@@ -242,7 +234,7 @@ export class Resource<
       }
       case "NamedNode": {
         if (value) {
-          for (const object of this.addableObjectsToTerms(value)) {
+          for (const object of Array.isArray(value) ? value : [value]) {
             for (const quad of [
               ...this.dataset.match(
                 this.identifier,
@@ -595,43 +587,10 @@ export class Resource<
       unique: !!options?.unique,
     });
   }
-
-  private addableObjectToTerm(object: AddableObject): Term {
-    switch (typeof object) {
-      case "bigint":
-        return this.literalFactory.bigint(object);
-      case "boolean":
-        return this.literalFactory.boolean(object);
-      case "number":
-        return this.literalFactory.number(object);
-      case "string":
-        return this.literalFactory.string(object);
-      case "object":
-        return object;
-    }
-  }
-
-  private addableObjectsToTerms(
-    objects: AddableObject | readonly AddableObject[],
-  ): readonly Term[] {
-    if (Array.isArray(objects)) {
-      return objects.map((value) => this.addableObjectToTerm(value));
-    }
-    return [this.addableObjectToTerm(objects as AddableObject)];
-  }
-
-  private addableSubjectsToTerms(
-    subjects: AddableSubject | readonly AddableSubject[],
-  ): readonly AddableSubject[] {
-    if (Array.isArray(subjects)) {
-      return subjects;
-    }
-    return [subjects as AddableSubject];
-  }
 }
 
 type AddableSubject = BlankNode | NamedNode;
-type AddableObject = BlankNode | Literal | NamedNode | Exclude<Primitive, Date>;
+type AddableObject = BlankNode | Literal | NamedNode;
 type Graph = Exclude<Quad_Graph, Variable>;
 type InversePath = {
   readonly path: NamedNode;
