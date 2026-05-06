@@ -5,7 +5,10 @@ import { ResourceSet } from "../src/ResourceSet.js";
 import { houseMdDataset } from "./houseMdDataset.js";
 
 describe("ResourceSet", () => {
-  const houseMdResourceSet = new ResourceSet(houseMdDataset);
+  const houseMdResourceSet = new ResourceSet({
+    dataFactory,
+    dataset: houseMdDataset,
+  });
 
   describe("instancesOf", () => {
     it("no graph specified", ({ expect }) => {

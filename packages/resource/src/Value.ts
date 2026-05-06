@@ -265,8 +265,10 @@ export class Value<TermT extends Term = Term> {
   ): Either<Error, T | Resource> {
     return (in_ ? this.toIdentifier(in_) : this.toIdentifier()).map(
       (identifier) =>
-        new Resource(this.focusResource.dataset, identifier, {
+        new Resource({
           dataFactory: this.dataFactory,
+          dataset: this.focusResource.dataset,
+          identifier,
         }),
     );
   }

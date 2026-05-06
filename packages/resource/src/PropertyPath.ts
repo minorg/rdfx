@@ -159,7 +159,11 @@ export namespace PropertyPath {
             ),
           );
       }
-      const objectResource = new Resource(resource.dataset, quad.object);
+      const objectResource = new Resource({
+        dataFactory: resource.dataFactory,
+        dataset: resource.dataset,
+        identifier: quad.object,
+      });
 
       // Alternative path
       // sh:path: [ sh:alternativePath ( ex:father ex:mother  ) ]
@@ -224,7 +228,7 @@ export namespace PropertyPath {
     const graph = options?.graph;
     const resourceSet =
       options?.resourceSet ??
-      new ResourceSet(datasetFactory.dataset(), { dataFactory: dataFactory });
+      new ResourceSet({ dataFactory, dataset: datasetFactory.dataset() });
 
     if (propertyPath.termType === "NamedNode") {
       return resourceSet.resource(propertyPath);

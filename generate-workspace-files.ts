@@ -159,7 +159,7 @@ const workspaces = {
           "@types/rdfjs__term-set",
           "purify-ts",
         ],
-        internal: ["data-factory", "literal", "string"],
+        internal: ["literal", "string"],
       },
       devDependencies: {
         external: [
@@ -170,6 +170,7 @@ const workspaces = {
           "housemd",
           "ts-invariant",
         ],
+        internal: ["data-factory"],
       },
       tsconfig: packageTsconfig,
     },

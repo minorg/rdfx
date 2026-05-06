@@ -6,7 +6,7 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-import defaultDataFactory from "@rdfx/data-factory";
+
 import type { Identifier } from "./Identifier.js";
 import { Resource } from "./Resource.js";
 import { rdf, rdfs } from "./vocabularies.js";
@@ -16,17 +16,15 @@ import { rdf, rdfs } from "./vocabularies.js";
  */
 export class ResourceSet {
   private readonly dataFactory: DataFactory;
-  private readonly graph?: Exclude<Quad_Graph, Variable>;
 
-  constructor(
-    readonly dataset: DatasetCore,
-    options?: {
-      dataFactory?: DataFactory;
-      graph?: Exclude<Quad_Graph, Variable>;
-    },
-  ) {
-    this.dataFactory = options?.dataFactory ?? defaultDataFactory;
-    this.graph = options?.graph;
+  readonly dataset: DatasetCore;
+
+  constructor({
+    dataFactory,
+    dataset,
+  }: { dataFactory: DataFactory; dataset: DatasetCore }) {
+    this.dataFactory = dataFactory;
+    this.dataset = dataset;
   }
 
   *instancesOf(
@@ -55,8 +53,10 @@ export class ResourceSet {
   resource<IdentifierT extends Resource.Identifier>(
     identifier: IdentifierT,
   ): Resource<IdentifierT> {
-    return new Resource(this.dataset, identifier, {
+    return new Resource({
       dataFactory: this.dataFactory,
+      dataset: this.dataset,
+      identifier,
     });
   }
 
@@ -67,7 +67,7 @@ export class ResourceSet {
     yield* instanceIdentifiersRecursive({
       class_,
       dataset: this.dataset,
-      graph: options?.graph ?? this.graph,
+      graph: options?.graph,
       visitedClasses: new TermSet<NamedNode>(),
       yieldedInstanceIdentifiers: new TermSet<Identifier>(),
     });
