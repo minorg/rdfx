@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.12";
+const VERSION = "0.0.13";
 
 const vitestVersion = "~4.1.5";
 
@@ -127,6 +127,7 @@ const workspaces = {
           "ts-log",
           "unbzip2-stream",
         ],
+        internal: ["data-factory"],
       },
       devDependencies: {
         external: ["@rdfjs/dataset", "@types/rdfjs__dataset"],
