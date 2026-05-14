@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@rdfx/data-factory": "0.0.12",
     "@rdfjs/formats": "~4.0.1",
     "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__formats": "~4.0.1",
