@@ -13,6 +13,13 @@ const externalDependencies = {
   "@biomejs/biome": "2.3.10",
   "@rdfjs/dataset": "~2.0.2",
   "@rdfjs/formats": "~4.0.1",
+  "@rdfjs/parser-jsonld": "~2.1.3",
+  "@rdfjs/parser-n3": "~2.1.0",
+  "@rdfjs/serializer-jsonld": "~2.0.1",
+  "@rdfjs/serializer-jsonld-ext": "~4.0.2",
+  "@rdfjs/serializer-ntriples": "~2.0.1",
+  "@rdfjs/serializer-turtle": "~1.1.5",
+  "@rdfjs/sink-map": "~2.0.1",
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
@@ -23,6 +30,13 @@ const externalDependencies = {
   "@types/node": "^24",
   "@types/rdfjs__dataset": "~2.0.7",
   "@types/rdfjs__formats": "~4.0.1",
+  "@types/rdfjs__parser-jsonld": "~2.1.7",
+  "@types/rdfjs__parser-n3": "~2.0.6",
+  "@types/rdfjs__serializer-jsonld": "~2.0.5",
+  "@types/rdfjs__serializer-jsonld-ext": "~4.0.1",
+  "@types/rdfjs__serializer-ntriples": "~2.0.6",
+  "@types/rdfjs__serializer-turtle": "~1.1.0",
+  "@types/rdfjs__sink-map": "~2.0.5",
   "@types/rdfjs__term-set": "~2.0.9",
   "@types/rdfjs__to-ntriples": "~3.0.0",
   // "@types/readable-stream": "~4.0.23",
@@ -51,7 +65,9 @@ type PackageName =
   | "data-factory"
   | "fs"
   | "literal"
+  | "parsers"
   | "resource"
+  | "serializers"
   | "sparql-client"
   | "string"
   | "testing";
@@ -152,6 +168,18 @@ const workspaces = {
       },
       tsconfig: packageTsconfig,
     },
+    parsers: {
+      dependencies: {
+        external: [
+          "@rdfjs/parser-jsonld",
+          "@rdfjs/parser-n3",
+          "@rdfjs/sink-map",
+          "@types/rdfjs__parser-jsonld",
+          "@types/rdfjs__parser-n3",
+        ],
+      },
+      tsconfig: packageTsconfig,
+    },
     resource: {
       dependencies: {
         external: [
@@ -172,6 +200,23 @@ const workspaces = {
           "ts-invariant",
         ],
         internal: ["data-factory"],
+      },
+      tsconfig: packageTsconfig,
+    },
+    serializers: {
+      dependencies: {
+        external: [
+          "@rdfjs/serializer-jsonld",
+          "@rdfjs/serializer-jsonld-ext",
+          "@rdfjs/serializer-ntriples",
+          "@rdfjs/serializer-turtle",
+          "@rdfjs/sink-map",
+          "@types/rdfjs__serializer-jsonld",
+          "@types/rdfjs__serializer-jsonld-ext",
+          "@types/rdfjs__serializer-ntriples",
+          "@types/rdfjs__serializer-turtle",
+          "@types/rdfjs__sink-map",
+        ],
       },
       tsconfig: packageTsconfig,
     },

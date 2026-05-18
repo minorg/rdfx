@@ -34,7 +34,9 @@
     "packages/data-factory",
     "packages/fs",
     "packages/literal",
+    "packages/parsers",
     "packages/resource",
+    "packages/serializers",
     "packages/sparql-client",
     "packages/string",
     "packages/testing"
