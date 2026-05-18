@@ -5,6 +5,7 @@
     "@rdfjs/serializer-ntriples": "~2.0.1",
     "@rdfjs/serializer-turtle": "~1.1.5",
     "@rdfjs/sink-map": "~2.0.1",
+    "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__serializer-jsonld": "~2.0.5",
     "@types/rdfjs__serializer-jsonld-ext": "~4.0.1",
     "@types/rdfjs__serializer-ntriples": "~2.0.6",
