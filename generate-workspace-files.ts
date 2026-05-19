@@ -12,7 +12,6 @@ const vitestVersion = "~4.1.5";
 const externalDependencies = {
   "@biomejs/biome": "2.3.10",
   "@rdfjs/dataset": "~2.0.2",
-  "@rdfjs/formats": "~4.0.1",
   "@rdfjs/parser-jsonld": "~2.1.3",
   "@rdfjs/parser-n3": "~2.1.0",
   "@rdfjs/serializer-jsonld-ext": "~4.0.2",
@@ -132,16 +131,14 @@ const workspaces = {
     fs: {
       dependencies: {
         external: [
-          "@rdfjs/formats",
           "@rdfjs/types",
-          "@types/rdfjs__formats",
           "@types/unbzip2-stream",
           "mime",
           "purify-ts",
           "ts-log",
           "unbzip2-stream",
         ],
-        internal: ["data-factory"],
+        internal: ["data-factory", "parsers"],
       },
       devDependencies: {
         external: ["@rdfjs/dataset", "@types/rdfjs__dataset"],

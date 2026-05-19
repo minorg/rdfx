@@ -2,10 +2,9 @@ import fs from "node:fs";
 import * as path from "node:path";
 import type { Readable } from "node:stream";
 import zlib from "node:zlib";
-import formatsDefault from "@rdfjs/formats";
-import Formats from "@rdfjs/formats/lib/Formats.js";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
+import parsersFactory from "@rdfx/parsers";
 import { Mime } from "mime";
 import otherMimeTypes from "mime/types/other.js";
 import standardMimeTypes from "mime/types/standard.js";
@@ -15,7 +14,7 @@ import bz2 from "unbzip2-stream";
 import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
 import { RDF_FORMATS, type RdfFormat } from "./RdfFormat.js";
 
-const formats = new Formats({ factory: dataFactory }).import(formatsDefault);
+const parsers = parsersFactory({ dataFactory });
 
 const mime = new Mime(standardMimeTypes, otherMimeTypes, {
   "application/x-brotli": ["br"],
@@ -107,7 +106,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
       }
     }
 
-    return formats.parsers.import(this.format.rdfFormat, rdfFileStream)!;
+    return parsers.import(this.format.rdfFormat, rdfFileStream)!;
   }
 
   override parseInto(
