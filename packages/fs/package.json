@@ -1,9 +1,8 @@
 {
   "dependencies": {
     "@rdfx/data-factory": "0.0.13",
-    "@rdfjs/formats": "~4.0.1",
+    "@rdfx/parsers": "0.0.13",
     "@rdfjs/types": "~2.0.1",
-    "@types/rdfjs__formats": "~4.0.1",
     "@types/unbzip2-stream": "~1.4.3",
     "mime": "~4.1.0",
     "purify-ts": "~2.1.4",
