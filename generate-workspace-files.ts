@@ -15,7 +15,6 @@ const externalDependencies = {
   "@rdfjs/formats": "~4.0.1",
   "@rdfjs/parser-jsonld": "~2.1.3",
   "@rdfjs/parser-n3": "~2.1.0",
-  "@rdfjs/serializer-jsonld": "~2.0.1",
   "@rdfjs/serializer-jsonld-ext": "~4.0.2",
   "@rdfjs/serializer-ntriples": "~2.0.1",
   "@rdfjs/serializer-turtle": "~1.1.5",
@@ -32,7 +31,6 @@ const externalDependencies = {
   "@types/rdfjs__formats": "~4.0.1",
   "@types/rdfjs__parser-jsonld": "~2.1.7",
   "@types/rdfjs__parser-n3": "~2.0.6",
-  "@types/rdfjs__serializer-jsonld": "~2.0.5",
   "@types/rdfjs__serializer-jsonld-ext": "~4.0.1",
   "@types/rdfjs__serializer-ntriples": "~2.0.6",
   "@types/rdfjs__serializer-turtle": "~1.1.0",
@@ -207,13 +205,11 @@ const workspaces = {
     serializers: {
       dependencies: {
         external: [
-          "@rdfjs/serializer-jsonld",
           "@rdfjs/serializer-jsonld-ext",
           "@rdfjs/serializer-ntriples",
           "@rdfjs/serializer-turtle",
           "@rdfjs/sink-map",
           "@rdfjs/types",
-          "@types/rdfjs__serializer-jsonld",
           "@types/rdfjs__serializer-jsonld-ext",
           "@types/rdfjs__serializer-ntriples",
           "@types/rdfjs__serializer-turtle",
@@ -465,7 +461,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 14 dev dev:tests",
+        dev: "turbo run --concurrency 16 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },
