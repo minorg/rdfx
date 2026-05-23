@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "@rdfx/string": "0.0.17",
+    "@rdfx/string": "0.0.18",
     "@rdfjs/types": "~2.0.1"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.17"
+    "@rdfx/testing": "0.0.18"
   },
   "files": [
     "LICENSE",
@@ -30,5 +30,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.17"
+  "version": "0.0.18"
 }

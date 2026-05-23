@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.17";
+const VERSION = "0.0.18";
 
 const vitestVersion = "~4.1.5";
 
