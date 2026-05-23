@@ -2,20 +2,17 @@
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
-    "esModuleInterop": true,
     "exactOptionalPropertyTypes": false,
-    "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "lib": [
-      "ES2020"
+      "ES2023"
     ],
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "NodeNext",
     "noUncheckedIndexedAccess": false,
     "outDir": "dist",
     "rootDir": "src",
     "sourceMap": true,
-    "target": "ES2020"
+    "target": "ES2023"
   },
   "extends": [
     "@tsconfig/strictest/tsconfig.json"

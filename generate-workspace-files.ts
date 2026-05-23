@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.17";
+const VERSION = "0.0.18";
 
 const vitestVersion = "~4.1.5";
 
@@ -52,7 +52,7 @@ const externalDependencies = {
   "ts-log": "~3.0.2",
   tsx: "~4.16.2",
   turbo: "~2.5.5",
-  typescript: "5.9.3",
+  typescript: "6.0.3",
   "unbzip2-stream": "~1.4.3",
   vitest: vitestVersion,
   "vitest-fetch-mock": "~0.4.5",
@@ -99,18 +99,15 @@ const packageTsconfig: Tsconfig = {
   compilerOptions: {
     declaration: true,
     declarationMap: true,
-    esModuleInterop: true,
     exactOptionalPropertyTypes: false,
-    experimentalDecorators: true,
     forceConsistentCasingInFileNames: true,
-    lib: ["ES2020"],
-    module: "ES2020" as any,
-    moduleResolution: "node" as any,
+    lib: ["ES2023"],
+    module: "NodeNext" as any,
     noUncheckedIndexedAccess: false,
     outDir: "dist",
     rootDir: "src",
     sourceMap: true,
-    target: "ES2020" as any,
+    target: "ES2023" as any,
   } satisfies CompilerOptions,
   extends: ["@tsconfig/strictest/tsconfig.json"],
   include: ["src/**/*.ts"],
