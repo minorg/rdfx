@@ -100,7 +100,6 @@ const packageTsconfig: Tsconfig = {
     declaration: true,
     declarationMap: true,
     exactOptionalPropertyTypes: false,
-    experimentalDecorators: true,
     forceConsistentCasingInFileNames: true,
     lib: ["ES2023"],
     module: "NodeNext" as any,
