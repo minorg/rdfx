@@ -5,7 +5,7 @@
     "n3": "~1.26.0"
   },
   "devDependencies": {
-    "oxigraph": "0.4.7"
+    "oxigraph": "0.5.8"
   },
   "files": [
     "LICENSE",
