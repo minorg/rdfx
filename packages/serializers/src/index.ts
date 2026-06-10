@@ -1,10 +1,16 @@
 import JsonLdSerializer, {
   type SerializerOptions as JsonLdSerializerOptions,
 } from "@rdfjs/serializer-jsonld-ext";
+export { JsonLdSerializer, type JsonLdSerializerOptions };
+
 import NTriplesSerializer from "@rdfjs/serializer-ntriples";
+export { NTriplesSerializer };
+
 import TurtleSerializer, {
   type SerializerOptions as TurtleSerializerOptions,
 } from "@rdfjs/serializer-turtle";
+export { TurtleSerializer, type TurtleSerializerOptions };
+
 import SinkMap from "@rdfjs/sink-map";
 
 export default function serializers(options?: {

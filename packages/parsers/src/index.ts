@@ -1,6 +1,11 @@
 import JsonLdParser, { type ParserOptions } from "@rdfjs/parser-jsonld";
+export { JsonLdParser };
+
 import N3Parser from "@rdfjs/parser-n3";
+export { N3Parser };
+
 import SinkMap from "@rdfjs/sink-map";
+
 import type { DataFactory } from "@rdfjs/types";
 
 export default function parsers({
