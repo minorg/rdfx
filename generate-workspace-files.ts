@@ -44,7 +44,7 @@ const externalDependencies = {
   housemd: "0.1.3",
   mime: "~4.1.0",
   n3: "~1.26.0",
-  oxigraph: "0.4.7",
+  oxigraph: "0.5.8",
   "purify-ts": "~2.1.4",
   // "readable-stream": "^4.7.0",
   rimraf: "~6.0.1",
