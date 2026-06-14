@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
+    "noEmit": true,
     "types": ["node"]
   },
   "extends": [
     "@tsconfig/node24/tsconfig.json",
     "@tsconfig/strictest/tsconfig.json"
   ],
-  "include": ["*.ts"]
+  "include": ["*.ts", "packages/builder/generate.ts"]
 }
