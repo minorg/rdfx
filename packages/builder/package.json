@@ -5,7 +5,7 @@
   },
   "devDependencies": {
     "@rdfx/fs": "0.0.19",
-    "@shaclmate/compiler": "4.0.51",
+    "@shaclmate/compiler": "4.0.52",
     "@tpluscode/rdf-ns-builders": "~4.3.0",
     "ts-log": "~3.0.2"
   },

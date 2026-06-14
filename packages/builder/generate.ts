@@ -75,9 +75,16 @@ async function main() {
         continue;
       }
 
-      if (inputNodeShape.shaclmateName.isNothing()) {
+      if (inputNodeShape.extern.orDefault(false)) {
         logger.debug(
-          "%s: node shape %s has no shaclmate:name",
+          "%s: node shape %s is extern, skipping",
+          inputDirentPath,
+          inputNodeShape.$identifier(),
+        );
+        continue;
+      } else if (inputNodeShape.shaclmateName.isNothing()) {
+        logger.debug(
+          "%s: node shape %s has no shaclmate:name, skipping",
           inputDirentPath,
           inputNodeShape.$identifier(),
         );

@@ -224,11 +224,6 @@ function $wrap_ToRdfResourceFunction<
     return resource;
   };
 }
-export type Severity = NamedNode<
-  | "http://www.w3.org/ns/shacl#Info"
-  | "http://www.w3.org/ns/shacl#Warning"
-  | "http://www.w3.org/ns/shacl#Violation"
->;
 export type sh_NodeShape = {
   readonly $identifier: () => sh_NodeShape.Identifier;
 
@@ -310,7 +305,7 @@ export type sh_NodeShape = {
 
   readonly rdfType: Maybe<NamedNode>;
 
-  readonly severity: Maybe<Severity>;
+  readonly severity: Maybe<sh_Severity>;
 
   readonly shaclmateName: Maybe<string>;
 
@@ -1597,7 +1592,7 @@ export type sh_PropertyShape = {
 
   readonly order: Maybe<number>;
 
-  readonly path: sh_$a$PropertyPath;
+  readonly path: $PropertyPath;
 
   readonly pattern: Maybe<string>;
 
@@ -1611,7 +1606,7 @@ export type sh_PropertyShape = {
 
   readonly resolve: Maybe<BlankNode | NamedNode>;
 
-  readonly severity: Maybe<Severity>;
+  readonly severity: Maybe<sh_Severity>;
 
   readonly shaclmateName: Maybe<string>;
 
@@ -1973,7 +1968,7 @@ export namespace sh_PropertyShape {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#path"),
         get type() {
-          return sh_$a$PropertyPath.schema;
+          return $PropertyPath.schema;
         },
       },
       pattern: {
@@ -2563,7 +2558,7 @@ export namespace sh_PropertyShape {
     parameters.resource.add(
       sh_PropertyShape.schema.properties.path.path,
       [
-        sh_$a$PropertyPath.toRdfResource(parameters.object.path, {
+        $PropertyPath.toRdfResource(parameters.object.path, {
           graph: parameters.graph,
           resourceSet: parameters.resourceSet,
         }).identifier,
@@ -2715,6 +2710,11 @@ export namespace sh_PropertyShape {
 
   export const toRdfResource = $wrap_ToRdfResourceFunction(_toRdfResource);
 }
+export type sh_Severity = NamedNode<
+  | "http://www.w3.org/ns/shacl#Info"
+  | "http://www.w3.org/ns/shacl#Warning"
+  | "http://www.w3.org/ns/shacl#Violation"
+>;
 export type sh_ValidationReport = {
   readonly $identifier: () => sh_ValidationReport.Identifier;
 
@@ -2841,9 +2841,9 @@ export type sh_ValidationResult = {
 
   readonly message: Maybe<string>;
 
-  readonly path: Maybe<sh_$a$PropertyPath>;
+  readonly path: Maybe<$PropertyPath>;
 
-  readonly severity: Severity;
+  readonly severity: sh_Severity;
 
   readonly sourceConstraintComponent: NamedNode;
 
@@ -2909,7 +2909,7 @@ export namespace sh_ValidationResult {
           return {
             kind: "Option" as const,
             get itemType() {
-              return sh_$a$PropertyPath.schema;
+              return $PropertyPath.schema;
             },
           };
         },
@@ -2995,7 +2995,7 @@ export namespace sh_ValidationResult {
     parameters.resource.add(
       sh_ValidationResult.schema.properties.path.path,
       parameters.object.path.toList().flatMap((value) => [
-        sh_$a$PropertyPath.toRdfResource(value, {
+        $PropertyPath.toRdfResource(value, {
           graph: parameters.graph,
           resourceSet: parameters.resourceSet,
         }).identifier,
@@ -3027,16 +3027,16 @@ export namespace sh_ValidationResult {
 
   export const toRdfResource = $wrap_ToRdfResourceFunction(_toRdfResource);
 }
-export type Shape = sh_NodeShape | sh_PropertyShape;
+export type sh_Shape = sh_NodeShape | sh_PropertyShape;
 
-export namespace Shape {
+export namespace sh_Shape {
   export type Identifier = BlankNode | NamedNode;
   export namespace Identifier {
     export const parse = $parseIdentifier;
     export const stringify = NTriplesTerm.stringify;
   }
 
-  export function isShape(object: $Object): object is Shape {
+  export function issh_Shape(object: $Object): object is sh_Shape {
     return (
       sh_NodeShape.issh_NodeShape(object) ||
       sh_PropertyShape.issh_PropertyShape(object)
@@ -3361,7 +3361,7 @@ export namespace Shape {
     },
   } as const;
 
-  export const toRdfResource: $ToRdfResourceFunction<Shape> = (
+  export const toRdfResource: $ToRdfResourceFunction<sh_Shape> = (
     object,
     options,
   ) => {
@@ -3396,7 +3396,7 @@ export namespace Shape {
     }
 
     throw new Error("unable to serialize to RDF");
-  }) satisfies $ToRdfResourceValuesFunction<Shape>;
+  }) satisfies $ToRdfResourceValuesFunction<sh_Shape>;
 }
 export type $Object =
   | sh_NodeShape
