@@ -23,13 +23,16 @@ const mime = new Mime(standardMimeTypes, otherMimeTypes, {
 export class RdfFile extends AbstractRdfFileSystemEntry {
   readonly format: RdfFile.Format;
 
-  constructor({
-    format,
-    ...superParameters
-  }: {
-    format: RdfFile.Format;
-  } & ConstructorParameters<typeof AbstractRdfFileSystemEntry>[0]) {
-    super(superParameters);
+  constructor(
+    path: string,
+    {
+      format,
+      ...superParameters
+    }: {
+      format: RdfFile.Format;
+    } & ConstructorParameters<typeof AbstractRdfFileSystemEntry>[1],
+  ) {
+    super(path, superParameters);
     this.format = format;
   }
 
@@ -57,13 +60,12 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
         for (const rdfFormat of RDF_FORMATS) {
           if (uncompressedMimeType === rdfFormat) {
             return Right(
-              new RdfFile({
+              new RdfFile(filePath, {
                 format: {
                   compressionMethod: Just(compressionMethod),
                   rdfFormat,
                 },
                 logger: options?.logger,
-                path: filePath,
               }),
             );
           }
@@ -74,13 +76,12 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
     for (const rdfFormat of RDF_FORMATS) {
       if (mimeType === rdfFormat) {
         return Right(
-          new RdfFile({
+          new RdfFile(filePath, {
             format: {
               compressionMethod: Nothing,
               rdfFormat,
             },
             logger: options?.logger,
-            path: filePath,
           }),
         );
       }

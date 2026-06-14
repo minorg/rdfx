@@ -4,10 +4,12 @@ import { dummyLogger, type Logger } from "ts-log";
 
 export abstract class AbstractRdfFileSystemEntry {
   protected readonly logger: Logger;
-  readonly path: string;
 
-  constructor({ logger, path }: { logger?: Logger; path: string }) {
-    this.logger = logger ?? dummyLogger;
+  constructor(
+    readonly path: string,
+    options?: { logger?: Logger },
+  ) {
+    this.logger = options?.logger ?? dummyLogger;
     this.path = path;
   }
 

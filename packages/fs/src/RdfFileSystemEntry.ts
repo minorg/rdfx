@@ -15,7 +15,7 @@ export namespace RdfFileSystemEntry {
       const stat_ = await liftEither(await stat(path));
 
       if (stat_.isDirectory())
-        return new RdfDirectory({ logger: options?.logger, path });
+        return new RdfDirectory(path, { logger: options?.logger });
 
       if (stat_.isFile()) {
         return await liftEither(
