@@ -7,6 +7,7 @@ import type { CompilerOptions } from "typescript";
 
 const VERSION = "0.0.19";
 
+const shaclmateVersion = "4.0.51";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
@@ -23,7 +24,8 @@ const externalDependencies = {
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
-  "@shaclmate/compiler": "4.0.51",
+  "@shaclmate/compiler": shaclmateVersion,
+  "@shaclmate/shacl-ast": shaclmateVersion,
   "@tpluscode/rdf-ns-builders": "~4.3.0",
   "@tsconfig/node24": "^24",
   "@tsconfig/strictest": "~2.0.8",

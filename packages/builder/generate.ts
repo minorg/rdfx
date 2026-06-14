@@ -8,10 +8,9 @@ import { promisify } from "node:util";
 import datasetFactory from "@rdfjs/dataset";
 import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import dataFactory from "@rdfx/data-factory";
-import { RdfDirectory } from "@rdfx/fs";
+import { RdfDirectory, RdfFile } from "@rdfx/fs";
 import { ResourceSet } from "@rdfx/resource";
 import { Compiler, ShapesGraph, TsGenerator } from "@shaclmate/compiler";
-import { sh } from "@tpluscode/rdf-ns-builders";
 import type { Logger } from "ts-log";
 
 const exec = promisify(execCallback);
@@ -33,30 +32,62 @@ async function formatTsFile(tsFilePath: string): Promise<void> {
 }
 
 async function main() {
-  const prefixMap = new PrefixMap();
+  const prefixMap = new PrefixMap(undefined, { factory: dataFactory });
 
-  const inputDirectory = new RdfDirectory(
-    path.join(thisDirectoryPath, "shapes"),
-    { logger },
-  );
-  const inputDirectoryDataset = datasetFactory.dataset();
+  const inputDirectoryPath = path.join(thisDirectoryPath, "shapes");
+  const combinedInputDataset = datasetFactory.dataset();
 
-  for await (const inputFile of inputDirectory.files()) {
-    const inputFileDataset = (
-      await inputDirectory.parseInto(datasetFactory.dataset(), { prefixMap })
-    ).unsafeCoerce();
+  for (const inputDirent of await fs.readdir(inputDirectoryPath, {
+    withFileTypes: true,
+  })) {
+    const inputDataset = datasetFactory.dataset();
+    const inputDirentPath = path.join(inputDirectoryPath, inputDirent.name);
 
-    for (const resource of new ResourceSet({
+    if (inputDirent.isFile()) {
+      await RdfFile.fromPath(inputDirentPath, { logger })
+        .unsafeCoerce()
+        .parseInto(inputDataset);
+    } else if (inputDirent.isDirectory()) {
+      // Treat a subdirectory as a single file
+      // Needed to combine the SHACL shapes with SHACLmate extensions
+      (
+        await new RdfDirectory(inputDirentPath, { logger }).parseInto(
+          inputDataset,
+          { prefixMap },
+        )
+      ).unsafeCoerce();
+    } else {
+      continue;
+    }
+
+    const inputResourceSet = new ResourceSet({
       dataFactory,
-      dataset: inputFileDataset,
-    }).instancesOf(sh.NodeShape)) {
-      const currentShaclmateName = resource
-        .value(shaclmate.name)
-        .chain((_) => _.toString())
-        .unsafeCoerce();
+      dataset: inputDataset,
+    });
+
+    const inputShapesGraph = ShapesGraph.builder()
+      .parseDataset(inputDataset, { prefixMap })
+      .unsafeCoerce()
+      .build();
+
+    for (const inputNodeShape of inputShapesGraph.nodeShapes) {
+      if (inputNodeShape.$identifier().termType !== "NamedNode") {
+        continue;
+      }
+
+      if (inputNodeShape.shaclmateName.isNothing()) {
+        logger.debug(
+          "%s: node shape %s has no shaclmate:name",
+          inputDirentPath,
+          inputNodeShape.$identifier(),
+        );
+        continue;
+      }
+
+      const currentShaclmateName = inputNodeShape.shaclmateName.extract()!;
       const newShaclmateName = `${
         path
-          .basename(inputFile.path, path.extname(inputFile.path))
+          .basename(inputDirentPath, path.extname(inputDirentPath))
           .split(".")[0]
       }_${currentShaclmateName}`;
       logger.debug(
@@ -64,12 +95,19 @@ async function main() {
         currentShaclmateName,
         newShaclmateName,
       );
-      resource.set(shaclmate.name, dataFactory.literal(newShaclmateName));
+      inputResourceSet
+        .resource(inputNodeShape.$identifier())
+        .set(shaclmate.name, dataFactory.literal(newShaclmateName));
     }
+
+    for (const quad of inputDataset) {
+      combinedInputDataset.add(quad);
+    }
+    logger.debug("added %d quads from %s", inputDataset.size, inputDirentPath);
   }
 
   const output = ShapesGraph.builder()
-    .parseDataset(inputDirectoryDataset, { prefixMap })
+    .parseDataset(combinedInputDataset, { prefixMap })
     .map((_) => _.build())
     .chain((shapesGraph) =>
       new Compiler({

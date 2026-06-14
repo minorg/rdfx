@@ -10,7 +10,9 @@
     "ts-log": "~3.0.2"
   },
   "files": [
-    "LICENSE"
+    "LICENSE",
+    "dist/*.d.ts",
+    "dist/*.js"
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
