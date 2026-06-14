@@ -126,7 +126,13 @@ const workspaces = {
   packages: {
     builder: {
       dependencies: {
-        external: ["@rdfjs/namespace", "@rdfjs/types", "@types/rdfjs__namespace"],
+        external: [
+          "@rdfjs/namespace",
+          "@rdfjs/types",
+          "@types/rdfjs__namespace",
+          "purify-ts",
+          "ts-invariant",
+        ],
         internal: ["data-factory", "resource"],
       },
       devDependencies: {

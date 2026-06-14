@@ -1,15 +1,13 @@
 import type { NamespaceBuilder } from "@rdfjs/namespace";
 import namespace from "@rdfjs/namespace";
-import type { NamedNode } from "@rdfjs/types";
-import { skos } from "@tpluscode/rdf-ns-builders";
+import { sh } from "./sh.js";
 
 export function builder<
-  NamespaceT extends object = NamespaceBuilder,
+  NamespaceT extends NamespaceBuilder = NamespaceBuilder,
 >(options?: { namespace?: NamespaceT }) {
-  const ns = (options?.namespace ?? namespace("")) as NamespaceBuilder;
+  const namespace_ = (options?.namespace ?? namespace("")) as NamespaceT;
 
-  return (x: keyof NamespaceT): NamedNode => {
-    return ns[x as string];
+  return {
+    sh: sh<NamespaceT>({ namespace: namespace_ }),
   };
 }
-builder({ namespace: skos })("broader");

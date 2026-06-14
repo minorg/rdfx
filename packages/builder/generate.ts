@@ -120,7 +120,7 @@ async function main() {
       new Compiler({
         generator: new TsGenerator({
           configuration: {
-            features: new Set(["Object.toRdf"]),
+            features: new Set(["Object.create", "Object.toRdf"]),
           },
           logger: console,
         }),
