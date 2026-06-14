@@ -3,7 +3,6 @@ import * as path from "node:path";
 import type { Readable } from "node:stream";
 import zlib from "node:zlib";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
-import { PrefixMapInit } from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, NamedNode, Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import parsersFactory from "@rdfx/parsers";

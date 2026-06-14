@@ -27,6 +27,6 @@ describe("RdfDirectory", () => {
       await sut.parseInto(datasetFactory.dataset(), { prefixMap })
     ).unsafeCoerce();
     expect(dataset.size).toBe(88482 + 6); // The UNESCO datasets are all duplicates
-    expect(prefixMap.size).toBe(1); // Only the .ttl
+    expect(prefixMap.size).toBe(8); // place.jsonld and unesco-thesaurus.ttl
   }, 30000);
 });

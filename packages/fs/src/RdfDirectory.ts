@@ -98,7 +98,9 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
   ): Promise<Either<Error, DatasetCore>> {
     return EitherAsync(async ({ liftEither }) => {
       for await (const file of this.files(options)) {
-        await liftEither(await file.parseInto(dataset, { prefixMap }));
+        await liftEither(
+          await file.parseInto(dataset, { prefixMap: options?.prefixMap }),
+        );
       }
       return dataset;
     });
