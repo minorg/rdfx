@@ -1,8 +1,14 @@
 {
-  "dependencies": {},
+  "dependencies": {
+    "@rdfx/data-factory": "0.0.19",
+    "@rdfx/resource": "0.0.19"
+  },
   "devDependencies": {
+    "@rdfx/fs": "0.0.19",
     "@shaclmate/cli": "4.0.51",
-    "@shaclmate/compiler": "4.0.51"
+    "@shaclmate/compiler": "4.0.51",
+    "@tpluscode/rdf-ns-builders": "~4.3.0",
+    "ts-log": "~3.0.2"
   },
   "files": [
     "LICENSE"
