@@ -15,6 +15,7 @@ const externalDependencies = {
   "@rdfjs/dataset": "~2.0.2",
   "@rdfjs/parser-jsonld": "~2.1.3",
   "@rdfjs/parser-n3": "~2.1.0",
+  "@rdfjs/prefix-map": "~0.1.2",
   "@rdfjs/serializer-jsonld-ext": "~4.0.2",
   "@rdfjs/serializer-ntriples": "~2.0.1",
   "@rdfjs/serializer-rdfjs": "0.1.3",
@@ -34,6 +35,7 @@ const externalDependencies = {
   "@types/rdfjs__formats": "~4.0.1",
   "@types/rdfjs__parser-jsonld": "~2.1.7",
   "@types/rdfjs__parser-n3": "~2.0.6",
+  "@types/rdfjs__prefix-map": "~0.1.5",
   "@types/rdfjs__serializer-jsonld-ext": "~4.0.1",
   "@types/rdfjs__serializer-ntriples": "~2.0.6",
   "@types/rdfjs__serializer-rdfjs": "0.1.6",
@@ -122,8 +124,17 @@ const packageTsconfig: Tsconfig = {
 const workspaces = {
   packages: {
     builder: {
+      dependencies: {
+        internal: ["data-factory", "resource"],
+      },
       devDependencies: {
-        external: ["@shaclmate/cli", "@shaclmate/compiler"],
+        external: [
+          "@shaclmate/cli",
+          "@shaclmate/compiler",
+          "@tpluscode/rdf-ns-builders",
+          "ts-log",
+        ],
+        internal: ["fs"],
       },
       tsconfig: packageTsconfig,
     },
@@ -409,14 +420,13 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
               exactOptionalPropertyTypes: false,
               experimentalDecorators: true,
               forceConsistentCasingInFileNames: true,
-              lib: ["ES2020"],
-              module: "ES2020",
-              moduleResolution: "node",
               noEmit: true,
               noUncheckedIndexedAccess: false,
-              target: "ES2020",
             },
-            extends: ["@tsconfig/strictest/tsconfig.json"],
+            extends: [
+              "@tsconfig/node24/tsconfig.json",
+              "@tsconfig/strictest/tsconfig.json",
+            ],
             include: ["./**/*.ts", "../src/**/*"],
           },
           undefined,
