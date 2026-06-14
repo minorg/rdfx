@@ -6,10 +6,10 @@ import path from "node:path";
 import url from "node:url";
 import { promisify } from "node:util";
 import datasetFactory from "@rdfjs/dataset";
+import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import dataFactory from "@rdfx/data-factory";
 import { RdfDirectory } from "@rdfx/fs";
 import { ResourceSet } from "@rdfx/resource";
-import * as shaclmateCli from "@shaclmate/cli";
 import { Compiler, ShapesGraph, TsGenerator } from "@shaclmate/compiler";
 import { sh } from "@tpluscode/rdf-ns-builders";
 import type { Logger } from "ts-log";
@@ -33,27 +33,43 @@ async function formatTsFile(tsFilePath: string): Promise<void> {
 }
 
 async function main() {
-  const dataset = datasetFactory.dataset();
+  const prefixMap = new PrefixMap();
 
   const inputDirectory = new RdfDirectory(
     path.join(thisDirectoryPath, "shapes"),
     { logger },
   );
+  const inputDirectoryDataset = datasetFactory.dataset();
 
   for await (const inputFile of inputDirectory.files()) {
-  }
+    const inputFileDataset = (
+      await inputDirectory.parseInto(datasetFactory.dataset(), { prefixMap })
+    ).unsafeCoerce();
 
-  const resourceSet = new ResourceSet({ dataFactory, dataset });
-  for (const resource of resourceSet.instancesOf(sh.NodeShape)) {
-    const currentShaclmateName = resource
-      .value(shaclmate.name)
-      .chain((_) => _.toString())
-      .unsafeCoerce();
-    const newShaclmateName =
+    for (const resource of new ResourceSet({
+      dataFactory,
+      dataset: inputFileDataset,
+    }).instancesOf(sh.NodeShape)) {
+      const currentShaclmateName = resource
+        .value(shaclmate.name)
+        .chain((_) => _.toString())
+        .unsafeCoerce();
+      const newShaclmateName = `${
+        path
+          .basename(inputFile.path, path.extname(inputFile.path))
+          .split(".")[0]
+      }_${currentShaclmateName}`;
+      logger.debug(
+        "renaming node shape %s to %s",
+        currentShaclmateName,
+        newShaclmateName,
+      );
+      resource.set(shaclmate.name, dataFactory.literal(newShaclmateName));
+    }
   }
 
   const output = ShapesGraph.builder()
-    .parseDataset(dataset, { prefixMap })
+    .parseDataset(inputDirectoryDataset, { prefixMap })
     .map((_) => _.build())
     .chain((shapesGraph) =>
       new Compiler({
