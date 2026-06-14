@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
+import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { type Either, EitherAsync } from "purify-ts";
 import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
@@ -93,11 +94,11 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
 
   override async parseInto(
     dataset: DatasetCore,
-    options?: { recursive?: boolean },
+    options?: { prefixMap?: PrefixMap; recursive?: boolean },
   ): Promise<Either<Error, DatasetCore>> {
     return EitherAsync(async ({ liftEither }) => {
       for await (const file of this.files(options)) {
-        await liftEither(await file.parseInto(dataset));
+        await liftEither(await file.parseInto(dataset, { prefixMap }));
       }
       return dataset;
     });

@@ -2,6 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import datasetFactory from "@rdfjs/dataset";
+import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
+import dataFactory from "@rdfx/data-factory";
 import { describe, it } from "vitest";
 import { RdfFile } from "../src/RdfFile.js";
 
@@ -37,12 +39,16 @@ describe("RdfFile", () => {
       const rdfFilePath = path.resolve(testDataDirPath, fileName);
       if (fileName.startsWith("unesco-thesaurus")) {
         it(`should parse ${fileName}`, async ({ expect }) => {
+          const prefixMap = new PrefixMap(undefined, { factory: dataFactory });
           const dataset = (
             await RdfFile.fromPath(rdfFilePath)
               .unsafeCoerce()
-              .parseInto(datasetFactory.dataset())
+              .parseInto(datasetFactory.dataset(), { prefixMap })
           ).unsafeCoerce();
           expect(dataset.size).toBe(88482);
+          if (fileName.endsWith(".ttl")) {
+            expect(prefixMap.size).toBe(1);
+          }
         }, 10000);
       } else if (fileName === "place.jsonld") {
         it(`should parse ${fileName}`, async ({ expect }) => {

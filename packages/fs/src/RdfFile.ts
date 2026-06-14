@@ -2,7 +2,9 @@ import fs from "node:fs";
 import * as path from "node:path";
 import type { Readable } from "node:stream";
 import zlib from "node:zlib";
-import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
+import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
+import { PrefixMapInit } from "@rdfjs/prefix-map/PrefixMap.js";
+import type { DatasetCore, NamedNode, Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import parsersFactory from "@rdfx/parsers";
 import { Mime } from "mime";
@@ -112,10 +114,42 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
 
   override parseInto(
     dataset: DatasetCore,
+    options?: { prefixMap?: PrefixMap },
   ): Promise<Either<Error, DatasetCore>> {
     return new Promise<Either<Error, DatasetCore>>((resolve) => {
       const stream = this.parse();
       stream.on("data", (quad) => dataset.add(quad));
+      stream.on("prefix", (prefix: string, prefixNode: NamedNode) => {
+        const prefixMap = options?.prefixMap;
+        if (!prefixMap) {
+          return;
+        }
+
+        for (const [
+          existingPrefix,
+          existingPrefixNode,
+        ] of prefixMap.entries()) {
+          if (existingPrefix === prefix) {
+            if (!prefixNode.equals(existingPrefixNode)) {
+              this.logger.warn(
+                "conflicting prefix %s: %s vs. %s",
+                prefixNode.value,
+                existingPrefixNode.value,
+              );
+              return;
+            }
+          } else if (prefixNode.equals(existingPrefixNode)) {
+            this.logger.debug(
+              "duplicate prefix %s: %s vs. %s",
+              prefixNode.value,
+              prefix,
+              existingPrefix,
+            );
+          }
+        }
+
+        prefixMap.set(prefix, prefixNode);
+      });
       stream.on("end", () => resolve(Either.of(dataset)));
       stream.on("error", (error) => resolve(Left(error)));
     });
