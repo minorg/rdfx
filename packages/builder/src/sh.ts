@@ -2,7 +2,6 @@ import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type { BlankNode, Literal, NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import type { PropertyPath } from "@rdfx/resource";
-import { Maybe } from "purify-ts";
 import { sh_PropertyShape } from "./shapes.js";
 import { toIri } from "./toIri.js";
 
@@ -12,7 +11,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
   namespace: NamespaceT;
 }) {
   return {
-    propertyShape: (
+    PropertyShape: (
       $identifier: BlankNode | NamedNode | keyof NamespaceT | undefined,
       parameters: Omit<
         NonNullable<Parameters<typeof sh_PropertyShape.createUnsafe>[0]>,

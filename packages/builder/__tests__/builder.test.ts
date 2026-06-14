@@ -7,15 +7,21 @@ describe("builder", () => {
   describe("constructor", () => {
     it("with namespace", ({ expect }) => {
       expect(
-        builder({ namespace: skos })("broader").equals(skos.broader),
+        builder({ namespace: skos })
+          .sh.PropertyShape("Concept", {
+            cardinality: "set",
+          })
+          .$identifier()
+          .equals(skos.Concept),
       ).toStrictEqual(true);
     });
 
     it("without namespace", ({ expect }) => {
       expect(
-        builder()("http://example.com").equals(
-          dataFactory.namedNode("http://example.com"),
-        ),
+        builder()
+          .sh.PropertyShape("http://example.com", { cardinality: "set" })
+          .$identifier()
+          .equals(dataFactory.namedNode("http://example.com")),
       ).toStrictEqual(true);
     });
   });
