@@ -13,6 +13,7 @@ const vitestVersion = "~4.1.5";
 const externalDependencies = {
   "@biomejs/biome": "2.3.10",
   "@rdfjs/dataset": "~2.0.2",
+  "@rdfjs/namespace": "~2.0.1",
   "@rdfjs/parser-jsonld": "~2.1.3",
   "@rdfjs/parser-n3": "~2.1.0",
   "@rdfjs/prefix-map": "~0.1.2",
@@ -32,7 +33,7 @@ const externalDependencies = {
   "@types/n3": "~1.26.0",
   "@types/node": "^24",
   "@types/rdfjs__dataset": "~2.0.7",
-  "@types/rdfjs__formats": "~4.0.1",
+  "@types/rdfjs__namespace": "~2.0.10",
   "@types/rdfjs__parser-jsonld": "~2.1.7",
   "@types/rdfjs__parser-n3": "~2.0.6",
   "@types/rdfjs__prefix-map": "~0.1.5",
@@ -125,11 +126,11 @@ const workspaces = {
   packages: {
     builder: {
       dependencies: {
+        external: ["@rdfjs/namespace", "@rdfjs/types", "@types/rdfjs__namespace"],
         internal: ["data-factory", "resource"],
       },
       devDependencies: {
         external: [
-          "@shaclmate/cli",
           "@shaclmate/compiler",
           "@tpluscode/rdf-ns-builders",
           "ts-log",

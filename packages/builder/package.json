@@ -1,7 +1,10 @@
 {
   "dependencies": {
     "@rdfx/data-factory": "0.0.19",
-    "@rdfx/resource": "0.0.19"
+    "@rdfx/resource": "0.0.19",
+    "@rdfjs/namespace": "~2.0.1",
+    "@rdfjs/types": "~2.0.1",
+    "@types/rdfjs__namespace": "~2.0.10"
   },
   "devDependencies": {
     "@rdfx/fs": "0.0.19",
@@ -26,7 +29,9 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "depcheck": "depcheck .",
-    "dev": "tsc -w --preserveWatchOutput"
+    "dev": "tsc -w --preserveWatchOutput",
+    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/builder/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
