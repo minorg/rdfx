@@ -14,7 +14,7 @@ import { Either, Left } from "purify-ts";
 import { DatasetValues } from "./DatasetValues.js";
 import type { Identifier as _Identifier, Identifier } from "./Identifier.js";
 import { ListStructureError as _ListStructureError } from "./ListStructureError.js";
-import { MistypedTermValueError as _MistypedTermValueError } from "./MistypedTermValueError.js";
+import { MistypedValueError } from "./MistypedValueError.js";
 import type { PropertyPath } from "./PropertyPath.js";
 import type { Term } from "./Term.js";
 import { Value as _Value } from "./Value.js";
@@ -501,7 +501,7 @@ export class Resource<
         break;
       default:
         return Left(
-          new Resource.MistypedTermValueError({
+          new MistypedValueError({
             actualValue: firstObject,
             expectedValueType: "BlankNode | Literal | NamedNode",
             focusResource: this,
@@ -542,7 +542,7 @@ export class Resource<
         break;
       default:
         return Left(
-          new Resource.MistypedTermValueError({
+          new MistypedValueError({
             actualValue: restObject,
             expectedValueType: "BlankNode | NamedNode",
             focusResource: this,
@@ -612,9 +612,6 @@ export namespace Resource {
 
   export const ListStructureError = _ListStructureError;
   export type ListStructureError = _ListStructureError;
-
-  export const MistypedTermValueError = _MistypedTermValueError;
-  export type MistypedTermValueError = _MistypedTermValueError;
 
   export const ValueError = _ValueError;
   export type ValueError = _ValueError;

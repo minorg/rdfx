@@ -1,4 +1,6 @@
 import type { Literal } from "@rdfjs/types";
+
+import { Decimal } from "decimal.js";
 import { Either, Left } from "purify-ts";
 import { literalDatatypeDefinitions } from "./literalDatatypeDefinitions.js";
 import type { Primitive } from "./Primitive.js";
@@ -11,6 +13,36 @@ import type { Primitive } from "./Primitive.js";
 export namespace LiteralDecoder {
   const BIGINT_NUMBER_MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
   const BIGINT_NUMBER_MIN_SAFE_INTEGER = BigInt(Number.MIN_SAFE_INTEGER);
+
+  function convertBigDecimalToBigInt(
+    literal: Literal,
+    value: Decimal,
+  ): Either<Error, bigint> {
+    if (value.isInt()) {
+      return Either.of(BigInt(value.toFixed(0)));
+    }
+
+    return Left(
+      new LiteralValueError(literal, `Decimal ${value} is not an integer`),
+    );
+  }
+
+  function convertBigDecimalToNumber(
+    literal: Literal,
+    value: Decimal,
+  ): Either<Error, number> {
+    const valueToNumber = value.toNumber();
+    if (new Decimal(valueToNumber).equals(value)) {
+      return Either.of(valueToNumber);
+    }
+
+    return Left(
+      new LiteralValueError(
+        literal,
+        `Decimal ${value} is outside number's safe range [-${Number.MAX_VALUE}, ${Number.MAX_VALUE}]`,
+      ),
+    );
+  }
 
   function convertBigIntToNumber(
     literal: Literal,
@@ -43,6 +75,41 @@ export namespace LiteralDecoder {
     );
   }
 
+  export function decodeBigDecimalLiteral(
+    literal: Literal,
+  ): Either<Error, Decimal> {
+    const literalDatatypeDefinition =
+      literalDatatypeDefinitions[literal.datatype.value];
+    if (!literalDatatypeDefinition) {
+      return Left(new LiteralDatatypeError(literal));
+    }
+
+    switch (literalDatatypeDefinition.kind) {
+      case "bigdecimal":
+        return decodeBigDecimalLiteralValue(literal);
+      case "bigint":
+        return decodeBigIntLiteralValue(literal).map(
+          (value) => new Decimal(value),
+        );
+      case "float":
+        return decodeFloatLiteralValue(literal).map(
+          (value) => new Decimal(value),
+        );
+      case "int":
+        return decodeIntLiteralValue(literal).map(
+          (value) => new Decimal(value),
+        );
+      default:
+        return Left(new LiteralDatatypeError(literal));
+    }
+  }
+
+  function decodeBigDecimalLiteralValue(
+    literal: Literal,
+  ): Either<Error, Decimal> {
+    return Either.encase(() => Decimal(literal.value));
+  }
+
   export function decodeBigIntLiteral(literal: Literal): Either<Error, bigint> {
     const literalDatatypeDefinition =
       literalDatatypeDefinitions[literal.datatype.value];
@@ -51,6 +118,10 @@ export namespace LiteralDecoder {
     }
 
     switch (literalDatatypeDefinition.kind) {
+      case "bigdecimal":
+        return decodeBigDecimalLiteral(literal).chain((value) =>
+          convertBigDecimalToBigInt(literal, value),
+        );
       case "bigint":
         return decodeBigIntLiteralValue(literal);
       case "float":
@@ -138,6 +209,10 @@ export namespace LiteralDecoder {
     }
 
     switch (literalDatatypeDefinition.kind) {
+      case "bigdecimal":
+        return decodeBigDecimalLiteral(literal).chain((value) =>
+          convertBigDecimalToNumber(literal, value),
+        );
       case "bigint":
         return decodeBigIntLiteral(literal).chain((value) =>
           convertBigIntToNumber(literal, value),
@@ -178,6 +253,10 @@ export namespace LiteralDecoder {
     }
 
     switch (literalDatatypeDefinition.kind) {
+      case "bigdecimal":
+        return decodeBigDecimalLiteral(literal).chain((value) =>
+          convertBigDecimalToNumber(literal, value),
+        );
       case "bigint":
         return decodeBigIntLiteral(literal).chain((value) =>
           convertBigIntToNumber(literal, value),
@@ -206,6 +285,10 @@ export namespace LiteralDecoder {
       return Left(new LiteralDatatypeError(literal));
     }
     switch (literalDatatypeDefinition.kind) {
+      case "bigdecimal":
+        return decodeBigDecimalLiteral(literal).chain((value) =>
+          convertBigDecimalToNumber(literal, value),
+        );
       case "bigint":
         return decodeBigIntLiteralValue(literal).chain((value) =>
           convertBigIntToNumber(literal, value),

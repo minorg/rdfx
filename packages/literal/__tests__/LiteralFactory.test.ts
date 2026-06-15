@@ -1,6 +1,7 @@
 import type { Literal } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { xsd } from "@tpluscode/rdf-ns-builders";
+import { Decimal } from "decimal.js";
 import { describe, expect, it } from "vitest";
 import { testData } from "../../resource/__tests__/testData.js";
 import { LiteralDecoder } from "../src/LiteralDecoder.js";
@@ -38,6 +39,60 @@ describe("LiteralFactory", () => {
         sut.primitive(actualPrimitive); // Don't specify datatype
       });
     }
+  });
+
+  describe("bigdecimal", () => {
+    it("no datatype", () => {
+      expectEquals(
+        sut.bigdecimal(new Decimal(1)),
+        dataFactory.literal("1", xsd.decimal),
+      );
+      expectEquals(
+        sut.bigdecimal(new Decimal(-1)),
+        dataFactory.literal("-1", xsd.decimal),
+      );
+    });
+
+    it("xsd:decimal", () => {
+      expectEquals(
+        sut.bigdecimal(new Decimal(1), xsd.decimal),
+        dataFactory.literal("1", xsd.decimal),
+      );
+    });
+
+    it("xsd:double", () => {
+      expectEquals(
+        sut.bigdecimal(new Decimal(1), xsd.double),
+        dataFactory.literal("1e0", xsd.double),
+      );
+    });
+
+    it("xsd:int", () => {
+      expectEquals(
+        sut.bigdecimal(new Decimal(1), xsd.int),
+        dataFactory.literal("1", xsd.int),
+      );
+    });
+
+    it("xsd:integer", () => {
+      expectEquals(
+        sut.bigdecimal(new Decimal(1), xsd.integer),
+        dataFactory.literal("1", xsd.integer),
+      );
+    });
+
+    it("xsd:string", () => {
+      expect(() => sut.bigdecimal(new Decimal(1), xsd.string)).toThrowError(
+        RangeError,
+      );
+    });
+
+    it("weird datatype", () => {
+      expectEquals(
+        sut.bigdecimal(new Decimal(1), weirdDatatype),
+        dataFactory.literal("1", weirdDatatype),
+      );
+    });
   });
 
   describe("bigint", () => {

@@ -5,6 +5,7 @@ import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
 import { testData } from "./testData.js";
 import "@rdfx/testing";
+import { Decimal } from "decimal.js";
 import { ResourceSet } from "../src/ResourceSet.js";
 
 describe("Value", () => {
@@ -16,6 +17,23 @@ describe("Value", () => {
   for (const object of Object.values(objects)) {
     testResource.add(predicate, object);
   }
+
+  it("toBigDecimal", ({ expect }) => {
+    const values = [...testResource.values(predicate)].flatMap((value) =>
+      value.toBigDecimal().toMaybe().toList(),
+    );
+    expect(values).toHaveLength(16);
+
+    const values42: readonly Decimal[] = [
+      ...testResource.values(predicate),
+    ].flatMap((value) =>
+      value
+        .toBigDecimal([new Decimal(42)])
+        .toMaybe()
+        .toList(),
+    );
+    expect(values42).toHaveLength(1);
+  });
 
   it("toBigInt", ({ expect }) => {
     const values = [...testResource.values(predicate)].flatMap((value) =>
@@ -95,7 +113,7 @@ describe("Value", () => {
       [...testResource.values(predicate)].flatMap((value) =>
         value.toFloat().toMaybe().toList(),
       ),
-    ).toHaveLength(13);
+    ).toHaveLength(14);
 
     const valuesPi: readonly 3.14[] = [
       ...testResource.values(predicate),
@@ -132,7 +150,7 @@ describe("Value", () => {
       [...testResource.values(predicate)].flatMap((value) =>
         value.toInt().toMaybe().toList(),
       ),
-    ).toHaveLength(11);
+    ).toHaveLength(12);
 
     const valuesByte: readonly 127[] = [
       ...testResource.values(predicate),
@@ -170,7 +188,7 @@ describe("Value", () => {
       [...testResource.values(predicate)].flatMap((value) =>
         value.toLiteral().toMaybe().toList(),
       ),
-    ).toHaveLength(32);
+    ).toHaveLength(33);
 
     expect(
       [...testResource.values(predicate)].flatMap((value) =>
@@ -187,7 +205,7 @@ describe("Value", () => {
       [...testResource.values(predicate)].flatMap((value) =>
         value.toNumber().toMaybe().toList(),
       ),
-    ).toHaveLength(13);
+    ).toHaveLength(14);
 
     const valuesByte: readonly 127[] = [
       ...testResource.values(predicate),
