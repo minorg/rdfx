@@ -323,6 +323,12 @@ describe("LiteralDecoder", () => {
   });
 
   describe("decodePrimitiveLiteral", () => {
+    it("rdf:langString", ({ expect }) => {
+      expect(
+        sut.decodePrimitiveLiteral(dataFactory.literal("test", "en")),
+      ).toBeLeft();
+    });
+
     it("xsd:boolean", ({ expect }) => {
       expect(
         sut
@@ -414,6 +420,12 @@ describe("LiteralDecoder", () => {
   });
 
   describe("decodeStringLiteral", () => {
+    it("rdf:langString", ({ expect }) => {
+      expect(
+        sut.decodeStringLiteral(dataFactory.literal("test", "en")),
+      ).toBeLeft();
+    });
+
     it("xsd:boolean", ({ expect }) => {
       expect(
         sut.decodeStringLiteral(dataFactory.literal("true", xsd.boolean)),
