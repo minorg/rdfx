@@ -339,33 +339,23 @@ describe("LiteralDecoder", () => {
 
     it("xsd:date", ({ expect }) => {
       const expected = new Date(2026, 1, 1);
-      const actual = sut
-        .decodePrimitiveLiteral(
+      expect(
+        sut.decodePrimitiveLiteral(
           dataFactory.literal(
             expected.toISOString().replace(/T.*$/, ""),
             xsd.date,
           ),
-        )
-        .unsafeCoerce();
-      expect(actual).toBeInstanceOf(Date);
-      expect((actual as Date).getUTCFullYear()).toStrictEqual(
-        expected.getUTCFullYear(),
-      );
-      expect((actual as Date).getUTCMonth()).toStrictEqual(
-        expected.getUTCMonth(),
-      );
-      expect((actual as Date).getUTCDay()).toStrictEqual(expected.getUTCDay());
+        ),
+      ).toBeLeft();
     });
 
     it("xsd:dateTime", ({ expect }) => {
       const expected = new Date();
-      const actual = sut
-        .decodePrimitiveLiteral(
+      expect(
+        sut.decodePrimitiveLiteral(
           dataFactory.literal(expected.toISOString(), xsd.dateTime),
-        )
-        .unsafeCoerce();
-      expect(actual).toBeInstanceOf(Date);
-      expect((actual as Date).getTime()).toStrictEqual(expected.getTime());
+        ),
+      ).toBeLeft();
     });
 
     it("xsd:decimal", ({ expect }) => {

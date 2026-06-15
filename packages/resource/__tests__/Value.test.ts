@@ -199,16 +199,13 @@ describe("Value", () => {
     const primitives = [...testResource.values(predicate)].flatMap((value) =>
       value.toPrimitive().toMaybe().toList(),
     );
-    expect(primitives).toHaveLength(31);
+    expect(primitives).toHaveLength(28);
     expect(
       primitives.filter((primitive) => typeof primitive === "bigint"),
     ).toHaveLength(7);
     expect(
       primitives.filter((primitive) => typeof primitive === "boolean"),
     ).toHaveLength(1);
-    expect(
-      primitives.filter((primitive) => primitive instanceof Date),
-    ).toHaveLength(3);
     expect(
       primitives.filter((primitive) => typeof primitive === "number"),
     ).toHaveLength(8);
