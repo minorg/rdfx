@@ -66,17 +66,17 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       }
 
       let in_: readonly NamedNode[] | undefined;
-      let inConceptScheme: ConceptScheme<any> | undefined;
-      if (inParameter) {
-        if (Array.isArray(inParameter)) {
-          in_ = inParameter;
-        } else {
-          inConceptScheme = inParameter as ConceptScheme<any>;
-          in_ = Object.values(inConceptScheme.concepts).map(
-            (concept) => concept.identifier,
-          );
-        }
-      }
+      // let inConceptScheme: ConceptScheme<any> | undefined;
+      // if (inParameter) {
+      //   if (Array.isArray(inParameter)) {
+      //     in_ = inParameter;
+      //   } else {
+      //     inConceptScheme = inParameter as ConceptScheme<any>;
+      //     in_ = Object.values(inConceptScheme.concepts).map(
+      //       (concept) => concept.identifier,
+      //     );
+      //   }
+      // }
 
       let path: PropertyPath;
       switch (typeof pathParameter) {
@@ -115,9 +115,10 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       let classes: readonly NamedNode[] | undefined;
       if (parameters.classes) {
         classes = parameters.classes.map((class_) => toIri(class_, namespace));
-      } else if (inConceptScheme) {
-        classes = [(namespace as any)(inConceptScheme.className)];
       }
+      // else if (inConceptScheme) {
+      //   classes = [(namespace as any)(inConceptScheme.className)];
+      // }
 
       const finalParameters = {
         ...otherParameters,
