@@ -210,6 +210,7 @@ const workspaces = {
           "@rdfjs/term-set",
           "@rdfjs/types",
           "@types/rdfjs__term-set",
+          "decimal.js",
           "purify-ts",
         ],
         internal: ["literal", "string"],

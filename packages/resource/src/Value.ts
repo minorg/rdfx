@@ -8,11 +8,10 @@ import type {
 } from "@rdfjs/types";
 import { LiteralDecoder, type Primitive } from "@rdfx/literal";
 import { NTriplesTerm } from "@rdfx/string";
+import type { Decimal } from "decimal.js";
 import { Either, Left } from "purify-ts";
 import type { Identifier } from "./Identifier.js";
-import { MistypedDateValueError } from "./MistypedDateValueError.js";
-import { MistypedPrimitiveValueError } from "./MistypedPrimitiveValueError.js";
-import { MistypedTermValueError } from "./MistypedTermValueError.js";
+import { MistypedValueError } from "./MistypedValueError.js";
 import type { PropertyPath } from "./PropertyPath.js";
 import { Resource } from "./Resource.js";
 import type { Term } from "./Term.js";
@@ -41,6 +40,32 @@ export class Value<TermT extends Term = Term> {
     this.focusResource = focusResource;
     this.propertyPath = propertyPath;
     this.term = term;
+  }
+
+  /**
+   * Try to convert this term to a bigint.
+   */
+  toBigDecimal(in_?: readonly Decimal[]): Either<Error, Decimal> {
+    return this.toLiteral()
+      .chain(LiteralDecoder.decodeBigDecimalLiteral)
+      .mapLeft(() =>
+        this.newMistypedTermValueError(
+          in_ ? in_.map((_) => _.toString()).join(" | ") : "Decimal",
+        ),
+      )
+      .chain((value) => {
+        if (in_ && !in_.some((check) => value.equals(check))) {
+          return Left(
+            new MistypedValueError({
+              actualValue: value,
+              expectedValueType: in_.map((_) => _.toString()).join(" | "),
+              focusResource: this.focusResource,
+              propertyPath: this.propertyPath,
+            }),
+          );
+        }
+        return Either.of<Error, Decimal>(value);
+      });
   }
 
   /**
@@ -334,7 +359,7 @@ export class Value<TermT extends Term = Term> {
   ): Either<Error, Date> {
     if (in_ && !in_.some((check) => value.getTime() === check.getTime())) {
       return Left(
-        new MistypedDateValueError({
+        new MistypedValueError({
           actualValue: value,
           expectedValueType: in_.map((_) => _.toISOString()).join(" | "),
           focusResource: this.focusResource,
@@ -354,7 +379,7 @@ export class Value<TermT extends Term = Term> {
   ): Either<Error, ConstrainedT | UnconstrainedT> {
     if (in_ && !in_.some((check) => value === check)) {
       return Left(
-        new MistypedPrimitiveValueError({
+        new MistypedValueError({
           actualValue: value,
           expectedValueType: in_.map((_) => _.toString()).join(" | "),
           focusResource: this.focusResource,
@@ -374,7 +399,7 @@ export class Value<TermT extends Term = Term> {
   ): Either<Error, ConstrainedT | UnconstrainedT> {
     if (in_ && !in_.some((check) => value.equals(check))) {
       return Left(
-        new MistypedTermValueError({
+        new MistypedValueError({
           actualValue: value,
           expectedValueType: in_.map(NTriplesTerm.stringify).join(" | "),
           focusResource: this.focusResource,
@@ -387,8 +412,8 @@ export class Value<TermT extends Term = Term> {
 
   private newMistypedTermValueError(
     expectedValueType: string,
-  ): MistypedTermValueError {
-    return new MistypedTermValueError({
+  ): MistypedValueError<TermT> {
+    return new MistypedValueError({
       actualValue: this.term,
       expectedValueType,
       focusResource: this.focusResource,

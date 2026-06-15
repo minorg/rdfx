@@ -1,8 +1,8 @@
-import type { PropertyPath } from "./PropertyPath.js";
+import { PropertyPath } from "./PropertyPath.js";
 import type { Resource } from "./Resource.js";
 import { ValueError } from "./ValueError.js";
 
-export abstract class MistypedValueError<T> extends ValueError {
+export class MistypedValueError<T> extends ValueError {
   readonly actualValue: T;
   readonly expectedValueType: string;
 
@@ -10,18 +10,16 @@ export abstract class MistypedValueError<T> extends ValueError {
     actualValue,
     expectedValueType,
     focusResource,
-    message,
     propertyPath,
   }: {
     actualValue: T;
     expectedValueType: string;
-    message: string;
     focusResource: Resource;
     propertyPath: PropertyPath;
   }) {
     super({
       focusResource,
-      message,
+      message: `expected ${focusResource.identifier} ${PropertyPath.toString(propertyPath)} to be a ${expectedValueType}, was ${actualValue}`,
       propertyPath,
     });
     this.actualValue = actualValue;
