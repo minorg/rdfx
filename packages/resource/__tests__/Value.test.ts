@@ -157,12 +157,20 @@ describe("Value", () => {
     expect(specificIris).toHaveLength(1);
   });
 
+  it("toLangString", ({ expect }) => {
+    expect(
+      [...testResource.values(predicate)].flatMap((value) =>
+        value.toLangString().toMaybe().toList(),
+      ),
+    ).toHaveLength(1);
+  });
+
   it("toLiteral", ({ expect }) => {
     expect(
       [...testResource.values(predicate)].flatMap((value) =>
         value.toLiteral().toMaybe().toList(),
       ),
-    ).toHaveLength(31);
+    ).toHaveLength(32);
 
     expect(
       [...testResource.values(predicate)].flatMap((value) =>

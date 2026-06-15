@@ -3,6 +3,9 @@ import dataFactory from "@rdfx/data-factory";
 import { xsd } from "@tpluscode/rdf-ns-builders";
 
 const literals = {
+  // rdf:langString
+  langString: dataFactory.literal("langString", "en"),
+
   // String types
   string: dataFactory.literal("stringLiteralObject"),
   normalizedString: dataFactory.literal(
