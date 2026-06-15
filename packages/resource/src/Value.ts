@@ -17,6 +17,7 @@ import type { PropertyPath } from "./PropertyPath.js";
 import { Resource } from "./Resource.js";
 import type { Term } from "./Term.js";
 import { Values } from "./Values.js";
+import { rdf } from "./vocabularies.js";
 
 export class Value<TermT extends Term = Term> {
   private readonly dataFactory: DataFactory;
@@ -179,6 +180,23 @@ export class Value<TermT extends Term = Term> {
       return Left(this.newMistypedTermValueError("IRI"));
     }
     return this.constrainTerm(this.term as NamedNode, in_);
+  }
+
+  /**
+   * Try to convert this term to an rdf:langString Literal.
+   */
+  toLangString(in_?: readonly Literal[]): Either<Error, Literal> {
+    return this.toLiteral(in_).chain((literal) => {
+      if (!literal.datatype.equals(rdf.langString)) {
+        return Left(this.newMistypedTermValueError("rdf:langString"));
+      }
+
+      if (literal.language.length === 0) {
+        return Left(this.newMistypedTermValueError("rdf:langString"));
+      }
+
+      return Either.of(literal);
+    });
   }
 
   /**

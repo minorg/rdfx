@@ -2,7 +2,7 @@ import type { Quad, Quad_Object, Variable } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { xsd } from "@tpluscode/rdf-ns-builders";
 
-const literals = {
+const primitiveLiterals = {
   // String types
   string: dataFactory.literal("stringLiteralObject"),
   normalizedString: dataFactory.literal(
@@ -64,6 +64,13 @@ const literals = {
   notation: dataFactory.literal("notationName", xsd.NOTATION),
 } as const;
 
+const literals = {
+  ...primitiveLiterals,
+
+  // rdf:langString
+  langString: dataFactory.literal("langString", "en"),
+};
+
 const objects: Record<string, Exclude<Quad_Object, Quad | Variable>> = {
   blankNode: dataFactory.blankNode(),
   namedNode: dataFactory.namedNode("http://example.com/namedNodeObject"),
@@ -81,5 +88,6 @@ export const testData = {
   literals,
   objects,
   predicate,
+  primitiveLiterals,
   subject,
 };

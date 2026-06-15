@@ -7,7 +7,7 @@ import { LiteralDecoder } from "../src/LiteralDecoder.js";
 import { LiteralFactory } from "../src/LiteralFactory.js";
 
 describe("LiteralFactory", () => {
-  const { literals } = testData;
+  const { primitiveLiterals } = testData;
   const sut = new LiteralFactory({ dataFactory: dataFactory });
   const weirdDatatype = dataFactory.namedNode("http://example.com/weird");
 
@@ -17,7 +17,7 @@ describe("LiteralFactory", () => {
   }
 
   describe("round trip with LiteralDecoder", () => {
-    for (const expectedLiteral of Object.values(literals)) {
+    for (const expectedLiteral of Object.values(primitiveLiterals)) {
       it(expectedLiteral.datatype.value, () => {
         const actualPrimitive =
           LiteralDecoder.decodePrimitiveLiteral(expectedLiteral).unsafeCoerce();

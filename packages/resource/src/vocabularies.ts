@@ -4,6 +4,9 @@ export namespace rdf {
   export const first = dataFactory.namedNode(
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
   );
+  export const langString = dataFactory.namedNode(
+    "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+  );
   export const nil = dataFactory.namedNode(
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
   );
