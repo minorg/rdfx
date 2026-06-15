@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.22",
-    "@rdfx/resource": "0.0.22",
+    "@rdfx/data-factory": "0.0.23",
+    "@rdfx/resource": "0.0.23",
     "@rdfjs/namespace": "~2.0.1",
     "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__namespace": "~2.0.10",
@@ -9,7 +9,7 @@
     "ts-invariant": "~0.10.3"
   },
   "devDependencies": {
-    "@rdfx/fs": "0.0.22",
+    "@rdfx/fs": "0.0.23",
     "@shaclmate/compiler": "4.0.52",
     "@tpluscode/rdf-ns-builders": "~4.3.0",
     "ts-log": "~3.0.2"
@@ -37,5 +37,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.22"
+  "version": "0.0.23"
 }
