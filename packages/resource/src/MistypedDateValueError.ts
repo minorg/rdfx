@@ -1,16 +1,15 @@
-import type { Primitive } from "@rdfx/literal";
 import { MistypedValueError } from "./MistypedValueError.js";
 import { PropertyPath } from "./PropertyPath.js";
 import type { Resource } from "./Resource.js";
 
-export class MistypedPrimitiveValueError extends MistypedValueError<Primitive> {
+export class MistypedDateValueError extends MistypedValueError<Date> {
   constructor({
     actualValue,
     expectedValueType,
     focusResource,
     propertyPath,
   }: {
-    actualValue: Primitive;
+    actualValue: Date;
     expectedValueType: string;
     focusResource: Resource;
     propertyPath: PropertyPath;

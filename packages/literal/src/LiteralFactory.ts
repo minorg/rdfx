@@ -251,12 +251,6 @@ export class LiteralFactory {
         return this.bigint(value, datatype);
       case "boolean":
         return this.boolean(value, datatype);
-      case "object": {
-        if (value instanceof Date) {
-          return this.date(value, datatype);
-        }
-        throw new Error("not implemented");
-      }
       case "number":
         return this.number(value, datatype);
       case "string":

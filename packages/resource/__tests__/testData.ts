@@ -42,20 +42,6 @@ const primitiveLiterals = {
   float: dataFactory.literal("3.14e0", xsd.float),
   double: dataFactory.literal("2.718281828459045e0", xsd.double),
 
-  // Date & time
-  date: dataFactory.literal("2002-09-24", xsd.date),
-  dateTime: dataFactory.literal("2002-05-30T09:00:00", xsd.dateTime),
-  dateTimeStamp: dataFactory.literal("2002-05-30T09:00:00Z", xsd.dateTimeStamp),
-  // time: DataFactory.literal("09:00:00", xsd.time),
-  // duration: DataFactory.literal("P1Y2M3DT4H5M6S", xsd.duration),
-  // yearMonthDuration: DataFactory.literal("P1Y2M", xsd.yearMonthDuration),
-  // dayTimeDuration: DataFactory.literal("P3DT4H", xsd.dayTimeDuration),
-  // gYear: DataFactory.literal("2002", xsd.gYear),
-  // gYearMonth: DataFactory.literal("2002-09", xsd.gYearMonth),
-  // gMonth: DataFactory.literal("--09", xsd.gMonth),
-  // gMonthDay: DataFactory.literal("--09-24", xsd.gMonthDay),
-  // gDay: DataFactory.literal("---24", xsd.gDay),
-
   // URI & QName
   anyUri: dataFactory.literal("https://example.org/resource", xsd.anyURI),
   qName: dataFactory.literal("ex:localPart", xsd.QName),
@@ -69,6 +55,20 @@ const literals = {
 
   // rdf:langString
   langString: dataFactory.literal("langString", "en"),
+
+  // Date & time
+  date: dataFactory.literal("2002-09-24", xsd.date),
+  dateTime: dataFactory.literal("2002-05-30T09:00:00", xsd.dateTime),
+  dateTimeStamp: dataFactory.literal("2002-05-30T09:00:00Z", xsd.dateTimeStamp),
+  // time: DataFactory.literal("09:00:00", xsd.time),
+  // duration: DataFactory.literal("P1Y2M3DT4H5M6S", xsd.duration),
+  // yearMonthDuration: DataFactory.literal("P1Y2M", xsd.yearMonthDuration),
+  // dayTimeDuration: DataFactory.literal("P3DT4H", xsd.dayTimeDuration),
+  // gYear: DataFactory.literal("2002", xsd.gYear),
+  // gYearMonth: DataFactory.literal("2002-09", xsd.gYearMonth),
+  // gMonth: DataFactory.literal("--09", xsd.gMonth),
+  // gMonthDay: DataFactory.literal("--09-24", xsd.gMonthDay),
+  // gDay: DataFactory.literal("---24", xsd.gDay),
 };
 
 const objects: Record<string, Exclude<Quad_Object, Quad | Variable>> = {

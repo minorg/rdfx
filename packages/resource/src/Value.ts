@@ -6,13 +6,13 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-import { LiteralDecoder } from "@rdfx/literal";
+import { LiteralDecoder, type Primitive } from "@rdfx/literal";
 import { NTriplesTerm } from "@rdfx/string";
 import { Either, Left } from "purify-ts";
 import type { Identifier } from "./Identifier.js";
+import { MistypedDateValueError } from "./MistypedDateValueError.js";
 import { MistypedPrimitiveValueError } from "./MistypedPrimitiveValueError.js";
 import { MistypedTermValueError } from "./MistypedTermValueError.js";
-import type { Primitive } from "./Primitive.js";
 import type { PropertyPath } from "./PropertyPath.js";
 import { Resource } from "./Resource.js";
 import type { Term } from "./Term.js";
@@ -334,7 +334,7 @@ export class Value<TermT extends Term = Term> {
   ): Either<Error, Date> {
     if (in_ && !in_.some((check) => value.getTime() === check.getTime())) {
       return Left(
-        new MistypedPrimitiveValueError({
+        new MistypedDateValueError({
           actualValue: value,
           expectedValueType: in_.map((_) => _.toISOString()).join(" | "),
           focusResource: this.focusResource,

@@ -244,13 +244,6 @@ describe("LiteralFactory", () => {
       );
     });
 
-    it("no datatype: Date", () => {
-      expectEquals(
-        sut.primitive(new Date(Date.UTC(2026, 0, 1))),
-        dataFactory.literal("2026-01-01T00:00:00.000Z", xsd.dateTime),
-      );
-    });
-
     it("no datatype: number", () => {
       expectEquals(
         sut.primitive(1.1),

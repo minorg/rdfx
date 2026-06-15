@@ -230,20 +230,18 @@ export namespace LiteralDecoder {
 
     switch (literalDatatypeDefinition.kind) {
       case "bigdecimal":
+      case "date":
+      case "datetime":
         return Left(
           new LiteralDatatypeError(
             literal,
-            "unable to decode bigdecimal Literal",
+            `unable to decode ${literalDatatypeDefinition.kind} Literal`,
           ),
         );
       case "bigint":
         return decodeBigIntLiteralValue(literal);
       case "boolean":
         return decodeBooleanLiteralValue(literal);
-      case "date":
-        return decodeDateLiteralValue(literal);
-      case "datetime":
-        return decodeDateTimeLiteralValue(literal);
       case "float":
         return decodeFloatLiteralValue(literal);
       case "int":
