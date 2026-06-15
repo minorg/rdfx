@@ -145,7 +145,8 @@ export const literalDatatypeDefinitions: Record<
   "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString": {
     kind: "string",
   },
-  "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString": { kind: "string" },
+  // rdf:langString can't be encoded and decoded losslessly from a string.
+  // "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString": { kind: "string" },
   "http://www.w3.org/2001/XMLSchema#anyURI": { kind: "string" },
   "http://www.w3.org/2001/XMLSchema#base64Binary": { kind: "string" },
   "http://www.w3.org/2001/XMLSchema#duration": { kind: "string" },

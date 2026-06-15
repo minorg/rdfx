@@ -2,7 +2,8 @@ import fs from "node:fs";
 import * as path from "node:path";
 import type { Readable } from "node:stream";
 import zlib from "node:zlib";
-import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
+import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
+import type { DatasetCore, NamedNode, Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import parsersFactory from "@rdfx/parsers";
 import { Mime } from "mime";
@@ -23,13 +24,16 @@ const mime = new Mime(standardMimeTypes, otherMimeTypes, {
 export class RdfFile extends AbstractRdfFileSystemEntry {
   readonly format: RdfFile.Format;
 
-  constructor({
-    format,
-    ...superParameters
-  }: {
-    format: RdfFile.Format;
-  } & ConstructorParameters<typeof AbstractRdfFileSystemEntry>[0]) {
-    super(superParameters);
+  constructor(
+    path: string,
+    {
+      format,
+      ...superParameters
+    }: {
+      format: RdfFile.Format;
+    } & ConstructorParameters<typeof AbstractRdfFileSystemEntry>[1],
+  ) {
+    super(path, superParameters);
     this.format = format;
   }
 
@@ -57,13 +61,12 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
         for (const rdfFormat of RDF_FORMATS) {
           if (uncompressedMimeType === rdfFormat) {
             return Right(
-              new RdfFile({
+              new RdfFile(filePath, {
                 format: {
                   compressionMethod: Just(compressionMethod),
                   rdfFormat,
                 },
                 logger: options?.logger,
-                path: filePath,
               }),
             );
           }
@@ -74,13 +77,12 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
     for (const rdfFormat of RDF_FORMATS) {
       if (mimeType === rdfFormat) {
         return Right(
-          new RdfFile({
+          new RdfFile(filePath, {
             format: {
               compressionMethod: Nothing,
               rdfFormat,
             },
             logger: options?.logger,
-            path: filePath,
           }),
         );
       }
@@ -111,10 +113,42 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
 
   override parseInto(
     dataset: DatasetCore,
+    options?: { prefixMap?: PrefixMap },
   ): Promise<Either<Error, DatasetCore>> {
     return new Promise<Either<Error, DatasetCore>>((resolve) => {
       const stream = this.parse();
       stream.on("data", (quad) => dataset.add(quad));
+      stream.on("prefix", (prefix: string, prefixNode: NamedNode) => {
+        const prefixMap = options?.prefixMap;
+        if (!prefixMap) {
+          return;
+        }
+
+        for (const [
+          existingPrefix,
+          existingPrefixNode,
+        ] of prefixMap.entries()) {
+          if (existingPrefix === prefix) {
+            if (!prefixNode.equals(existingPrefixNode)) {
+              this.logger.warn(
+                "conflicting prefix %s: %s vs. %s",
+                prefixNode.value,
+                existingPrefixNode.value,
+              );
+              return;
+            }
+          } else if (prefixNode.equals(existingPrefixNode)) {
+            this.logger.debug(
+              "duplicate prefix %s: %s vs. %s",
+              prefixNode.value,
+              prefix,
+              existingPrefix,
+            );
+          }
+        }
+
+        prefixMap.set(prefix, prefixNode);
+      });
       stream.on("end", () => resolve(Either.of(dataset)));
       stream.on("error", (error) => resolve(Left(error)));
     });

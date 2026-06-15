@@ -7,13 +7,16 @@ import type { CompilerOptions } from "typescript";
 
 const VERSION = "0.0.19";
 
+const shaclmateVersion = "4.0.52";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
   "@biomejs/biome": "2.3.10",
   "@rdfjs/dataset": "~2.0.2",
+  "@rdfjs/namespace": "~2.0.1",
   "@rdfjs/parser-jsonld": "~2.1.3",
   "@rdfjs/parser-n3": "~2.1.0",
+  "@rdfjs/prefix-map": "~0.1.2",
   "@rdfjs/serializer-jsonld-ext": "~4.0.2",
   "@rdfjs/serializer-ntriples": "~2.0.1",
   "@rdfjs/serializer-rdfjs": "0.1.3",
@@ -22,15 +25,18 @@ const externalDependencies = {
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
+  "@shaclmate/compiler": shaclmateVersion,
+  "@shaclmate/shacl-ast": shaclmateVersion,
   "@tpluscode/rdf-ns-builders": "~4.3.0",
   "@tsconfig/node24": "^24",
   "@tsconfig/strictest": "~2.0.8",
   "@types/n3": "~1.26.0",
   "@types/node": "^24",
   "@types/rdfjs__dataset": "~2.0.7",
-  "@types/rdfjs__formats": "~4.0.1",
+  "@types/rdfjs__namespace": "~2.0.10",
   "@types/rdfjs__parser-jsonld": "~2.1.7",
   "@types/rdfjs__parser-n3": "~2.0.6",
+  "@types/rdfjs__prefix-map": "~0.1.5",
   "@types/rdfjs__serializer-jsonld-ext": "~4.0.1",
   "@types/rdfjs__serializer-ntriples": "~2.0.6",
   "@types/rdfjs__serializer-rdfjs": "0.1.6",
@@ -61,6 +67,7 @@ const externalDependencies = {
 };
 
 type PackageName =
+  | "builder"
   | "data-factory"
   | "fs"
   | "literal"
@@ -117,6 +124,27 @@ const packageTsconfig: Tsconfig = {
 
 const workspaces = {
   packages: {
+    builder: {
+      dependencies: {
+        external: [
+          "@rdfjs/namespace",
+          "@rdfjs/types",
+          "@types/rdfjs__namespace",
+          "purify-ts",
+          "ts-invariant",
+        ],
+        internal: ["data-factory", "resource"],
+      },
+      devDependencies: {
+        external: [
+          "@shaclmate/compiler",
+          "@tpluscode/rdf-ns-builders",
+          "ts-log",
+        ],
+        internal: ["fs"],
+      },
+      tsconfig: packageTsconfig,
+    },
     "data-factory": {
       dependencies: {
         external: ["@rdfjs/types"],
@@ -399,14 +427,13 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
               exactOptionalPropertyTypes: false,
               experimentalDecorators: true,
               forceConsistentCasingInFileNames: true,
-              lib: ["ES2020"],
-              module: "ES2020",
-              moduleResolution: "node",
               noEmit: true,
               noUncheckedIndexedAccess: false,
-              target: "ES2020",
             },
-            extends: ["@tsconfig/strictest/tsconfig.json"],
+            extends: [
+              "@tsconfig/node24/tsconfig.json",
+              "@tsconfig/strictest/tsconfig.json",
+            ],
             include: ["./**/*.ts", "../src/**/*"],
           },
           undefined,
@@ -459,7 +486,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 16 dev dev:tests",
+        dev: "turbo run --concurrency 17 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

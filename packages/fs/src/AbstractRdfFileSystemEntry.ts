@@ -1,13 +1,16 @@
+import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import type { Either } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 
 export abstract class AbstractRdfFileSystemEntry {
   protected readonly logger: Logger;
-  readonly path: string;
 
-  constructor({ logger, path }: { logger?: Logger; path: string }) {
-    this.logger = logger ?? dummyLogger;
+  constructor(
+    readonly path: string,
+    options?: { logger?: Logger },
+  ) {
+    this.logger = options?.logger ?? dummyLogger;
     this.path = path;
   }
 
@@ -15,6 +18,6 @@ export abstract class AbstractRdfFileSystemEntry {
 
   abstract parseInto(
     dataset: DatasetCore,
-    options?: { recursive?: boolean },
+    options?: { prefixMap?: PrefixMap; recursive?: boolean },
   ): Promise<Either<Error, DatasetCore>>;
 }
