@@ -3,11 +3,90 @@ import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
 import { LiteralDecoder } from "../src/LiteralDecoder.js";
 import "@rdfx/testing";
+import { Decimal } from "decimal.js";
 
 describe("LiteralDecoder", () => {
   const sut = LiteralDecoder;
 
+  describe("decodeBigDecimalLiteral", () => {
+    it("xsd:decimal", ({ expect }) => {
+      expect(
+        sut
+          .decodeBigDecimalLiteral(dataFactory.literal("1.0", xsd.decimal))
+          .unsafeCoerce()
+          .equals(new Decimal(1)),
+      ).toStrictEqual(true);
+    });
+
+    it("xsd:double", ({ expect }) => {
+      expect(
+        sut
+          .decodeBigDecimalLiteral(dataFactory.literal("1.0", xsd.double))
+          .unsafeCoerce()
+          .equals(new Decimal(1)),
+      ).toStrictEqual(true);
+    });
+
+    it("xsd:int", ({ expect }) => {
+      expect(
+        sut
+          .decodeBigDecimalLiteral(dataFactory.literal("1", xsd.int))
+          .unsafeCoerce()
+          .equals(new Decimal(1)),
+      ).toStrictEqual(true);
+    });
+
+    it("xsd:integer", ({ expect }) => {
+      const expected = new Decimal(Number.MAX_SAFE_INTEGER + 1);
+      expect(
+        sut
+          .decodeBigDecimalLiteral(
+            dataFactory.literal(expected.toString(), xsd.integer),
+          )
+          .unsafeCoerce()
+          .equals(expected),
+      ).toStrictEqual(true);
+    });
+
+    it("xsd:long", ({ expect }) => {
+      const expected = new Decimal(Number.MAX_SAFE_INTEGER + 1);
+      expect(
+        sut
+          .decodeBigDecimalLiteral(
+            dataFactory.literal(expected.toString(), xsd.long),
+          )
+          .unsafeCoerce()
+          .equals(expected),
+      ).toStrictEqual(true);
+    });
+
+    it("xsd:string", ({ expect }) => {
+      expect(
+        sut.decodeBigDecimalLiteral(dataFactory.literal("test")),
+      ).toBeLeft();
+    });
+
+    it("unrecognized datatype", ({ expect }) => {
+      expect(
+        sut.decodeBigDecimalLiteral(
+          dataFactory.literal(
+            "1",
+            dataFactory.namedNode("http://example.com/other"),
+          ),
+        ),
+      ).toBeLeft();
+    });
+  });
+
   describe("decodeBigIntLiteral", () => {
+    it("xsd:decimal", ({ expect }) => {
+      expect(
+        sut
+          .decodeBigIntLiteral(dataFactory.literal("1.0", xsd.decimal))
+          .unsafeCoerce(),
+      ).toStrictEqual(1n);
+    });
+
     it("xsd:double", ({ expect }) => {
       expect(
         sut
@@ -155,6 +234,14 @@ describe("LiteralDecoder", () => {
   });
 
   describe("decodeFloatLiteral", () => {
+    it("xsd:decimal", ({ expect }) => {
+      expect(
+        sut
+          .decodeFloatLiteral(dataFactory.literal("1.1", xsd.decimal))
+          .unsafeCoerce(),
+      ).toStrictEqual(1.1);
+    });
+
     it("xsd:double", ({ expect }) => {
       expect(
         sut
@@ -215,6 +302,14 @@ describe("LiteralDecoder", () => {
   });
 
   describe("decodeIntLiteral", () => {
+    it("xsd:decimal", ({ expect }) => {
+      expect(
+        sut
+          .decodeIntLiteral(dataFactory.literal("1", xsd.decimal))
+          .unsafeCoerce(),
+      ).toStrictEqual(1);
+    });
+
     it("xsd:double (integer)", ({ expect }) => {
       expect(
         sut
@@ -271,6 +366,14 @@ describe("LiteralDecoder", () => {
   });
 
   describe("decodeNumberLiteral", () => {
+    it("xsd:decimal", ({ expect }) => {
+      expect(
+        sut
+          .decodeNumberLiteral(dataFactory.literal("1.1", xsd.decimal))
+          .unsafeCoerce(),
+      ).toStrictEqual(1.1);
+    });
+
     it("xsd:double", ({ expect }) => {
       expect(
         sut
@@ -360,7 +463,7 @@ describe("LiteralDecoder", () => {
 
     it("xsd:decimal", ({ expect }) => {
       expect(
-        sut.decodeIntLiteral(dataFactory.literal("1.0", xsd.decimal)),
+        sut.decodePrimitiveLiteral(dataFactory.literal("1.0", xsd.decimal)),
       ).toBeLeft();
     });
 
@@ -419,6 +522,18 @@ describe("LiteralDecoder", () => {
     it("xsd:boolean", ({ expect }) => {
       expect(
         sut.decodeStringLiteral(dataFactory.literal("true", xsd.boolean)),
+      ).toBeLeft();
+    });
+
+    it("xsd:decimal", ({ expect }) => {
+      expect(
+        sut.decodeStringLiteral(dataFactory.literal("1.1", xsd.decimal)),
+      ).toBeLeft();
+    });
+
+    it("xsd:integer", ({ expect }) => {
+      expect(
+        sut.decodeStringLiteral(dataFactory.literal("1", xsd.integer)),
       ).toBeLeft();
     });
 

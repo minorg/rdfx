@@ -37,8 +37,7 @@ const primitiveLiterals = {
   unsignedByte: dataFactory.literal("255", xsd.unsignedByte),
   positiveInteger: dataFactory.literal("1", xsd.positiveInteger),
 
-  // Numeric - decimal & floating point
-  // decimal: DataFactory.literal("10.5", xsd.decimal),
+  // Numeric - floating point
   float: dataFactory.literal("3.14e0", xsd.float),
   double: dataFactory.literal("2.718281828459045e0", xsd.double),
 
@@ -52,6 +51,9 @@ const primitiveLiterals = {
 
 const literals = {
   ...primitiveLiterals,
+
+  // xsd:decimal
+  decimal: dataFactory.literal("10.5", xsd.decimal),
 
   // rdf:langString
   langString: dataFactory.literal("langString", "en"),

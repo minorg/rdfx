@@ -1,4 +1,6 @@
 import type { DataFactory, Literal, NamedNode } from "@rdfjs/types";
+
+import type { Decimal } from "decimal.js";
 import { literalDatatypeDefinitions } from "./literalDatatypeDefinitions.js";
 import type { Primitive } from "./Primitive.js";
 
@@ -80,6 +82,10 @@ export class LiteralFactory {
         "http://www.w3.org/2001/XMLSchema#unsignedShort",
       ),
     };
+  }
+
+  bigdecimal(value: Decimal, datatype?: NamedNode): Literal {
+    return this.numeric(value, datatype ?? this.xsd.decimal);
   }
 
   bigint(value: bigint, datatype?: NamedNode): Literal {
@@ -181,7 +187,34 @@ export class LiteralFactory {
     return this.numeric(value, datatype);
   }
 
-  private numeric(value: bigint | number, datatype: NamedNode): Literal {
+  primitive(value: Primitive, datatype?: NamedNode): Literal {
+    switch (typeof value) {
+      case "bigint":
+        return this.bigint(value, datatype);
+      case "boolean":
+        return this.boolean(value, datatype);
+      case "number":
+        return this.number(value, datatype);
+      case "string":
+        return this.string(value, datatype);
+    }
+  }
+
+  string(value: string, datatype?: NamedNode) {
+    if (datatype) {
+      const datatypeDefinition = literalDatatypeDefinitions[datatype.value];
+      if (datatypeDefinition && datatypeDefinition.kind !== "string") {
+        throw new DatatypeRangeError(datatype);
+      }
+    }
+
+    return this.dataFactory.literal(value, datatype);
+  }
+
+  private numeric(
+    value: bigint | Decimal | number,
+    datatype: NamedNode,
+  ): Literal {
     let valueString: string | undefined;
 
     const datatypeDefinition = literalDatatypeDefinitions[datatype.value];
@@ -195,18 +228,40 @@ export class LiteralFactory {
       } else {
         switch (datatypeDefinition.kind) {
           case "bigdecimal":
+            break;
           case "bigint":
           case "float":
           case "int": {
             const [min, max] = datatypeDefinition.range;
-            if (
-              (min !== undefined && value < min) ||
-              (max !== undefined && value > max)
-            ) {
-              throw new RangeError(
-                `value (${value}) outside range [${min}, ${max}] of ${datatype.value}`,
-              );
+
+            if (max !== undefined) {
+              if (typeof value === "object") {
+                if (value.gt(max)) {
+                  throw new RangeError(
+                    `value (${value}) above maximum (${max}) of ${datatype.value}`,
+                  );
+                }
+              } else if (value > max) {
+                throw new RangeError(
+                  `value (${value}) above maximum (${max}) of ${datatype.value}`,
+                );
+              }
             }
+
+            if (min !== undefined) {
+              if (typeof value === "object") {
+                if (value.lt(min)) {
+                  throw new RangeError(
+                    `value (${value}) below minimum (${min}) of ${datatype.value}`,
+                  );
+                }
+              } else if (value < min) {
+                throw new RangeError(
+                  `value (${value}) below minimum (${min}) of ${datatype.value}`,
+                );
+              }
+            }
+
             break;
           }
           default:
@@ -243,29 +298,5 @@ export class LiteralFactory {
     }
 
     return this.dataFactory.literal(valueString, datatype);
-  }
-
-  primitive(value: Primitive, datatype?: NamedNode): Literal {
-    switch (typeof value) {
-      case "bigint":
-        return this.bigint(value, datatype);
-      case "boolean":
-        return this.boolean(value, datatype);
-      case "number":
-        return this.number(value, datatype);
-      case "string":
-        return this.string(value, datatype);
-    }
-  }
-
-  string(value: string, datatype?: NamedNode) {
-    if (datatype) {
-      const datatypeDefinition = literalDatatypeDefinitions[datatype.value];
-      if (datatypeDefinition && datatypeDefinition.kind !== "string") {
-        throw new DatatypeRangeError(datatype);
-      }
-    }
-
-    return this.dataFactory.literal(value, datatype);
   }
 }
