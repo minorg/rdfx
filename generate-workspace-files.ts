@@ -47,6 +47,7 @@ const externalDependencies = {
   // "@types/readable-stream": "~4.0.23",
   "@types/unbzip2-stream": "~1.4.3",
   "@vitest/coverage-v8": vitestVersion,
+  "decimal.js": "~10.6.0",
   depcheck: "~1.4.7",
   "jest-rdf": "~2.0.0",
   housemd: "0.1.3",
@@ -182,7 +183,7 @@ const workspaces = {
     },
     literal: {
       dependencies: {
-        external: ["@rdfjs/types", "purify-ts"],
+        external: ["@rdfjs/types", "decimal.js", "purify-ts"],
       },
       devDependencies: {
         external: ["@tpluscode/rdf-ns-builders"],
