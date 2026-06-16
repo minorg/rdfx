@@ -2,6 +2,7 @@
   "dependencies": {
     "@rdfx/data-factory": "0.0.23",
     "@rdfx/parsers": "0.0.23",
+    "@rdfx/serializers": "0.0.23",
     "@rdfjs/types": "~2.0.1",
     "@types/unbzip2-stream": "~1.4.3",
     "mime": "~4.1.0",
