@@ -73,8 +73,10 @@ describe("RdfFile", () => {
     expectedDataset.add(expectedQuad);
 
     async function testSerialize(format: RdfFile.Format): Promise<void> {
-      await using tempDirPath = await fs.mkdtempDisposable(os.tmpdir());
-      const tempFilePath = path.join(tempDirPath.path, "file.tmp");
+      await using tempDir = await fs.mkdtempDisposable(
+        path.join(os.tmpdir(), "rdfx-"),
+      );
+      const tempFilePath = path.join(tempDir.path, "file.tmp");
       const tempFile = new RdfFile(tempFilePath, { format });
 
       (await tempFile.serialize(expectedDataset)).unsafeCoerce();
