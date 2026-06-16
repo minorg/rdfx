@@ -1,16 +1,11 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import datasetFactory from "@rdfjs/dataset";
 import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import dataFactory from "@rdfx/data-factory";
 import { describe, it } from "vitest";
 import { RdfDirectory } from "../src/RdfDirectory.js";
+import { testDataDirPath } from "./paths.js";
 
 describe("RdfDirectory", () => {
-  const testDataDirPath = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "data",
-  );
   const sut = new RdfDirectory(testDataDirPath);
 
   it("files", async ({ expect }) => {

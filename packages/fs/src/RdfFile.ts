@@ -1,15 +1,25 @@
 import fs from "node:fs";
 import * as path from "node:path";
-import type { Readable } from "node:stream";
+import { Readable, type Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import zlib from "node:zlib";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, NamedNode, Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import parsersFactory from "@rdfx/parsers";
+import serializers from "@rdfx/serializers";
 import { Mime } from "mime";
 import otherMimeTypes from "mime/types/other.js";
 import standardMimeTypes from "mime/types/standard.js";
-import { Either, Just, Left, type Maybe, Nothing, Right } from "purify-ts";
+import {
+  Either,
+  EitherAsync,
+  Just,
+  Left,
+  type Maybe,
+  Nothing,
+  Right,
+} from "purify-ts";
 import type { Logger } from "ts-log";
 import bz2 from "unbzip2-stream";
 import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
@@ -92,23 +102,23 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
   }
 
   override parse(): Stream<Quad> {
-    let rdfFileStream: Readable = fs.createReadStream(this.path);
+    let fileStream: Readable = fs.createReadStream(this.path);
 
     if (this.format.compressionMethod.isJust()) {
       switch (this.format.compressionMethod.unsafeCoerce()) {
         case "application/gzip":
-          rdfFileStream = rdfFileStream.pipe(zlib.createGunzip());
+          fileStream = fileStream.pipe(zlib.createGunzip());
           break;
         case "application/x-brotli":
-          rdfFileStream = rdfFileStream.pipe(zlib.createBrotliDecompress());
+          fileStream = fileStream.pipe(zlib.createBrotliDecompress());
           break;
         case "application/x-bzip2":
-          rdfFileStream = rdfFileStream.pipe(bz2());
+          fileStream = fileStream.pipe(bz2());
           break;
       }
     }
 
-    return parsers.import(this.format.rdfFormat, rdfFileStream)!;
+    return parsers.import(this.format.rdfFormat, fileStream)!;
   }
 
   override parseInto(
@@ -151,6 +161,47 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
       });
       stream.on("end", () => resolve(Either.of(dataset)));
       stream.on("error", (error) => resolve(Left(error)));
+    });
+  }
+
+  async serialize(
+    quads: Iterable<Quad>,
+    options?: Parameters<typeof serializers>[0],
+  ): Promise<Either<Error, void>> {
+    return EitherAsync(async () => {
+      const rdfStream = serializers(options).import(
+        this.format.rdfFormat,
+        Readable.from(quads),
+      );
+      if (rdfStream === null) {
+        throw new RangeError(
+          `unsupported RDF serialization format: ${this.format.rdfFormat}`,
+        );
+      }
+
+      const fileStream = fs.createWriteStream(this.path);
+
+      if (this.format.compressionMethod.isJust()) {
+        let compressor: Transform;
+        switch (this.format.compressionMethod.extract()) {
+          case "application/gzip":
+            compressor = zlib.createGzip();
+            break;
+          case "application/x-brotli":
+            compressor = zlib.createBrotliCompress();
+            break;
+          case "application/x-bzip2":
+            throw new RangeError("bzip2 compression unsupported");
+        }
+
+        await pipeline(
+          rdfStream as unknown as Readable,
+          compressor,
+          fileStream,
+        );
+      } else {
+        await pipeline(rdfStream as unknown as Readable, fileStream);
+      }
     });
   }
 }
