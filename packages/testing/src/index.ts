@@ -1,7 +1,7 @@
 import type * as RDF from "@rdfjs/types";
-import type { IQuadTerms } from "jest-rdf/lib/matchers/toBeRdfDatasetMatching.js";
 
 import "vitest";
+import type { IQuadTerms } from "./jestRdfMatchers.js";
 
 declare module "vitest" {
   interface Matchers<T = any> {

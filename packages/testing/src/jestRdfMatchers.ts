@@ -15,7 +15,7 @@ import {
 import { quadToStringQuad, termToString } from "rdf-string";
 import { everyTerms, someTerms } from "rdf-terms";
 
-interface IQuadTerms<TQuad extends RDF.BaseQuad = RDF.Quad> {
+export interface IQuadTerms<TQuad extends RDF.BaseQuad = RDF.Quad> {
   graph?: TQuad["graph"];
   object?: TQuad["object"];
   predicate?: TQuad["predicate"];
