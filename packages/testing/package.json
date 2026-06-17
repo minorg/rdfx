@@ -1,8 +1,10 @@
 {
   "dependencies": {
     "@rdfjs/types": "~2.0.1",
-    "jest-rdf": "~2.0.0",
     "purify-ts": "~2.1.4",
+    "rdf-isomorphic": "~2.0.1",
+    "rdf-string": "~2.0.1",
+    "rdf-terms": "~2.0.0",
     "vitest": "~4.1.5"
   },
   "devDependencies": {},
