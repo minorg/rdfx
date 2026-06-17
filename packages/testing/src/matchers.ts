@@ -1,7 +1,23 @@
-import { default as jestRdfMatchers } from "jest-rdf/lib/matchers/index.js";
-import * as purifyMatchers from "./purifyMatchers.js";
+import {
+  toBeRdfDatasetContaining,
+  toBeRdfDatasetMatching,
+  toBeRdfDatasetOfSize,
+  toBeRdfIsomorphic,
+  toEqualRdfQuad,
+  toEqualRdfQuadArray,
+  toEqualRdfTerm,
+  toEqualRdfTermArray,
+} from "./jestRdfMatchers.js";
+import { toBeLeft } from "./purifyMatchers.js";
 
 export const matchers = {
-  ...jestRdfMatchers,
-  ...purifyMatchers,
+  toBeRdfDatasetContaining,
+  toBeRdfDatasetMatching,
+  toBeRdfDatasetOfSize,
+  toBeRdfIsomorphic,
+  toEqualRdfQuad,
+  toEqualRdfQuadArray,
+  toEqualRdfTerm,
+  toEqualRdfTermArray,
+  toBeLeft,
 };

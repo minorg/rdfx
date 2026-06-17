@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.24";
+const VERSION = "0.0.25";
 
 const shaclmateVersion = "4.0.52";
 const vitestVersion = "~4.1.5";
@@ -49,12 +49,14 @@ const externalDependencies = {
   "@vitest/coverage-v8": vitestVersion,
   "decimal.js": "~10.6.0",
   depcheck: "~1.4.7",
-  "jest-rdf": "~2.0.0",
   housemd: "0.1.3",
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
   "purify-ts": "~2.1.4",
+  "rdf-isomorphic": "~2.0.1", // For @rdfx/testing code adapted from jest-rdf
+  "rdf-string": "~2.0.1", // For @rdfx/testing code adapted from jest-rdf
+  "rdf-terms": "~2.0.0", // For @rdfx/testing code adapted from jest-rdf
   // "readable-stream": "^4.7.0",
   rimraf: "~6.0.1",
   "ts-invariant": "~0.10.3",
@@ -267,7 +269,14 @@ const workspaces = {
     },
     testing: {
       dependencies: {
-        external: ["@rdfjs/types", "jest-rdf", "purify-ts", "vitest"],
+        external: [
+          "@rdfjs/types",
+          "purify-ts",
+          "rdf-isomorphic",
+          "rdf-string",
+          "rdf-terms",
+          "vitest",
+        ],
       },
       tsconfig: packageTsconfig,
     },
