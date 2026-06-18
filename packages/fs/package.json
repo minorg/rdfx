@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.25",
-    "@rdfx/parsers": "0.0.25",
-    "@rdfx/serializers": "0.0.25",
+    "@rdfx/data-factory": "0.0.26",
+    "@rdfx/parsers": "0.0.26",
+    "@rdfx/serializers": "0.0.26",
     "@rdfjs/types": "~2.0.1",
     "@types/unbzip2-stream": "~1.4.3",
     "mime": "~4.1.0",
@@ -37,5 +37,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.25"
+  "version": "0.0.26"
 }
