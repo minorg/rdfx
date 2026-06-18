@@ -90,9 +90,7 @@ describe("RdfFile", () => {
           const expectedDataset = datasetFactory.dataset([expectedQuad]);
           (
             await tempFile.serialize(expectedDataset, {
-              trig: {
-                prefixes,
-              },
+              prefixes,
             })
           ).unsafeCoerce();
           const actualDataset = (
@@ -110,14 +108,12 @@ describe("RdfFile", () => {
           );
           (
             await tempFile.serialize(datasetFactory.dataset([expectedTriple]), {
-              turtle: {
-                prefixes,
-              },
-              trig: {
-                prefixes,
-              },
+              prefixes,
             })
           ).unsafeCoerce();
+          // const actualSerializedText = (
+          //   await fs.readFile(tempFile.path)
+          // ).toString();
           const actualDataset = (
             await tempFile.parseInto(datasetFactory.dataset())
           ).unsafeCoerce();
