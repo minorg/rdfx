@@ -136,6 +136,12 @@ describe("RdfFile", () => {
         rdfFormat: "application/n-quads",
       }));
 
+    // it("nq.gz", () =>
+    //   testSerialize({
+    //     compressionMethod: Maybe.of("application/gzip"),
+    //     rdfFormat: "application/n-quads",
+    //   }));
+
     it("nt", () =>
       testSerialize({
         compressionMethod: Maybe.empty(),
@@ -147,12 +153,6 @@ describe("RdfFile", () => {
         compressionMethod: Maybe.empty(),
         rdfFormat: "application/trig",
       }));
-
-    // it("nq.gz", () =>
-    //   testSerialize({
-    //     compressionMethod: Maybe.of("application/gzip"),
-    //     rdfFormat: "application/n-quads",
-    //   }));
 
     it("ttl", () =>
       testSerialize({
