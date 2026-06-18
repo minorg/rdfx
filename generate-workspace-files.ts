@@ -44,7 +44,7 @@ const externalDependencies = {
   "@types/rdfjs__sink-map": "~2.0.5",
   "@types/rdfjs__term-set": "~2.0.9",
   "@types/rdfjs__to-ntriples": "~3.0.0",
-  // "@types/readable-stream": "~4.0.23",
+  "@types/readable-stream": "~4.0.23",
   "@types/unbzip2-stream": "~1.4.3",
   "@vitest/coverage-v8": vitestVersion,
   "decimal.js": "~10.6.0",
@@ -57,7 +57,7 @@ const externalDependencies = {
   "rdf-isomorphic": "~2.0.1", // For @rdfx/testing code adapted from jest-rdf
   "rdf-string": "~2.0.1", // For @rdfx/testing code adapted from jest-rdf
   "rdf-terms": "~2.0.0", // For @rdfx/testing code adapted from jest-rdf
-  // "readable-stream": "^4.7.0",
+  "readable-stream": "^4.7.0",
   rimraf: "~6.0.1",
   "ts-invariant": "~0.10.3",
   "ts-log": "~3.0.2",
@@ -233,17 +233,23 @@ const workspaces = {
     serializers: {
       dependencies: {
         external: [
+          "@rdfjs/prefix-map",
           "@rdfjs/serializer-jsonld-ext",
           "@rdfjs/serializer-ntriples",
           "@rdfjs/serializer-rdfjs",
           "@rdfjs/serializer-turtle",
           "@rdfjs/sink-map",
           "@rdfjs/types",
+          "@types/n3",
+          "@types/readable-stream",
+          "@types/rdfjs__prefix-map",
           "@types/rdfjs__serializer-jsonld-ext",
           "@types/rdfjs__serializer-ntriples",
           "@types/rdfjs__serializer-rdfjs",
           "@types/rdfjs__serializer-turtle",
           "@types/rdfjs__sink-map",
+          "n3",
+          "readable-stream",
         ],
       },
       tsconfig: packageTsconfig,

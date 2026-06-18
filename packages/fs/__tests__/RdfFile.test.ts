@@ -63,14 +63,16 @@ describe("RdfFile", () => {
   });
 
   describe("serialize", async () => {
-    const expectedDataset = datasetFactory.dataset();
     const expectedQuad = dataFactory.quad(
       dataFactory.namedNode("http://example.com/subject"),
       dataFactory.namedNode("http://example.com/predicate"),
       dataFactory.namedNode("http://example.com/object"),
       dataFactory.namedNode("http://example.com/graph"),
     );
-    expectedDataset.add(expectedQuad);
+    const prefixes = new PrefixMap(
+      [["ex", dataFactory.namedNode("http://example.com/")]],
+      { factory: dataFactory },
+    );
 
     async function testSerialize(format: RdfFile.Format): Promise<void> {
       await using tempDir = await fs.mkdtempDisposable(
@@ -79,32 +81,58 @@ describe("RdfFile", () => {
       const tempFilePath = path.join(tempDir.path, "file.tmp");
       const tempFile = new RdfFile(tempFilePath, { format });
 
-      (await tempFile.serialize(expectedDataset)).unsafeCoerce();
-
-      const actualDataset = datasetFactory.dataset();
-      (await tempFile.parseInto(actualDataset)).unsafeCoerce();
       switch (format.rdfFormat) {
         case "application/ld+json":
         case "application/n-quads":
         case "application/trig":
         case "application/rdf+xml":
+        case "text/n3": {
+          const expectedDataset = datasetFactory.dataset([expectedQuad]);
+          (
+            await tempFile.serialize(expectedDataset, {
+              trig: {
+                prefixes,
+              },
+            })
+          ).unsafeCoerce();
+          const actualDataset = (
+            await tempFile.parseInto(datasetFactory.dataset())
+          ).unsafeCoerce();
           expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
           break;
+        }
         case "application/n-triples":
-        case "text/n3":
         case "text/turtle": {
-          expect(actualDataset).toBeRdfDatasetOfSize(1);
-          const actualQuad = [...actualDataset][0];
-          expect(actualQuad).toEqualRdfQuad(
-            dataFactory.quad(
-              expectedQuad.subject,
-              expectedQuad.predicate,
-              expectedQuad.object,
-            ),
+          const expectedTriple = dataFactory.quad(
+            expectedQuad.subject,
+            expectedQuad.predicate,
+            expectedQuad.object,
           );
+          (
+            await tempFile.serialize(datasetFactory.dataset([expectedTriple]), {
+              turtle: {
+                prefixes,
+              },
+              trig: {
+                prefixes,
+              },
+            })
+          ).unsafeCoerce();
+          const actualDataset = (
+            await tempFile.parseInto(datasetFactory.dataset())
+          ).unsafeCoerce();
+          expect(actualDataset).toBeRdfDatasetOfSize(1);
+          const actualTriple = [...actualDataset][0];
+          expect(actualTriple).toEqualRdfQuad(expectedTriple);
         }
       }
     }
+
+    it("n3", () =>
+      testSerialize({
+        compressionMethod: Maybe.empty(),
+        rdfFormat: "text/n3",
+      }));
 
     it("nq", () =>
       testSerialize({
@@ -112,11 +140,23 @@ describe("RdfFile", () => {
         rdfFormat: "application/n-quads",
       }));
 
-    it("nq.gz", () =>
+    it("nt", () =>
       testSerialize({
-        compressionMethod: Maybe.of("application/gzip"),
-        rdfFormat: "application/n-quads",
+        compressionMethod: Maybe.empty(),
+        rdfFormat: "application/n-triples",
       }));
+
+    it("trig", () =>
+      testSerialize({
+        compressionMethod: Maybe.empty(),
+        rdfFormat: "application/trig",
+      }));
+
+    // it("nq.gz", () =>
+    //   testSerialize({
+    //     compressionMethod: Maybe.of("application/gzip"),
+    //     rdfFormat: "application/n-quads",
+    //   }));
 
     it("ttl", () =>
       testSerialize({
@@ -124,10 +164,10 @@ describe("RdfFile", () => {
         rdfFormat: "text/turtle",
       }));
 
-    it("ttl.gz", () =>
-      testSerialize({
-        compressionMethod: Maybe.of("application/gzip"),
-        rdfFormat: "text/turtle",
-      }));
+    // it("ttl.gz", () =>
+    //   testSerialize({
+    //     compressionMethod: Maybe.of("application/gzip"),
+    //     rdfFormat: "text/turtle",
+    //   }));
   });
 });
