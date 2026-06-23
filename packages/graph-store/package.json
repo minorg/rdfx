@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@rdfjs/types": "~2.0.1",
-    "purify-ts": "~2.1.4"
+    "@types/readable-stream": "~4.0.23",
+    "purify-ts": "~2.1.4",
+    "readable-stream": "^4.7.0"
   },
   "devDependencies": {},
   "files": [

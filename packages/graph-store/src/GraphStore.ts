@@ -1,4 +1,4 @@
-import type { BaseQuad, Quad, Stream } from "@rdfjs/types";
+import type { Stream } from "@rdfjs/types";
 
 import type { Either, Maybe } from "purify-ts";
 
@@ -7,7 +7,7 @@ import type { GraphIdentifier } from "./GraphIdentifier.js";
 /**
  * Graph store abstraction, modeled on the SPARQL 1.1 Graph Store HTTP Protocol (https://www.w3.org/TR/sparql11-http-rdf-update/).
  */
-export interface GraphStore<QuadT extends BaseQuad = Quad, VersionT = void> {
+export interface GraphStore<VersionT = void> {
   /**
    * Clear the store.
    */
@@ -26,7 +26,7 @@ export interface GraphStore<QuadT extends BaseQuad = Quad, VersionT = void> {
   get(
     identifier: GraphIdentifier,
     version?: VersionT,
-  ): Promise<Either<Error, Maybe<Stream<QuadT>>>>;
+  ): Promise<Either<Error, Maybe<Stream>>>;
 
   /**
    * Does the store have the named graph at the given version?
@@ -46,12 +46,12 @@ export interface GraphStore<QuadT extends BaseQuad = Quad, VersionT = void> {
    *
    * Returns the new version of the store.
    */
-  post(quads: Stream<QuadT>): Promise<Either<Error, VersionT>>;
+  post(quads: Stream): Promise<Either<Error, VersionT>>;
 
   /**
    * Add quads, clearing the quads' graphs first.
    *
    * Returns the new version of the store.
    */
-  put(quads: Stream<QuadT>): Promise<Either<Error, VersionT>>;
+  put(quads: Stream): Promise<Either<Error, VersionT>>;
 }
