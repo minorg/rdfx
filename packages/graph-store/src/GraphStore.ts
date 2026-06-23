@@ -1,13 +1,13 @@
 import type { BaseQuad, Quad, Stream } from "@rdfjs/types";
 
-import type { Either } from "purify-ts";
+import type { Either, Maybe } from "purify-ts";
 
 import type { GraphIdentifier } from "./GraphIdentifier.js";
 
 /**
  * Graph store abstraction, modeled on the SPARQL 1.1 Graph Store HTTP Protocol (https://www.w3.org/TR/sparql11-http-rdf-update/).
  */
-export interface GraphStore<QuadT extends BaseQuad = Quad> {
+export interface GraphStore<QuadT extends BaseQuad = Quad, VersionT = void> {
   /**
    * Clear the store.
    */
@@ -15,18 +15,26 @@ export interface GraphStore<QuadT extends BaseQuad = Quad> {
 
   /**
    * Delete a graph.
+   *
+   * Returns the new version of the store.
    */
-  delete(identifier: GraphIdentifier): Promise<Either<Error, void>>;
+  delete(identifier: GraphIdentifier): Promise<Either<Error, VersionT>>;
 
   /**
-   * Get the triples of the named graph.
+   * Get the triples of the named graph at the given version.
    */
-  get(identifier: GraphIdentifier): Stream<QuadT>;
+  get(
+    identifier: GraphIdentifier,
+    version?: VersionT,
+  ): Promise<Either<Error, Maybe<Stream<QuadT>>>>;
 
   /**
-   * Does the store have the named graph?
+   * Does the store have the named graph at the given version?
    */
-  head(identifier: GraphIdentifier): Promise<Either<Error, boolean>>;
+  head(
+    identifier: GraphIdentifier,
+    version?: VersionT,
+  ): Promise<Either<Error, boolean>>;
 
   /**
    * Test if the entire store is empty.
@@ -35,11 +43,15 @@ export interface GraphStore<QuadT extends BaseQuad = Quad> {
 
   /**
    * Add quads without clearing quads' graphs first.
+   *
+   * Returns the new version of the store.
    */
-  post(quads: Stream<QuadT>): Promise<Either<Error, void>>;
+  post(quads: Stream<QuadT>): Promise<Either<Error, VersionT>>;
 
   /**
    * Add quads, clearing the quads' graphs first.
+   *
+   * Returns the new version of the store.
    */
-  put(quads: Stream<QuadT>): Promise<Either<Error, void>>;
+  put(quads: Stream<QuadT>): Promise<Either<Error, VersionT>>;
 }
