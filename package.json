@@ -34,6 +34,7 @@
     "packages/builder",
     "packages/data-factory",
     "packages/fs",
+    "packages/graph-store",
     "packages/literal",
     "packages/parsers",
     "packages/resource",

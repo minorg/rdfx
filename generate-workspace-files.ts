@@ -73,6 +73,7 @@ type PackageName =
   | "builder"
   | "data-factory"
   | "fs"
+  | "graph-store"
   | "literal"
   | "parsers"
   | "resource"
@@ -182,6 +183,12 @@ const workspaces = {
           types: ["node"],
         },
       },
+    },
+    "graph-store": {
+      dependencies: {
+        external: ["@rdfjs/types", "purify-ts"],
+      },
+      tsconfig: packageTsconfig,
     },
     literal: {
       dependencies: {
