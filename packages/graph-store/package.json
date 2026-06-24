@@ -1,12 +1,16 @@
 {
   "dependencies": {
     "@rdfjs/types": "~2.0.1",
-    "decimal.js": "~10.6.0",
-    "purify-ts": "~2.1.4"
+    "@types/readable-stream": "~4.0.23",
+    "purify-ts": "~2.1.4",
+    "readable-stream": "^4.7.0",
+    "ts-log": "~3.0.2"
   },
   "devDependencies": {
     "@rdfx/data-factory": "0.0.28",
-    "@tpluscode/rdf-ns-builders": "~4.3.0"
+    "@rdfjs/dataset": "~2.0.2",
+    "get-stream": "~9.0.1",
+    "into-stream": "~9.1.0"
   },
   "files": [
     "LICENSE",
@@ -15,7 +19,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/literal",
+  "name": "@rdfx/graph-store",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -27,7 +31,7 @@
     "depcheck": "depcheck .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/literal/__tests__"
+    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/graph-store/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

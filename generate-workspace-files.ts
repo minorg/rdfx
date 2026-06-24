@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.27";
+const VERSION = "0.0.28";
 
 const shaclmateVersion = "4.0.52";
 const vitestVersion = "~4.1.5";
@@ -49,7 +49,9 @@ const externalDependencies = {
   "@vitest/coverage-v8": vitestVersion,
   "decimal.js": "~10.6.0",
   depcheck: "~1.4.7",
+  "get-stream": "~9.0.1",
   housemd: "0.1.3",
+  "into-stream": "~9.1.0",
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
@@ -73,6 +75,7 @@ type PackageName =
   | "builder"
   | "data-factory"
   | "fs"
+  | "graph-store"
   | "literal"
   | "parsers"
   | "resource"
@@ -161,17 +164,25 @@ const workspaces = {
     fs: {
       dependencies: {
         external: [
+          "@rdfjs/dataset",
+          "@rdfjs/prefix-map",
           "@rdfjs/types",
+          "@types/rdfjs__dataset",
+          "@types/rdfjs__prefix-map",
           "@types/unbzip2-stream",
+          "into-stream",
           "mime",
           "purify-ts",
           "ts-log",
           "unbzip2-stream",
         ],
-        internal: ["data-factory", "parsers", "serializers"],
-      },
-      devDependencies: {
-        external: ["@rdfjs/dataset", "@types/rdfjs__dataset"],
+        internal: [
+          "data-factory",
+          "graph-store",
+          "parsers",
+          "serializers",
+          "string",
+        ],
       },
       tsconfig: {
         ...packageTsconfig,
@@ -182,6 +193,22 @@ const workspaces = {
           types: ["node"],
         },
       },
+    },
+    "graph-store": {
+      dependencies: {
+        external: [
+          "@rdfjs/types",
+          "@types/readable-stream",
+          "purify-ts",
+          "readable-stream",
+          "ts-log",
+        ],
+      },
+      devDependencies: {
+        external: ["@rdfjs/dataset", "get-stream", "into-stream"],
+        internal: ["data-factory"],
+      },
+      tsconfig: packageTsconfig,
     },
     literal: {
       dependencies: {
@@ -503,7 +530,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 18 dev dev:tests",
+        dev: "turbo run --concurrency 20 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

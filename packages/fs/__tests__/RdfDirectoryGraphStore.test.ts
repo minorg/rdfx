@@ -1,0 +1,31 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { testGraphStore } from "@rdfx/graph-store/__tests__/testGraphStore.js";
+import { describe } from "vitest";
+import { RdfDirectoryGraphStore } from "../src/RdfDirectoryGraphStore.js";
+import { logger } from "./logger.js";
+
+describe("RdfDirectoryGraphStore", () => {
+  describe("test data (existing directory)", () => {
+    testGraphStore(async (use) => {
+      await using directoryPath = await fs.mkdtempDisposable(
+        path.join(os.tmpdir(), "RdfDirectoryGraphStore.test"),
+      );
+      await use(new RdfDirectoryGraphStore(directoryPath.path, { logger }));
+    });
+  });
+
+  describe("test data (non-extant directory)", () => {
+    testGraphStore(async (use) => {
+      await using directoryPath = await fs.mkdtempDisposable(
+        path.join(os.tmpdir(), "RdfDirectoryGraphStore.test"),
+      );
+      await use(
+        new RdfDirectoryGraphStore(path.join(directoryPath.path, "nonextant"), {
+          logger,
+        }),
+      );
+    });
+  });
+});

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import * as path from "node:path";
-import { Readable, type Transform } from "node:stream";
+import type { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import zlib from "node:zlib";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
@@ -165,13 +165,13 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
   }
 
   async serialize(
-    quads: Iterable<Quad>,
+    quads: Stream,
     options?: Parameters<typeof serializers>[0],
   ): Promise<Either<Error, void>> {
     return EitherAsync(async () => {
       const rdfStream = serializers(options).import(
         this.format.rdfFormat,
-        Readable.from(quads),
+        quads,
       );
       if (rdfStream === null) {
         throw new RangeError(
