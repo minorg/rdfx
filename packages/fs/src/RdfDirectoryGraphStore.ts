@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import fs from "node:fs";
 import path from "node:path";
+import type { Readable } from "node:stream";
 import datasetFactory from "@rdfjs/dataset";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
@@ -9,7 +10,6 @@ import parsers from "@rdfx/parsers";
 import { NTriplesTerm } from "@rdfx/string";
 import { Either, EitherAsync, Left, Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
-
 import { RdfDirectory } from "./RdfDirectory.js";
 import type { RdfFile } from "./RdfFile.js";
 import { stat } from "./stat.js";
@@ -58,9 +58,20 @@ export class RdfDirectoryGraphStore implements GraphStore {
         return Maybe.empty();
       }
 
-      return Maybe.of(
-        parser.import(fs.createReadStream(this.graphFilePath(identifier))),
+      let stream: Stream = parser.import(
+        fs.createReadStream(this.graphFilePath(identifier)),
       );
+      if (identifier.termType !== "DefaultGraph") {
+        stream = (stream as Readable).map((quad: Quad) =>
+          dataFactory.quad(
+            quad.subject,
+            quad.predicate,
+            quad.object,
+            identifier,
+          ),
+        );
+      }
+      return Maybe.of(stream);
     });
   }
 
@@ -222,13 +233,23 @@ export class RdfDirectoryGraphStore implements GraphStore {
         });
         const graphFilePath = this.graphFilePath(graphIdentifierString);
         if (method === "post") {
-          ntriples = (await fs.promises.readFile(graphFilePath))
-            .toString("utf-8")
-            .split("\n")
-            .concat(ntriples);
+          try {
+            ntriples = (await fs.promises.readFile(graphFilePath))
+              .toString("utf-8")
+              .split("\n")
+              .concat(ntriples);
+          } catch (error) {
+            if (errorCode(error) !== "ENOENT") {
+              throw error;
+            }
+          }
         }
         ntriples.sort();
-        await fs.promises.writeFile(ntriples.join("\n"), "utf-8");
+        await fs.promises.writeFile(
+          graphFilePath,
+          ntriples.join("\n"),
+          "utf-8",
+        );
       }
 
       return {};
