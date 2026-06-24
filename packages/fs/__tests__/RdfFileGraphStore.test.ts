@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { testGraphStore } from "@rdfx/graph-store/__tests__/testGraphStore.js";
 import { describe } from "vitest";
-import { testGraphStore } from "../../graph-store/__tests__/testGraphStore.js";
 import { RdfFileGraphStore } from "../src/RdfFileGraphStore.js";
 import { logger } from "./logger.js";
 
