@@ -171,7 +171,7 @@ const workspaces = {
           "ts-log",
           "unbzip2-stream",
         ],
-        internal: ["data-factory", "parsers", "serializers"],
+        internal: ["data-factory", "graph-store", "parsers", "serializers"],
       },
       devDependencies: {
         external: ["@rdfjs/dataset", "@types/rdfjs__dataset"],
