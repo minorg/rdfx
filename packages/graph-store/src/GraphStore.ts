@@ -37,6 +37,11 @@ export interface GraphStore<VersionT = void> {
   ): Promise<Either<Error, boolean>>;
 
   /**
+   * Get a list of the store's graph identifiers.
+   */
+  identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>>;
+
+  /**
    * Test if the entire store is empty.
    */
   isEmpty(): Promise<Either<Error, boolean>>;

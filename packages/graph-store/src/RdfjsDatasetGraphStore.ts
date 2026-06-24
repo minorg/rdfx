@@ -35,6 +35,23 @@ export class RdfjsDatasetGraphStore implements GraphStore<void> {
     });
   }
 
+  async identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>> {
+    return EitherAsync(async () => {
+      const identifiers = new Map<string, GraphIdentifier>();
+      for (const quad of this.dataset.match()) {
+        switch (quad.graph.termType) {
+          case "DefaultGraph":
+            identifiers.set("", quad.graph);
+            break;
+          case "NamedNode":
+            identifiers.set(quad.graph.value, quad.graph);
+            break;
+        }
+      }
+      return [...identifiers.values()];
+    });
+  }
+
   async isEmpty(): Promise<Either<Error, boolean>> {
     return Either.of(this.dataset.size === 0);
   }

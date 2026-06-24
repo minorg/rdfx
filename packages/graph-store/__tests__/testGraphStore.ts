@@ -113,8 +113,23 @@ export function testGraphStore(
             }));
         });
 
+        describe("identifiers", () => {
+          it("on empty store", async ({ expect }) =>
+            await withGraphStore(async (sut) => {
+              expect((await sut.identifiers()).unsafeCoerce()).toEqual([]);
+            }));
+
+          it("on populated store", async ({ expect }) =>
+            await withGraphStore(async (sut) => {
+              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              expect(
+                (await sut.identifiers()).unsafeCoerce(),
+              ).toEqualRdfTermArray([graph]);
+            }));
+        });
+
         describe("isEmpty", () => {
-          it("isEmpty on empty store", async ({ expect }) =>
+          it("on empty store", async ({ expect }) =>
             await withGraphStore(async (sut) => {
               expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(true);
             }));
