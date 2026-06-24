@@ -164,7 +164,11 @@ const workspaces = {
     fs: {
       dependencies: {
         external: [
+          "@rdfjs/dataset",
+          "@rdfjs/prefix-map",
           "@rdfjs/types",
+          "@types/rdfjs__dataset",
+          "@types/rdfjs__prefix-map",
           "@types/unbzip2-stream",
           "mime",
           "purify-ts",
@@ -172,9 +176,6 @@ const workspaces = {
           "unbzip2-stream",
         ],
         internal: ["data-factory", "graph-store", "parsers", "serializers"],
-      },
-      devDependencies: {
-        external: ["@rdfjs/dataset", "@types/rdfjs__dataset"],
       },
       tsconfig: {
         ...packageTsconfig,
