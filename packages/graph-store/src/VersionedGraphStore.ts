@@ -1,6 +1,3 @@
-import type { Stream } from "@rdfjs/types";
-import type { Either, Maybe } from "purify-ts";
-import type { GraphIdentifier } from "./GraphIdentifier.js";
 import type { GraphStore } from "./GraphStore.js";
 
 /**
@@ -8,44 +5,39 @@ import type { GraphStore } from "./GraphStore.js";
  *
  * Writes to the store return the new version of the store. Versions are intentionally opaque.
  */
-export interface VersionedGraphStore<VersionT> extends GraphStore {
-  /**
-   * Get the triples of a graph at the given version.
-   *
-   * If the version isn't specified, defaults to the latest version.
-   */
-  get(
-    identifier: GraphIdentifier,
-    options?: { version: VersionT },
-  ): Promise<Either<Error, Maybe<Stream>>>;
-
-  /**
-   * Does a named graph with the given version exist?
-   *
-   * If the version isn't specified, defaults to the latest version.
-   */
-  head(
-    identifier: GraphIdentifier,
-    options?: { version: VersionT },
-  ): Promise<Either<Error, boolean>>;
-
-  /**
-   * Add quads without clearing quads' graphs first.
-   *
-   * Returns the new version of the store.
-   */
-  post(
-    quads: Stream,
-    options?: object,
-  ): Promise<Either<Error, { version: VersionT }>>;
-
-  /**
-   * Add quads, clearing the quads' graphs first.
-   *
-   * Returns the new version of the store.
-   */
-  put(
-    quads: Stream,
-    options?: object,
-  ): Promise<Either<Error, { version: VersionT }>>;
-}
+export type VersionedGraphStore<
+  VersionT,
+  ClearOptionsT extends object = object,
+  ClearReturnT extends { readonly version: VersionT } = {
+    readonly version: VersionT;
+  },
+  DeleteOptionsT extends object = object,
+  DeleteReturnT extends { readonly version: VersionT } = {
+    readonly version: VersionT;
+  },
+  GetOptionsT extends { readonly version?: VersionT } = {
+    readonly version?: VersionT;
+  },
+  HeadOptionsT extends { readonly version?: VersionT } = {
+    readonly version?: VersionT;
+  },
+  PostOptionsT extends object = object,
+  PostReturnT extends { readonly version: VersionT } = {
+    readonly version: VersionT;
+  },
+  PutOptionsT extends object = object,
+  PutReturnT extends { readonly version: VersionT } = {
+    readonly version: VersionT;
+  },
+> = GraphStore<
+  ClearOptionsT,
+  ClearReturnT,
+  DeleteOptionsT,
+  DeleteReturnT,
+  GetOptionsT,
+  HeadOptionsT,
+  PostOptionsT,
+  PostReturnT,
+  PutOptionsT,
+  PutReturnT
+>;

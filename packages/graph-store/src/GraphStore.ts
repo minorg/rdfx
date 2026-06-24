@@ -7,26 +7,37 @@ import type { GraphIdentifier } from "./GraphIdentifier.js";
 /**
  * Graph store abstraction, modeled on the SPARQL 1.1 Graph Store HTTP Protocol (https://www.w3.org/TR/sparql11-http-rdf-update/).
  */
-export interface GraphStore {
+export interface GraphStore<
+  ClearOptionsT extends object = object,
+  ClearReturnT extends object = object,
+  DeleteOptionsT extends object = object,
+  DeleteReturnT extends object = object,
+  GetOptionsT extends object = object,
+  HeadOptionsT extends object = object,
+  PostOptionsT extends object = object,
+  PostReturnT extends object = object,
+  PutOptionsT extends object = object,
+  PutReturnT extends object = object,
+> {
   /**
    * Clear the store.
    */
-  clear(): Promise<Either<Error, void>>;
+  clear(options?: ClearOptionsT): Promise<Either<Error, ClearReturnT>>;
 
   /**
    * Delete a graph.
    */
   delete(
     identifier: GraphIdentifier,
-    options?: object,
-  ): Promise<Either<Error, object>>;
+    options?: DeleteOptionsT,
+  ): Promise<Either<Error, DeleteReturnT>>;
 
   /**
    * Get the triples of the named graph.
    */
   get(
     identifier: GraphIdentifier,
-    options?: object,
+    options?: GetOptionsT,
   ): Promise<Either<Error, Maybe<Stream>>>;
 
   /**
@@ -34,7 +45,7 @@ export interface GraphStore {
    */
   head(
     identifier: GraphIdentifier,
-    options?: object,
+    options?: HeadOptionsT,
   ): Promise<Either<Error, boolean>>;
 
   /**
@@ -50,10 +61,13 @@ export interface GraphStore {
   /**
    * Add quads without clearing quads' graphs first.
    */
-  post(quads: Stream, options?: object): Promise<Either<Error, object>>;
+  post(
+    quads: Stream,
+    options?: PostOptionsT,
+  ): Promise<Either<Error, PostReturnT>>;
 
   /**
    * Add quads, clearing the quads' graphs first.
    */
-  put(quads: Stream, options?: object): Promise<Either<Error, object>>;
+  put(quads: Stream, options?: PutOptionsT): Promise<Either<Error, PutReturnT>>;
 }

@@ -10,11 +10,12 @@ import type { GraphStore } from "./GraphStore.js";
 export class RdfjsDatasetGraphStore implements GraphStore {
   constructor(private readonly dataset: DatasetCore) {}
 
-  async clear(): Promise<Either<Error, void>> {
+  async clear(): Promise<Either<Error, object>> {
     return EitherAsync(async () => {
       for (const quad of this.dataset) {
         this.dataset.delete(quad);
       }
+      return {};
     });
   }
 
