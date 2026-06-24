@@ -170,6 +170,7 @@ const workspaces = {
           "@types/rdfjs__dataset",
           "@types/rdfjs__prefix-map",
           "@types/unbzip2-stream",
+          "into-stream",
           "mime",
           "purify-ts",
           "ts-log",

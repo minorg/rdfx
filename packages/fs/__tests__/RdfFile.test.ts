@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import { RdfFile } from "../src/RdfFile.js";
 import { testDataDirPath } from "./paths.js";
 import "@rdfx/testing";
+import intoStream from "into-stream";
 import { Maybe } from "purify-ts";
 
 describe("RdfFile", () => {
@@ -89,7 +90,7 @@ describe("RdfFile", () => {
         case "text/n3": {
           const expectedDataset = datasetFactory.dataset([expectedQuad]);
           (
-            await tempFile.serialize(expectedDataset, {
+            await tempFile.serialize(intoStream.object(expectedDataset), {
               prefixes,
             })
           ).unsafeCoerce();
@@ -107,7 +108,7 @@ describe("RdfFile", () => {
             expectedQuad.object,
           );
           (
-            await tempFile.serialize(datasetFactory.dataset([expectedTriple]), {
+            await tempFile.serialize(intoStream.object([expectedTriple]), {
               prefixes,
             })
           ).unsafeCoerce();

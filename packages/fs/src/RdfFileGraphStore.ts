@@ -3,14 +3,15 @@ import path from "node:path";
 import datasetFactory from "@rdfjs/dataset";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Stream } from "@rdfjs/types";
-import { RdfFile } from "@rdfx/fs";
 import {
   type GraphIdentifier,
   type GraphStore,
   RdfjsDatasetGraphStore,
 } from "@rdfx/graph-store";
+import intoStream from "into-stream";
 import { Either, EitherAsync, Left, type Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
+import { RdfFile } from "./RdfFile.js";
 
 /**
  * A GraphStore implementation backed by a single RdfFile.
@@ -140,7 +141,9 @@ export class RdfFileGraphStore implements GraphStore {
       await fs.mkdir(path.dirname(this.filePath), { recursive: true });
 
       await liftEither(
-        await this.file.serialize(unionDataset, { prefixes: this.prefixMap }),
+        await this.file.serialize(intoStream.object(unionDataset), {
+          prefixes: this.prefixMap,
+        }),
       );
 
       return return_;
