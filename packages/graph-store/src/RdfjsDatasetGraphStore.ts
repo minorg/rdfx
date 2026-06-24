@@ -27,7 +27,12 @@ export class RdfjsDatasetGraphStore implements GraphStore<void> {
   }
 
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
-    return EitherAsync(async () => this.#hasNamedGraph(identifier));
+    return EitherAsync(async () => {
+      for (const _ of this.dataset.match(null, null, null, identifier)) {
+        return true;
+      }
+      return false;
+    });
   }
 
   async isEmpty(): Promise<Either<Error, boolean>> {
@@ -98,12 +103,5 @@ export class RdfjsDatasetGraphStore implements GraphStore<void> {
 
       quads.on("error", (error) => resolve(Either.of(error)));
     });
-  }
-
-  #hasNamedGraph(identifier: GraphIdentifier): boolean {
-    for (const _ of this.dataset.match(null, null, null, identifier)) {
-      return true;
-    }
-    return false;
   }
 }
