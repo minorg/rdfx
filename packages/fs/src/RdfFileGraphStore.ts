@@ -70,17 +70,6 @@ export class RdfFileGraphStore implements GraphStore {
     );
   }
 
-  async identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>> {
-    return EitherAsync(
-      async ({ liftEither }) =>
-        await liftEither(
-          await (
-            await liftEither(await this.unionDatasetGraphStore())
-          ).identifiers(),
-        ),
-    );
-  }
-
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
     return EitherAsync(
       async ({ liftEither }) =>
@@ -88,6 +77,17 @@ export class RdfFileGraphStore implements GraphStore {
           await (await liftEither(await this.unionDatasetGraphStore())).head(
             identifier,
           ),
+        ),
+    );
+  }
+
+  async identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>> {
+    return EitherAsync(
+      async ({ liftEither }) =>
+        await liftEither(
+          await (
+            await liftEither(await this.unionDatasetGraphStore())
+          ).identifiers(),
         ),
     );
   }
@@ -113,6 +113,29 @@ export class RdfFileGraphStore implements GraphStore {
     return this.mutate((unionDatasetGraphStore) =>
       unionDatasetGraphStore.put(quads),
     );
+  }
+
+  async unionDataset(): Promise<Either<Error, DatasetCore>> {
+    return (
+      await EitherAsync<Error, DatasetCore>(async ({ liftEither }) => {
+        this.logger.debug("parsing dataset from %s", this.filePath);
+        const dataset = await liftEither(
+          await this.file.parseInto(datasetFactory.dataset()),
+        );
+        this.logger.debug(
+          "parsed %d quads from %d",
+          dataset.size,
+          this.filePath,
+        );
+        return dataset;
+      })
+    ).chainLeft((error) => {
+      if (errorCode(error) === "ENOENT") {
+        return Either.of(datasetFactory.dataset());
+      } else {
+        return Left(error);
+      }
+    });
   }
 
   private async mutate<ReturnT>(
@@ -147,29 +170,6 @@ export class RdfFileGraphStore implements GraphStore {
       );
 
       return return_;
-    });
-  }
-
-  private async unionDataset(): Promise<Either<Error, DatasetCore>> {
-    return (
-      await EitherAsync<Error, DatasetCore>(async ({ liftEither }) => {
-        this.logger.debug("parsing dataset from %s", this.filePath);
-        const dataset = await liftEither(
-          await this.file.parseInto(datasetFactory.dataset()),
-        );
-        this.logger.debug(
-          "parsed %d quads from %d",
-          dataset.size,
-          this.filePath,
-        );
-        return dataset;
-      })
-    ).chainLeft((error) => {
-      if (errorCode(error) === "ENOENT") {
-        return Either.of(datasetFactory.dataset());
-      } else {
-        return Left(error);
-      }
     });
   }
 

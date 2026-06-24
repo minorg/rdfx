@@ -176,7 +176,13 @@ const workspaces = {
           "ts-log",
           "unbzip2-stream",
         ],
-        internal: ["data-factory", "graph-store", "parsers", "serializers"],
+        internal: [
+          "data-factory",
+          "graph-store",
+          "parsers",
+          "serializers",
+          "string",
+        ],
       },
       tsconfig: {
         ...packageTsconfig,

@@ -4,6 +4,7 @@
     "@rdfx/graph-store": "0.0.27",
     "@rdfx/parsers": "0.0.27",
     "@rdfx/serializers": "0.0.27",
+    "@rdfx/string": "0.0.27",
     "@rdfjs/dataset": "~2.0.2",
     "@rdfjs/prefix-map": "~0.1.2",
     "@rdfjs/types": "~2.0.1",

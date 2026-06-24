@@ -1,7 +1,7 @@
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { Either, EitherAsync, Maybe } from "purify-ts";
 import { Readable } from "readable-stream";
-import type { GraphIdentifier } from "./GraphIdentifier.js";
+import { GraphIdentifier } from "./GraphIdentifier.js";
 import type { GraphStore } from "./GraphStore.js";
 
 /**
@@ -89,17 +89,9 @@ export class RdfjsDatasetGraphStore implements GraphStore {
     const clearedGraphIdentifiers = new Set<string>();
     return new Promise((resolve) => {
       quads.on("data", (quad: Quad) => {
-        let graphIdentifierString: string;
-        switch (quad.graph.termType) {
-          case "DefaultGraph":
-            graphIdentifierString = "";
-            break;
-          case "NamedNode":
-            graphIdentifierString = quad.graph.value;
-            break;
-          default:
-            throw new RangeError(quad.graph.termType);
-        }
+        const graphIdentifierString = GraphIdentifier.stringify(
+          GraphIdentifier.fromQuadGraph(quad.graph).unsafeCoerce(),
+        );
 
         if (!clearedGraphIdentifiers.has(graphIdentifierString)) {
           for (const deleteQuad of this.dataset.match(
