@@ -3,7 +3,8 @@
     "@rdfjs/types": "~2.0.1",
     "@types/readable-stream": "~4.0.23",
     "purify-ts": "~2.1.4",
-    "readable-stream": "^4.7.0"
+    "readable-stream": "^4.7.0",
+    "ts-log": "~3.0.2"
   },
   "devDependencies": {
     "@rdfx/data-factory": "0.0.27",

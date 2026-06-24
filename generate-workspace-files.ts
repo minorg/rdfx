@@ -193,6 +193,7 @@ const workspaces = {
           "@types/readable-stream",
           "purify-ts",
           "readable-stream",
+          "ts-log",
         ],
       },
       devDependencies: {
