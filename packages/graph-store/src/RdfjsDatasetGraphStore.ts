@@ -7,7 +7,7 @@ import type { GraphStore } from "./GraphStore.js";
 /**
  * A GraphStore implementation backed by an RDF/JS Dataset.
  */
-export class RdfjsDatasetGraphStore implements GraphStore<void> {
+export class RdfjsDatasetGraphStore implements GraphStore {
   constructor(private readonly dataset: DatasetCore) {}
 
   async clear(): Promise<Either<Error, void>> {
@@ -18,11 +18,12 @@ export class RdfjsDatasetGraphStore implements GraphStore<void> {
     });
   }
 
-  async delete(identifier: GraphIdentifier): Promise<Either<Error, void>> {
+  async delete(identifier: GraphIdentifier): Promise<Either<Error, object>> {
     return EitherAsync(async () => {
       for (const quad of this.dataset.match(null, null, null, identifier)) {
         this.dataset.delete(quad);
       }
+      return {};
     });
   }
 
@@ -69,21 +70,21 @@ export class RdfjsDatasetGraphStore implements GraphStore<void> {
     return Either.of(Maybe.empty());
   }
 
-  async post(quads: Stream): Promise<Either<Error, void>> {
+  async post(quads: Stream): Promise<Either<Error, object>> {
     return new Promise((resolve) => {
       quads.on("data", (quad: Quad) => {
         this.dataset.add(quad);
       });
 
       quads.on("end", () => {
-        resolve(Either.of(undefined));
+        resolve(Either.of({}));
       });
 
       quads.on("error", (error) => resolve(Either.of(error)));
     });
   }
 
-  async put(quads: Stream): Promise<Either<Error, void>> {
+  async put(quads: Stream): Promise<Either<Error, object>> {
     const clearedGraphIdentifiers = new Set<string>();
     return new Promise((resolve) => {
       quads.on("data", (quad: Quad) => {
@@ -115,7 +116,7 @@ export class RdfjsDatasetGraphStore implements GraphStore<void> {
       });
 
       quads.on("end", () => {
-        resolve(Either.of(undefined));
+        resolve(Either.of({}));
       });
 
       quads.on("error", (error) => resolve(Either.of(error)));
