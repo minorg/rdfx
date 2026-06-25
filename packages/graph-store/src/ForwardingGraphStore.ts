@@ -32,7 +32,7 @@ export class ForwardingGraphStore<
     >
 {
   constructor(
-    protected readonly delegate: GraphStore<
+    private readonly delegate: GraphStore<
       ClearOptionsT,
       ClearReturnT,
       DeleteOptionsT,
