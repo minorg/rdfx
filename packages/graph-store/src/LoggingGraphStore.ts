@@ -1,6 +1,7 @@
 import type { Stream } from "@rdfjs/types";
 import type { Either, Maybe } from "purify-ts";
 import type { Logger } from "ts-log";
+import { ForwardingGraphStore } from "./ForwardingGraphStore.js";
 import type { GraphIdentifier } from "./GraphIdentifier.js";
 import type { GraphStore } from "./GraphStore.js";
 
@@ -18,22 +19,20 @@ export class LoggingGraphStore<
   PostReturnT extends object,
   PutOptionsT extends object,
   PutReturnT extends object,
-> implements
-    GraphStore<
-      ClearOptionsT,
-      ClearReturnT,
-      DeleteOptionsT,
-      DeleteReturnT,
-      GetOptionsT,
-      HeadOptionsT,
-      PostOptionsT,
-      PostReturnT,
-      PutOptionsT,
-      PutReturnT
-    >
-{
+> extends ForwardingGraphStore<
+  ClearOptionsT,
+  ClearReturnT,
+  DeleteOptionsT,
+  DeleteReturnT,
+  GetOptionsT,
+  HeadOptionsT,
+  PostOptionsT,
+  PostReturnT,
+  PutOptionsT,
+  PutReturnT
+> {
   constructor(
-    private readonly delegate: GraphStore<
+    delegate: GraphStore<
       ClearOptionsT,
       ClearReturnT,
       DeleteOptionsT,
@@ -46,11 +45,15 @@ export class LoggingGraphStore<
       PutReturnT
     >,
     private readonly logger: Logger,
-  ) {}
+  ) {
+    super(delegate);
+  }
 
-  async clear(options?: ClearOptionsT): Promise<Either<Error, ClearReturnT>> {
+  override async clear(
+    options?: ClearOptionsT,
+  ): Promise<Either<Error, ClearReturnT>> {
     this.logger.debug("clear(options=%s)", options);
-    return this.delegate.clear(options).then((either) =>
+    return super.clear(options).then((either) =>
       either
         .ifLeft((error) => {
           this.logger.error(
@@ -69,12 +72,12 @@ export class LoggingGraphStore<
     );
   }
 
-  async delete(
+  override async delete(
     identifier: GraphIdentifier,
     options?: DeleteOptionsT,
   ): Promise<Either<Error, DeleteReturnT>> {
     this.logger.debug("delete(identifier=%s, options=%s)", identifier, options);
-    return this.delegate.delete(identifier, options).then((either) =>
+    return super.delete(identifier, options).then((either) =>
       either
         .ifLeft((error) => {
           this.logger.error(
@@ -95,12 +98,12 @@ export class LoggingGraphStore<
     );
   }
 
-  async get(
+  override async get(
     identifier: GraphIdentifier,
     options?: GetOptionsT,
   ): Promise<Either<Error, Maybe<Stream>>> {
     this.logger.debug("get(identifier=%s, options=%s)", identifier, options);
-    return this.delegate.get(identifier, options).then((either) =>
+    return super.get(identifier, options).then((either) =>
       either
         .ifLeft((error) => {
           this.logger.error(
@@ -121,12 +124,12 @@ export class LoggingGraphStore<
     );
   }
 
-  async head(
+  override async head(
     identifier: GraphIdentifier,
     options?: HeadOptionsT,
   ): Promise<Either<Error, boolean>> {
     this.logger.debug("head(identifier=%s, options=%s)", identifier, options);
-    return this.delegate.head(identifier, options).then((either) =>
+    return super.head(identifier, options).then((either) =>
       either
         .ifLeft((error) => {
           this.logger.error(
@@ -147,9 +150,11 @@ export class LoggingGraphStore<
     );
   }
 
-  async identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>> {
+  override async identifiers(): Promise<
+    Either<Error, readonly GraphIdentifier[]>
+  > {
     this.logger.debug("identifiers()");
-    return this.delegate.identifiers().then((either) =>
+    return super.identifiers().then((either) =>
       either
         .ifLeft((error) => {
           this.logger.error("identifiers() -> ERROR: %s", error.message);
@@ -160,9 +165,9 @@ export class LoggingGraphStore<
     );
   }
 
-  async isEmpty(): Promise<Either<Error, boolean>> {
+  override async isEmpty(): Promise<Either<Error, boolean>> {
     this.logger.debug("isEmpty()");
-    return this.delegate.isEmpty().then((either) =>
+    return super.isEmpty().then((either) =>
       either
         .ifLeft((error) => {
           this.logger.error("isEmpty() -> ERROR: %s", error.message);
@@ -173,12 +178,12 @@ export class LoggingGraphStore<
     );
   }
 
-  async post(
+  override async post(
     quads: Stream,
     options?: PostOptionsT,
   ): Promise<Either<Error, PostReturnT>> {
     this.logger.debug("post(quads, options=%s)", options);
-    return this.delegate.post(quads, options).then((either) =>
+    return super.post(quads, options).then((either) =>
       either
         .ifLeft((error) => {
           this.logger.error(
@@ -197,12 +202,12 @@ export class LoggingGraphStore<
     );
   }
 
-  async put(
+  override async put(
     quads: Stream,
     options?: PutOptionsT,
   ): Promise<Either<Error, PutReturnT>> {
     this.logger.debug("put(quads, options=%s)", options);
-    return this.delegate.put(quads, options).then((either) =>
+    return super.put(quads, options).then((either) =>
       either
         .ifLeft((error) => {
           this.logger.error(
