@@ -1,3 +1,4 @@
+export * from "./ForwardingGraphStore.js";
 export * from "./GraphIdentifier.js";
 export * from "./GraphStore.js";
 export * from "./LoggingGraphStore.js";
