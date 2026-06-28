@@ -399,3 +399,81 @@ sh:Shape-xone
     sh:node shaclmate:ShapeList ;
     sh:path sh:xone .
 
+sh:NodeShape
+    sh:property sh:NodeShape-discriminantValue, sh:NodeShape-extern, sh:NodeShape-fromRdfType, sh:NodeShape-rdfType, sh:NodeShape-toRdfTypes, sh:NodeShape-tsImports, shaclmate:Shape-ignore, shaclmate:Shape-mutable, shaclmate:Shape-shaclmateName .
+
+sh:NodeShape-discriminantValue
+    a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:path shaclmate:discriminantValue .
+
+sh:NodeShape-extern
+    a sh:PropertyShape ;
+    sh:datatype xsd:boolean ;
+    sh:maxCount 1 ;
+    sh:path shaclmate:extern .
+
+sh:NodeShape-fromRdfType
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:path shaclmate:fromRdfType .
+
+sh:NodeShape-rdfType
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:path shaclmate:rdfType .
+
+sh:NodeShape-toRdfTypes
+    a sh:PropertyShape ;
+    sh:nodeKind sh:IRI ;
+    sh:path shaclmate:toRdfType .
+
+sh:NodeShape-tsImports
+    a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:name "tsImports" ;
+    sh:path shaclmate:tsImport .
+
+sh:PropertyShape
+    sh:property sh:PropertyShape-display, sh:PropertyShape-resolve, shaclmate:Shape-ignore, shaclmate:Shape-mutable, shaclmate:Shape-shaclmateName .
+
+sh:PropertyShape-display
+    a sh:PropertyShape ;
+    rdfs:comment "Whether to include this property in a toString()-type display, defaults to false" ;
+    sh:datatype xsd:boolean ;
+    sh:defaultValue false ;
+    sh:maxCount 1 ;
+    sh:path shaclmate:display .
+
+sh:PropertyShape-resolve
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:name "resolve" ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:path shaclmate:resolve .
+
+shaclmate:Shape-ignore
+    a sh:PropertyShape ;
+    rdfs:comment "Whether to ignore this shape in code generation, defaults to false" ;
+    sh:datatype xsd:boolean ;
+    sh:defaultValue false ;
+    sh:maxCount 1 ;
+    sh:path shaclmate:ignore .
+
+shaclmate:Shape-mutable
+    a sh:PropertyShape ;
+    sh:datatype xsd:boolean ;
+    sh:maxCount 1 ;
+    sh:path shaclmate:mutable .
+
+shaclmate:Shape-shaclmateName
+    shaclmate:display true ;
+    a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "shaclmateName" ;
+    sh:path shaclmate:name .
+
