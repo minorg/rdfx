@@ -17,7 +17,7 @@ rdfs:isDefinedBy
     sh:maxCount 1 ;
     sh:path rdfs:isDefinedBy ;
     sh:xone ([
-            sh:nodeKind sh:BlankNodeOrIRI
+            sh:nodeKind sh:IRI
         ]
         [
             sh:node owl:Ontology

@@ -82,6 +82,10 @@ async function main() {
         generator: new TsGenerator({
           configuration: {
             features: new Set(["Object.create", "Object.toRdf"]),
+            objectDiscriminantProperty: {
+              jsonName: "!IRRELEVANT!",
+              name: "termType",
+            },
           },
           logger: console,
         }),

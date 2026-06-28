@@ -432,7 +432,7 @@ function $wrap_ToRdfResourceFunction<
 export type owl_Ontology = {
   readonly $identifier: () => owl_Ontology.Identifier;
 
-  readonly $type: "owl_Ontology";
+  readonly termType: "owl_Ontology";
 
   readonly comment: Maybe<string>;
 
@@ -468,7 +468,10 @@ export namespace owl_Ontology {
         ),
       ),
     })
-      .map((properties) => ({ ...properties, $type: "owl_Ontology" as const }))
+      .map((properties) => ({
+        ...properties,
+        termType: "owl_Ontology" as const,
+      }))
       .map((object) =>
         $monkeyPatchObject(object, { $toString: owl_Ontology.$toString }),
       );
@@ -493,7 +496,7 @@ export namespace owl_Ontology {
   }
 
   export function isowl_Ontology(object: $Object): object is owl_Ontology {
-    return object.$type === "owl_Ontology";
+    return object.termType === "owl_Ontology";
   }
 
   export const schema = {
@@ -578,7 +581,7 @@ export namespace owl_Ontology {
 export type sh_NodeShape = {
   readonly $identifier: () => sh_NodeShape.Identifier;
 
-  readonly $type: "sh_NodeShape";
+  readonly termType: "sh_NodeShape";
 
   readonly and: Maybe<readonly (BlankNode | NamedNode)[]>;
 
@@ -600,9 +603,7 @@ export type sh_NodeShape = {
 
   readonly in_: Maybe<readonly (NamedNode | Literal)[]>;
 
-  readonly isDefinedBy: Maybe<
-    (BlankNode | NamedNode) | { termType: "owl_Ontology"; value: owl_Ontology }
-  >;
+  readonly isDefinedBy: Maybe<NamedNode | owl_Ontology>;
 
   readonly label: Maybe<string>;
 
@@ -686,14 +687,8 @@ export namespace sh_NodeShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | (
-          | (BlankNode | NamedNode)
-          | { termType: "owl_Ontology"; value: owl_Ontology }
-        )
-      | Maybe<
-          | (BlankNode | NamedNode)
-          | { termType: "owl_Ontology"; value: owl_Ontology }
-        >;
+      | (NamedNode | owl_Ontology)
+      | Maybe<NamedNode | owl_Ontology>;
     readonly label?: string | Maybe<string>;
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
     readonly maxExclusive?:
@@ -1101,7 +1096,10 @@ export namespace sh_NodeShape {
         ),
       ),
     })
-      .map((properties) => ({ ...properties, $type: "sh_NodeShape" as const }))
+      .map((properties) => ({
+        ...properties,
+        termType: "sh_NodeShape" as const,
+      }))
       .map((object) =>
         $monkeyPatchObject(object, { $toString: sh_NodeShape.$toString }),
       );
@@ -1131,14 +1129,8 @@ export namespace sh_NodeShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | (
-          | (BlankNode | NamedNode)
-          | { termType: "owl_Ontology"; value: owl_Ontology }
-        )
-      | Maybe<
-          | (BlankNode | NamedNode)
-          | { termType: "owl_Ontology"; value: owl_Ontology }
-        >;
+      | (NamedNode | owl_Ontology)
+      | Maybe<NamedNode | owl_Ontology>;
     readonly label?: string | Maybe<string>;
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
     readonly maxExclusive?:
@@ -1262,7 +1254,7 @@ export namespace sh_NodeShape {
   }
 
   export function issh_NodeShape(object: $Object): object is sh_NodeShape {
-    return object.$type === "sh_NodeShape";
+    return object.termType === "sh_NodeShape";
   }
 
   export const schema = {
@@ -1374,9 +1366,9 @@ export namespace sh_NodeShape {
               return {
                 kind: "DiscriminatedUnion" as const,
                 members: {
-                  BlankNode: {
-                    discriminantValues: ["BlankNode", "NamedNode"],
-                    type: { kind: "Identifier" as const },
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" as const },
                   },
                   owl_Ontology: {
                     discriminantValues: ["owl_Ontology"],
@@ -1830,16 +1822,13 @@ export namespace sh_NodeShape {
       sh_NodeShape.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList().flatMap((value) =>
         (
-          ((value, _options): (BlankNode | NamedNode)[] => {
-            if (
-              value["termType"] === "BlankNode" ||
-              value["termType"] === "NamedNode"
-            ) {
+          ((value, _options): (NamedNode | BlankNode)[] => {
+            if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (value["termType"] === "owl_Ontology") {
+            if (owl_Ontology.isowl_Ontology(value)) {
               return [
-                owl_Ontology.toRdfResource(value.value, {
+                owl_Ontology.toRdfResource(value, {
                   graph: _options.graph,
                   resourceSet: _options.resourceSet,
                 }).identifier,
@@ -1847,10 +1836,7 @@ export namespace sh_NodeShape {
             }
 
             throw new Error("unable to serialize to RDF");
-          }) satisfies $ToRdfResourceValuesFunction<
-            | (BlankNode | NamedNode)
-            | { termType: "owl_Ontology"; value: owl_Ontology }
-          >
+          }) satisfies $ToRdfResourceValuesFunction<NamedNode | owl_Ontology>
         )(value, {
           graph: parameters.graph,
           resource: parameters.resource,
@@ -2159,7 +2145,7 @@ export namespace sh_NodeShape {
 export type sh_PropertyGroup = {
   readonly $identifier: () => sh_PropertyGroup.Identifier;
 
-  readonly $type: "sh_PropertyGroup";
+  readonly termType: "sh_PropertyGroup";
 
   readonly comment: Maybe<string>;
 
@@ -2197,7 +2183,7 @@ export namespace sh_PropertyGroup {
     })
       .map((properties) => ({
         ...properties,
-        $type: "sh_PropertyGroup" as const,
+        termType: "sh_PropertyGroup" as const,
       }))
       .map((object) =>
         $monkeyPatchObject(object, { $toString: sh_PropertyGroup.$toString }),
@@ -2225,7 +2211,7 @@ export namespace sh_PropertyGroup {
   export function issh_PropertyGroup(
     object: $Object,
   ): object is sh_PropertyGroup {
-    return object.$type === "sh_PropertyGroup";
+    return object.termType === "sh_PropertyGroup";
   }
 
   export const schema = {
@@ -2310,7 +2296,7 @@ export namespace sh_PropertyGroup {
 export type sh_PropertyShape = {
   readonly $identifier: () => sh_PropertyShape.Identifier;
 
-  readonly $type: "sh_PropertyShape";
+  readonly termType: "sh_PropertyShape";
 
   readonly and: Maybe<readonly (BlankNode | NamedNode)[]>;
 
@@ -2338,9 +2324,7 @@ export type sh_PropertyShape = {
 
   readonly in_: Maybe<readonly (NamedNode | Literal)[]>;
 
-  readonly isDefinedBy: Maybe<
-    (BlankNode | NamedNode) | { termType: "owl_Ontology"; value: owl_Ontology }
-  >;
+  readonly isDefinedBy: Maybe<NamedNode | owl_Ontology>;
 
   readonly label: Maybe<string>;
 
@@ -2447,14 +2431,8 @@ export namespace sh_PropertyShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | (
-          | (BlankNode | NamedNode)
-          | { termType: "owl_Ontology"; value: owl_Ontology }
-        )
-      | Maybe<
-          | (BlankNode | NamedNode)
-          | { termType: "owl_Ontology"; value: owl_Ontology }
-        >;
+      | (NamedNode | owl_Ontology)
+      | Maybe<NamedNode | owl_Ontology>;
     readonly label?: string | Maybe<string>;
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
     readonly lessThan?: string | NamedNode | readonly (string | NamedNode)[];
@@ -2966,7 +2944,7 @@ export namespace sh_PropertyShape {
     })
       .map((properties) => ({
         ...properties,
-        $type: "sh_PropertyShape" as const,
+        termType: "sh_PropertyShape" as const,
       }))
       .map((object) =>
         $monkeyPatchObject(object, { $toString: sh_PropertyShape.$toString }),
@@ -3002,14 +2980,8 @@ export namespace sh_PropertyShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | (
-          | (BlankNode | NamedNode)
-          | { termType: "owl_Ontology"; value: owl_Ontology }
-        )
-      | Maybe<
-          | (BlankNode | NamedNode)
-          | { termType: "owl_Ontology"; value: owl_Ontology }
-        >;
+      | (NamedNode | owl_Ontology)
+      | Maybe<NamedNode | owl_Ontology>;
     readonly label?: string | Maybe<string>;
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
     readonly lessThan?: string | NamedNode | readonly (string | NamedNode)[];
@@ -3147,7 +3119,7 @@ export namespace sh_PropertyShape {
   export function issh_PropertyShape(
     object: $Object,
   ): object is sh_PropertyShape {
-    return object.$type === "sh_PropertyShape";
+    return object.termType === "sh_PropertyShape";
   }
 
   export const schema = {
@@ -3274,9 +3246,9 @@ export namespace sh_PropertyShape {
               return {
                 kind: "DiscriminatedUnion" as const,
                 members: {
-                  BlankNode: {
-                    discriminantValues: ["BlankNode", "NamedNode"],
-                    type: { kind: "Identifier" as const },
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" as const },
                   },
                   owl_Ontology: {
                     discriminantValues: ["owl_Ontology"],
@@ -3773,16 +3745,13 @@ export namespace sh_PropertyShape {
       sh_NodeShape.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList().flatMap((value) =>
         (
-          ((value, _options): (BlankNode | NamedNode)[] => {
-            if (
-              value["termType"] === "BlankNode" ||
-              value["termType"] === "NamedNode"
-            ) {
+          ((value, _options): (NamedNode | BlankNode)[] => {
+            if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (value["termType"] === "owl_Ontology") {
+            if (owl_Ontology.isowl_Ontology(value)) {
               return [
-                owl_Ontology.toRdfResource(value.value, {
+                owl_Ontology.toRdfResource(value, {
                   graph: _options.graph,
                   resourceSet: _options.resourceSet,
                 }).identifier,
@@ -3790,10 +3759,7 @@ export namespace sh_PropertyShape {
             }
 
             throw new Error("unable to serialize to RDF");
-          }) satisfies $ToRdfResourceValuesFunction<
-            | (BlankNode | NamedNode)
-            | { termType: "owl_Ontology"; value: owl_Ontology }
-          >
+          }) satisfies $ToRdfResourceValuesFunction<NamedNode | owl_Ontology>
         )(value, {
           graph: parameters.graph,
           resource: parameters.resource,
@@ -4307,9 +4273,9 @@ export namespace sh_Shape {
               return {
                 kind: "DiscriminatedUnion" as const,
                 members: {
-                  BlankNode: {
-                    discriminantValues: ["BlankNode", "NamedNode"],
-                    type: { kind: "Identifier" as const },
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" as const },
                   },
                   owl_Ontology: {
                     discriminantValues: ["owl_Ontology"],
