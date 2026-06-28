@@ -25,3 +25,7 @@ rdfs:label
     sh:maxCount 1 ;
     sh:path rdfs:label .
 
+rdfs:subClassOf
+    a sh:PropertyShape ;
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:subClassOf .

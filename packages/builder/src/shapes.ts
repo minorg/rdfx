@@ -655,7 +655,7 @@ export type sh_NodeShape = {
 
   readonly targetSubjectsOf: readonly NamedNode[];
 
-  readonly types: readonly NamedNode[];
+  readonly type: readonly NamedNode[];
 
   readonly xone: Maybe<readonly (BlankNode | NamedNode)[]>;
 };
@@ -801,7 +801,7 @@ export namespace sh_NodeShape {
       | string
       | NamedNode
       | readonly (string | NamedNode)[];
-    readonly types?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly type?: string | NamedNode | readonly (string | NamedNode)[];
     readonly xone?:
       | readonly (BlankNode | NamedNode | string | undefined)[]
       | Maybe<readonly (BlankNode | NamedNode)[]>;
@@ -1083,12 +1083,12 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      types: $convertToScalarSet(
+      type: $convertToScalarSet(
         $convertToIri<string>,
         true,
-      )(parameters?.types).chain((value) =>
+      )(parameters?.type).chain((value) =>
         $validateArray($identityValidationFunction, true)(
-          sh_NodeShape.schema.properties.types.type,
+          sh_NodeShape.schema.properties.type.type,
           value,
         ),
       ),
@@ -1246,7 +1246,7 @@ export namespace sh_NodeShape {
       | string
       | NamedNode
       | readonly (string | NamedNode)[];
-    readonly types?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly type?: string | NamedNode | readonly (string | NamedNode)[];
     readonly xone?:
       | readonly (BlankNode | NamedNode | string | undefined)[]
       | Maybe<readonly (BlankNode | NamedNode)[]>;
@@ -1581,7 +1581,7 @@ export namespace sh_NodeShape {
         ),
         type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
       },
-      types: {
+      type: {
         kind: "Shacl",
         path: $RdfVocabularies.rdf.type,
         type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
@@ -2080,8 +2080,8 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.types.path,
-      parameters.object.types.flatMap((item) => [item]),
+      sh_NodeShape.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(

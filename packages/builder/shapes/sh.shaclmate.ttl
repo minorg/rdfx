@@ -94,7 +94,7 @@ shaclmate:StringList
 sh:NodeShape
     a owl:Class, sh:NodeShape ;
     shaclmate:name "sh_NodeShape" ;
-    sh:property rdfs:comment, rdfs:label, sh:NodeShape-closed, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, sh:NodeShape-subClassOf, sh:NodeShape-types, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, rdfs:isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
+    sh:property rdfs:comment, rdfs:label, sh:NodeShape-closed, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, rdfs:subClassOf, rdf:type, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, rdfs:isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:NodeShape-closed
     a sh:PropertyShape ;
@@ -112,16 +112,6 @@ sh:NodeShape-properties
     a sh:PropertyShape ;
     sh:nodeKind sh:BlankNodeOrIRI ;
     sh:path sh:property .
-
-sh:NodeShape-subClassOf
-    a sh:PropertyShape ;
-    sh:nodeKind sh:IRI ;
-    sh:path rdfs:subClassOf .
-
-sh:NodeShape-types
-    a sh:PropertyShape ;
-    sh:nodeKind sh:IRI ;
-    sh:path rdf:type .
 
 sh:PropertyGroup
     a owl:Class, sh:NodeShape ;
