@@ -24,7 +24,7 @@ const externalDependencies = {
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
-  "@shaclmate/compiler": "4.0.61",
+  "@shaclmate/compiler": "4.0.62",
   "@tpluscode/rdf-ns-builders": "~4.3.0",
   "@tsconfig/node24": "^24",
   "@tsconfig/strictest": "~2.0.8",
