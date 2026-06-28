@@ -12,6 +12,12 @@ rdfs:comment
     sh:name "comment" ;
     sh:path rdfs:comment .
 
+rdfs:isDefinedBy
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:xone ( [ sh:nodeKind sh:BlankNodeOrIRI ] [ sh:node owl:Ontology ] ) ;
+    sh:path rdfs:isDefinedBy .
+
 rdfs:label
     shaclmate:display true ;
     a sh:PropertyShape ;

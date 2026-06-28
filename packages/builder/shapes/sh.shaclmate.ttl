@@ -94,7 +94,7 @@ shaclmate:StringList
 sh:NodeShape
     a owl:Class, sh:NodeShape ;
     shaclmate:name "sh_NodeShape" ;
-    sh:property rdfs:comment, rdfs:label, sh:NodeShape-closed, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, sh:NodeShape-subClassOf, sh:NodeShape-types, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, sh:Shape-isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
+    sh:property rdfs:comment, rdfs:label, sh:NodeShape-closed, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, sh:NodeShape-subClassOf, sh:NodeShape-types, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, rdfs:isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:NodeShape-closed
     a sh:PropertyShape ;
@@ -131,7 +131,7 @@ sh:PropertyGroup
 sh:PropertyShape
     a owl:Class, sh:NodeShape ;
     shaclmate:name "sh_PropertyShape" ;
-    sh:property rdfs:comment, rdfs:label, sh:PropertyShape-defaultValue, sh:PropertyShape-description, sh:PropertyShape-disjoint, sh:PropertyShape-equals, sh:PropertyShape-groups, sh:PropertyShape-lessThan, sh:PropertyShape-lessThanOrEquals, sh:PropertyShape-maxCount, sh:PropertyShape-minCount, sh:PropertyShape-name, sh:PropertyShape-order, sh:PropertyShape-path, sh:PropertyShape-qualifiedMaxCount, sh:PropertyShape-qualifiedMinCount, sh:PropertyShape-qualifiedValueShape, sh:PropertyShape-qualifiedValueShapesDisjoint, sh:PropertyShape-uniqueLang, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, sh:Shape-isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
+    sh:property rdfs:comment, rdfs:label, sh:PropertyShape-defaultValue, sh:PropertyShape-description, sh:PropertyShape-disjoint, sh:PropertyShape-equals, sh:PropertyShape-groups, sh:PropertyShape-lessThan, sh:PropertyShape-lessThanOrEquals, sh:PropertyShape-maxCount, sh:PropertyShape-minCount, sh:PropertyShape-name, sh:PropertyShape-order, sh:PropertyShape-path, sh:PropertyShape-qualifiedMaxCount, sh:PropertyShape-qualifiedMinCount, sh:PropertyShape-qualifiedValueShape, sh:PropertyShape-qualifiedValueShapesDisjoint, sh:PropertyShape-uniqueLang, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, rdfs:isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:PropertyShape-defaultValue
     a sh:PropertyShape ;
@@ -290,12 +290,6 @@ sh:Shape-in
     sh:name "in_" ;
     sh:node shaclmate:InList ;
     sh:path sh:in .
-
-sh:Shape-isDefinedBy
-    a sh:PropertyShape ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
-    sh:path rdfs:isDefinedBy .
 
 sh:Shape-languageIn
     a sh:PropertyShape ;
