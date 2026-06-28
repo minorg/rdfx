@@ -141,11 +141,13 @@ const workspaces = {
       },
       devDependencies: {
         external: [
+          "@rdfjs/dataset",
           "@shaclmate/compiler",
           "@tpluscode/rdf-ns-builders",
+          "@types/rdfjs__dataset",
           "ts-log",
         ],
-        internal: ["fs"],
+        internal: ["fs", "resource"],
       },
       tsconfig: packageTsconfig,
     },
