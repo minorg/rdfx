@@ -5,7 +5,7 @@
 @prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-shaclmate:IdentifierList
+shaclmate:ShapeList
     a sh:NodeShape ;
     sh:xone ([
             sh:hasValue ( )
@@ -14,12 +14,12 @@ shaclmate:IdentifierList
             sh:property [
                 sh:maxCount 1 ;
                 sh:minCount 1 ;
-                sh:nodeKind sh:BlankNodeOrIRI ;
+                sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node sh:Shape ]) ;
                 sh:path rdf:first
             ], [
                 sh:maxCount 1 ;
                 sh:minCount 1 ;
-                sh:node shaclmate:IdentifierList ;
+                sh:node shaclmate:ShapeList ;
                 sh:path rdf:rest
             ]
         ]
@@ -110,7 +110,7 @@ sh:NodeShape-ignoredProperties
 
 sh:NodeShape-properties
     a sh:PropertyShape ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node sh:PropertyShape ]) ;
     sh:path sh:property .
 
 sh:PropertyGroup
@@ -147,7 +147,7 @@ sh:PropertyShape-equals
 
 sh:PropertyShape-groups
     a sh:PropertyShape ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node sh:PropertyGroup ]) ;
     sh:path sh:group .
 
 sh:PropertyShape-lessThan
@@ -241,7 +241,7 @@ sh:Shape
 sh:Shape-and
     a sh:PropertyShape ;
     sh:maxCount 1 ;
-    sh:node shaclmate:IdentifierList ;
+    sh:node shaclmate:ShapeList ;
     sh:path sh:and .
 
 sh:Shape-classes
@@ -332,7 +332,7 @@ sh:Shape-minLength
 sh:Shape-node
     a sh:PropertyShape ;
     sh:maxCount 1 ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node sh:NodeShape ]) ;
     sh:path sh:node .
 
 sh:Shape-nodeKind
@@ -349,13 +349,13 @@ sh:Shape-nodeKind
 
 sh:Shape-not
     a sh:PropertyShape ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node sh:NodeShape ]) ;
     sh:path sh:not .
 
 sh:Shape-or
     a sh:PropertyShape ;
     sh:maxCount 1 ;
-    sh:node shaclmate:IdentifierList ;
+    sh:node shaclmate:ShapeList ;
     sh:path sh:or .
 
 sh:Shape-pattern
@@ -396,6 +396,6 @@ sh:Shape-targetSubjectsOf
 sh:Shape-xone
     a sh:PropertyShape ;
     sh:maxCount 1 ;
-    sh:node shaclmate:IdentifierList ;
+    sh:node shaclmate:ShapeList ;
     sh:path sh:xone .
 
