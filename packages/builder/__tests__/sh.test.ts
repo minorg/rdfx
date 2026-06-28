@@ -1,17 +1,15 @@
 import datasetFactory from "@rdfjs/dataset";
-import namespace from "@rdfjs/namespace";
 import dataFactory from "@rdfx/data-factory";
 import { ResourceSet } from "@rdfx/resource";
 import { ShapesGraph } from "@shaclmate/compiler";
+import { skos } from "@tpluscode/rdf-ns-builders";
 import { describe, expect, it } from "vitest";
 import { builder } from "../src/builder.js";
 import { sh_NodeShape, sh_PropertyShape, sh_Shape } from "../src/shapes.js";
 
-const ex = namespace("http://example.com/");
-
 describe("sh", () => {
   function shBuilder() {
-    return builder({ namespace: ex }).sh;
+    return builder({ namespace: skos }).sh;
   }
 
   function testShapesGraph(...shapes: readonly sh_Shape[]) {
@@ -44,9 +42,8 @@ describe("sh", () => {
   describe("PropertyShape", () => {
     it("minimal", () => {
       testShapesGraph(
-        shBuilder().PropertyShape("PropertyShape", {
+        shBuilder().PropertyShape("prefLabel", {
           cardinality: "required",
-          path: ex("path"),
         }),
       );
     });
