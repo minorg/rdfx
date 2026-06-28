@@ -93,6 +93,7 @@ shaclmate:StringList
 
 sh:NodeShape
     a owl:Class, sh:NodeShape ;
+    shaclmate:name "sh_NodeShape" ;
     sh:property rdfs:comment, rdfs:label, sh:NodeShape-closed, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, sh:NodeShape-subClassOf, sh:NodeShape-types, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, sh:Shape-isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:NodeShape-closed
@@ -123,11 +124,13 @@ sh:NodeShape-types
     sh:path rdf:type .
 
 sh:PropertyGroup
-    a sh:NodeShape ;
+    a owl:Class, sh:NodeShape ;
+    shaclmate:name "sh_PropertyGroup" ;
     sh:property rdfs:comment, rdfs:label .
 
 sh:PropertyShape
     a owl:Class, sh:NodeShape ;
+    shaclmate:name "sh_PropertyShape" ;
     sh:property rdfs:comment, rdfs:label, sh:PropertyShape-defaultValue, sh:PropertyShape-description, sh:PropertyShape-disjoint, sh:PropertyShape-equals, sh:PropertyShape-groups, sh:PropertyShape-lessThan, sh:PropertyShape-lessThanOrEquals, sh:PropertyShape-maxCount, sh:PropertyShape-minCount, sh:PropertyShape-name, sh:PropertyShape-order, sh:PropertyShape-path, sh:PropertyShape-qualifiedMaxCount, sh:PropertyShape-qualifiedMinCount, sh:PropertyShape-qualifiedValueShape, sh:PropertyShape-qualifiedValueShapesDisjoint, sh:PropertyShape-uniqueLang, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, sh:Shape-isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:PropertyShape-defaultValue
@@ -232,6 +235,7 @@ sh:PropertyShape-uniqueLang
 
 sh:Severity
     a sh:NodeShape ;
+    shaclmate:name "sh_Severity" ;
     sh:in (sh:Info
         sh:Warning
         sh:Violation
@@ -239,6 +243,7 @@ sh:Severity
 
 sh:Shape
     a sh:NodeShape ;
+    shaclmate:name "sh_Shape" ;
     sh:xone (sh:NodeShape
         sh:PropertyShape
     ) .
@@ -409,77 +414,3 @@ sh:Shape-xone
     sh:maxCount 1 ;
     sh:node shaclmate:IdentifierList ;
     sh:path sh:xone .
-
-sh:ValidateReport
-    a sh:NodeShape ;
-    sh:property sh:ValidateReport-conforms, sh:ValidateReport-results, sh:ValidateReport-shapesGraphWellFormed .
-
-sh:ValidateReport-conforms
-    a sh:PropertyShape ;
-    sh:datatype xsd:boolean ;
-    sh:maxCount 1 ;
-    sh:minCount 1 ;
-    sh:path sh:conforms .
-
-sh:ValidateReport-results
-    a sh:PropertyShape ;
-    sh:node sh:ValidationResult ;
-    sh:path sh:result .
-
-sh:ValidateReport-shapesGraphWellFormed
-    a sh:PropertyShape ;
-    sh:datatype xsd:boolean ;
-    sh:maxCount 1 ;
-    sh:path sh:shapesGraphWellFormed .
-
-sh:ValidationResult
-    a sh:NodeShape ;
-    sh:property sh:ValidationResult-details, sh:ValidationResult-focusNode, sh:ValidationResult-message, sh:ValidationResult-path, sh:ValidationResult-severity, sh:ValidationResult-sourceConstraintComponent, sh:ValidationResult-sourceShape, sh:ValidationResult-value .
-
-sh:ValidationResult-details
-    a sh:PropertyShape ;
-    sh:path sh:detail .
-
-sh:ValidationResult-focusNode
-    a sh:PropertyShape ;
-    sh:maxCount 1 ;
-    sh:minCount 1 ;
-    sh:path sh:focusNode .
-
-sh:ValidationResult-message
-    a sh:PropertyShape ;
-    sh:datatype xsd:string ;
-    sh:maxCount 1 ;
-    sh:path sh:resultMessage .
-
-sh:ValidationResult-path
-    a sh:PropertyShape ;
-    sh:maxCount 1 ;
-    sh:node shaclmate:PropertyPath ;
-    sh:path sh:resultPath .
-
-sh:ValidationResult-severity
-    a sh:PropertyShape ;
-    sh:maxCount 1 ;
-    sh:minCount 1 ;
-    sh:node sh:Severity ;
-    sh:path sh:resultSeverity .
-
-sh:ValidationResult-sourceConstraintComponent
-    a sh:PropertyShape ;
-    sh:maxCount 1 ;
-    sh:minCount 1 ;
-    sh:nodeKind sh:IRI ;
-    sh:path sh:sourceConstraintComponent .
-
-sh:ValidationResult-sourceShape
-    a sh:PropertyShape ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
-    sh:path sh:sourceShape .
-
-sh:ValidationResult-value
-    a sh:PropertyShape ;
-    sh:maxCount 1 ;
-    sh:path sh:value .
-
