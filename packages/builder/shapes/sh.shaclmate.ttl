@@ -92,9 +92,9 @@ shaclmate:StringList
     ) .
 
 sh:NodeShape
-    a owl:Class, sh:NodeShape ;
     shaclmate:name "sh_NodeShape" ;
-    sh:property rdfs:comment, rdfs:label, sh:NodeShape-closed, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, rdfs:subClassOf, rdf:type, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, rdfs:isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
+    a owl:Class, sh:NodeShape ;
+    sh:property rdf:type, rdfs:comment, rdfs:isDefinedBy, rdfs:label, rdfs:subClassOf, sh:NodeShape-closed, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:NodeShape-closed
     a sh:PropertyShape ;
@@ -114,14 +114,14 @@ sh:NodeShape-properties
     sh:path sh:property .
 
 sh:PropertyGroup
-    a owl:Class, sh:NodeShape ;
     shaclmate:name "sh_PropertyGroup" ;
+    a owl:Class, sh:NodeShape ;
     sh:property rdfs:comment, rdfs:label .
 
 sh:PropertyShape
-    a owl:Class, sh:NodeShape ;
     shaclmate:name "sh_PropertyShape" ;
-    sh:property rdfs:comment, rdfs:label, sh:PropertyShape-defaultValue, sh:PropertyShape-description, sh:PropertyShape-disjoint, sh:PropertyShape-equals, sh:PropertyShape-groups, sh:PropertyShape-lessThan, sh:PropertyShape-lessThanOrEquals, sh:PropertyShape-maxCount, sh:PropertyShape-minCount, sh:PropertyShape-name, sh:PropertyShape-order, sh:PropertyShape-path, sh:PropertyShape-qualifiedMaxCount, sh:PropertyShape-qualifiedMinCount, sh:PropertyShape-qualifiedValueShape, sh:PropertyShape-qualifiedValueShapesDisjoint, sh:PropertyShape-uniqueLang, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, rdfs:isDefinedBy, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
+    a owl:Class, sh:NodeShape ;
+    sh:property rdfs:comment, rdfs:isDefinedBy, rdfs:label, sh:PropertyShape-defaultValue, sh:PropertyShape-description, sh:PropertyShape-disjoint, sh:PropertyShape-equals, sh:PropertyShape-groups, sh:PropertyShape-lessThan, sh:PropertyShape-lessThanOrEquals, sh:PropertyShape-maxCount, sh:PropertyShape-minCount, sh:PropertyShape-name, sh:PropertyShape-order, sh:PropertyShape-path, sh:PropertyShape-qualifiedMaxCount, sh:PropertyShape-qualifiedMinCount, sh:PropertyShape-qualifiedValueShape, sh:PropertyShape-qualifiedValueShapesDisjoint, sh:PropertyShape-uniqueLang, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-in, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:PropertyShape-defaultValue
     a sh:PropertyShape ;
@@ -224,16 +224,16 @@ sh:PropertyShape-uniqueLang
     sh:path sh:uniqueLang .
 
 sh:Severity
-    a sh:NodeShape ;
     shaclmate:name "sh_Severity" ;
+    a sh:NodeShape ;
     sh:in (sh:Info
         sh:Warning
         sh:Violation
     ) .
 
 sh:Shape
-    a sh:NodeShape ;
     shaclmate:name "sh_Shape" ;
+    a sh:NodeShape ;
     sh:xone (sh:NodeShape
         sh:PropertyShape
     ) .
@@ -398,3 +398,4 @@ sh:Shape-xone
     sh:maxCount 1 ;
     sh:node shaclmate:IdentifierList ;
     sh:path sh:xone .
+

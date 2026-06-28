@@ -9,3 +9,4 @@ rdf:type
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdf:type .
+

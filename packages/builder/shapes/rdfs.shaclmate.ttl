@@ -15,8 +15,14 @@ rdfs:comment
 rdfs:isDefinedBy
     a sh:PropertyShape ;
     sh:maxCount 1 ;
-    sh:xone ( [ sh:nodeKind sh:BlankNodeOrIRI ] [ sh:node owl:Ontology ] ) ;
-    sh:path rdfs:isDefinedBy .
+    sh:path rdfs:isDefinedBy ;
+    sh:xone ([
+            sh:nodeKind sh:BlankNodeOrIRI
+        ]
+        [
+            sh:node owl:Ontology
+        ]
+    ) .
 
 rdfs:label
     shaclmate:display true ;
@@ -29,3 +35,4 @@ rdfs:subClassOf
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:subClassOf .
+
