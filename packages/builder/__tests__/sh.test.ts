@@ -105,6 +105,36 @@ describe("sh", () => {
       });
     });
 
+    describe("node", () => {
+      it("unspecified", () => {
+        const propertyShape = shBuilder().PropertyShape("prefLabel", {
+          cardinality: "required",
+        });
+        expectParseableShapesGraph(propertyShape);
+        expect(propertyShape.node.extract()).toBeUndefined();
+      });
+
+      it("IRI", () => {
+        const propertyShape = shBuilder().PropertyShape("broader", {
+          cardinality: "required",
+          node: skos.Concept,
+        });
+        expect(propertyShape.node.extract()).toEqualRdfTerm(skos.Concept);
+      });
+
+      it.skip("inline node shape", () => {
+        throw new Error("implement me");
+      });
+
+      it("string", () => {
+        const propertyShape = shBuilder().PropertyShape("broader", {
+          cardinality: "required",
+          node: skos.Concept,
+        });
+        expect(propertyShape.node.extract()).toEqualRdfTerm(skos.Concept);
+      });
+    });
+
     describe("path", () => {
       it("IRI", () => {
         const propertyShape = shBuilder().PropertyShape(undefined, {
@@ -122,6 +152,36 @@ describe("sh", () => {
         });
         expectParseableShapesGraph(propertyShape);
         expect(propertyShape.path).toEqualRdfTerm(skos.prefLabel);
+      });
+    });
+
+    describe("resolve", () => {
+      it("unspecified", () => {
+        const propertyShape = shBuilder().PropertyShape("prefLabel", {
+          cardinality: "required",
+        });
+        expectParseableShapesGraph(propertyShape);
+        expect(propertyShape.resolve.extract()).toBeUndefined();
+      });
+
+      it("IRI", () => {
+        const propertyShape = shBuilder().PropertyShape("broader", {
+          cardinality: "required",
+          resolve: skos.Concept,
+        });
+        expect(propertyShape.resolve.extract()).toEqualRdfTerm(skos.Concept);
+      });
+
+      it.skip("inline resolve shape", () => {
+        throw new Error("implement me");
+      });
+
+      it("string", () => {
+        const propertyShape = shBuilder().PropertyShape("broader", {
+          cardinality: "required",
+          resolve: skos.Concept,
+        });
+        expect(propertyShape.resolve.extract()).toEqualRdfTerm(skos.Concept);
       });
     });
   });
