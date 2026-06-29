@@ -183,6 +183,69 @@ function $convertToScalarSet<
   };
 }
 
+function $convertWithDefaultValue<ItemSourceT, ItemTargetT>(
+  convertToItem: $ConversionFunction<ItemSourceT, ItemTargetT>,
+  defaultValue: ItemSourceT,
+) {
+  return (value: ItemSourceT | undefined): Either<Error, ItemTargetT> => {
+    if (typeof value === "undefined") {
+      return convertToItem(defaultValue);
+    }
+    return convertToItem(value);
+  };
+}
+
+export type $EqualsResult = Either<$EqualsResult.Unequal, true>;
+
+export namespace $EqualsResult {
+  export const Equal: $EqualsResult = Right(true);
+
+  export function fromBooleanEqualsResult(
+    left: any,
+    right: any,
+    equalsResult: boolean | $EqualsResult,
+  ): $EqualsResult {
+    if (typeof equalsResult !== "boolean") {
+      return equalsResult;
+    }
+
+    if (equalsResult) {
+      return Equal;
+    }
+
+    return Left({ left, right, type: "boolean" });
+  }
+
+  export type Unequal =
+    | {
+        readonly left: {
+          readonly array: readonly any[];
+          readonly element: any;
+          readonly elementIndex: number;
+        };
+        readonly right: {
+          readonly array: readonly any[];
+          readonly unequals: readonly Unequal[];
+        };
+        readonly type: "array-element";
+      }
+    | {
+        readonly left: readonly any[];
+        readonly right: readonly any[];
+        readonly type: "array-length";
+      }
+    | { readonly left: any; readonly right: any; readonly type: "boolean" }
+    | { readonly right: any; readonly type: "left-null" }
+    | {
+        readonly left: any;
+        readonly right: any;
+        readonly propertyName: string;
+        readonly propertyValuesUnequal: Unequal;
+        readonly type: "property";
+      }
+    | { readonly left: any; readonly type: "right-null" };
+}
+
 function $identityConversionFunction<T>(value: T): Either<Error, T> {
   return Either.of(value);
 }
@@ -329,6 +392,16 @@ function $sequenceRecord<T extends Record<string, unknown>>(
   }
 
   return Right(result as T);
+}
+
+/**
+ * Compare two values for strict equality (===), returning an $EqualsResult rather than a boolean.
+ */
+function $strictEquals<T extends bigint | boolean | number | string>(
+  left: T,
+  right: T,
+): $EqualsResult {
+  return $EqualsResult.fromBooleanEqualsResult(left, right, left === right);
 }
 
 export type $ToRdfResourceFunction<
@@ -595,9 +668,20 @@ export type sh_NodeShape = {
 
   readonly deactivated: Maybe<boolean>;
 
+  readonly discriminantValue: Maybe<string>;
+
+  readonly extern: Maybe<boolean>;
+
   readonly flags: Maybe<string>;
 
+  readonly fromRdfType: Maybe<NamedNode>;
+
   readonly hasValues: readonly (NamedNode | Literal)[];
+
+  /**
+   * Whether to ignore this shape in code generation, defaults to false
+   */
+  readonly ignore: boolean;
 
   readonly ignoredProperties: Maybe<readonly NamedNode[]>;
 
@@ -623,6 +707,8 @@ export type sh_NodeShape = {
 
   readonly minLength: Maybe<bigint>;
 
+  readonly mutable: Maybe<boolean>;
+
   readonly node: Maybe<NamedNode | sh_NodeShape>;
 
   readonly nodeKind: Maybe<
@@ -644,7 +730,11 @@ export type sh_NodeShape = {
 
   readonly properties: readonly (NamedNode | sh_PropertyShape)[];
 
+  readonly rdfType: Maybe<NamedNode>;
+
   readonly severity: Maybe<sh_Severity>;
+
+  readonly shaclmateName: Maybe<string>;
 
   readonly subClassOf: readonly NamedNode[];
 
@@ -655,6 +745,10 @@ export type sh_NodeShape = {
   readonly targetObjectsOf: readonly NamedNode[];
 
   readonly targetSubjectsOf: readonly NamedNode[];
+
+  readonly toRdfTypes: readonly NamedNode[];
+
+  readonly tsImports: readonly string[];
 
   readonly type: readonly NamedNode[];
 
@@ -676,10 +770,14 @@ export namespace sh_NodeShape {
     readonly comment?: string | Maybe<string>;
     readonly datatype?: string | NamedNode | Maybe<NamedNode>;
     readonly deactivated?: boolean | Maybe<boolean>;
+    readonly discriminantValue?: string | Maybe<string>;
+    readonly extern?: boolean | Maybe<boolean>;
     readonly flags?: string | Maybe<string>;
+    readonly fromRdfType?: string | NamedNode | Maybe<NamedNode>;
     readonly hasValues?:
       | (NamedNode | Literal)
       | readonly (NamedNode | Literal)[];
+    readonly ignore?: boolean;
     readonly ignoredProperties?:
       | readonly (string | NamedNode)[]
       | Maybe<readonly NamedNode[]>;
@@ -726,6 +824,7 @@ export namespace sh_NodeShape {
       | Literal
       | Maybe<Literal>;
     readonly minLength?: bigint | Maybe<bigint>;
+    readonly mutable?: boolean | Maybe<boolean>;
     readonly node?:
       | (NamedNode | sh_NodeShape)
       | Maybe<NamedNode | sh_NodeShape>;
@@ -766,6 +865,7 @@ export namespace sh_NodeShape {
     readonly properties?:
       | (NamedNode | sh_PropertyShape)
       | readonly (NamedNode | sh_PropertyShape)[];
+    readonly rdfType?: string | NamedNode | Maybe<NamedNode>;
     readonly severity?:
       | (
           | "http://www.w3.org/ns/shacl#Info"
@@ -774,6 +874,7 @@ export namespace sh_NodeShape {
         )
       | sh_Severity
       | Maybe<sh_Severity>;
+    readonly shaclmateName?: string | Maybe<string>;
     readonly subClassOf?: string | NamedNode | readonly (string | NamedNode)[];
     readonly targetClasses?:
       | string
@@ -790,6 +891,8 @@ export namespace sh_NodeShape {
       | string
       | NamedNode
       | readonly (string | NamedNode)[];
+    readonly toRdfTypes?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly tsImports?: string | readonly string[];
     readonly type?: string | NamedNode | readonly (string | NamedNode)[];
     readonly xone?:
       | readonly (NamedNode | sh_Shape)[]
@@ -846,11 +949,35 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
+      discriminantValue: $convertToMaybe($identityConversionFunction)(
+        parameters?.discriminantValue,
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.discriminantValue.type,
+          value,
+        ),
+      ),
+      extern: $convertToMaybe($identityConversionFunction)(
+        parameters?.extern,
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.extern.type,
+          value,
+        ),
+      ),
       flags: $convertToMaybe($identityConversionFunction)(
         parameters?.flags,
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.flags.type,
+          value,
+        ),
+      ),
+      fromRdfType: $convertToMaybe($convertToIri<string>)(
+        parameters?.fromRdfType,
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.fromRdfType.type,
           value,
         ),
       ),
@@ -863,6 +990,10 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
+      ignore: $convertWithDefaultValue(
+        $identityConversionFunction,
+        false,
+      )(parameters?.ignore),
       ignoredProperties: $convertToMaybe(
         $convertToList($convertToIri<string>, true),
       )(parameters?.ignoredProperties).chain((value) =>
@@ -959,6 +1090,14 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
+      mutable: $convertToMaybe($identityConversionFunction)(
+        parameters?.mutable,
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.mutable.type,
+          value,
+        ),
+      ),
       node: $convertToMaybe($identityConversionFunction)(
         parameters?.node,
       ).chain((value) =>
@@ -1016,6 +1155,14 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
+      rdfType: $convertToMaybe($convertToIri<string>)(
+        parameters?.rdfType,
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.rdfType.type,
+          value,
+        ),
+      ),
       severity: $convertToMaybe(
         $convertToIri<
           | "http://www.w3.org/ns/shacl#Info"
@@ -1025,6 +1172,14 @@ export namespace sh_NodeShape {
       )(parameters?.severity).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.severity.type,
+          value,
+        ),
+      ),
+      shaclmateName: $convertToMaybe($identityConversionFunction)(
+        parameters?.shaclmateName,
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.shaclmateName.type,
           value,
         ),
       ),
@@ -1073,6 +1228,24 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
+      toRdfTypes: $convertToScalarSet(
+        $convertToIri<string>,
+        true,
+      )(parameters?.toRdfTypes).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          sh_NodeShape.schema.properties.toRdfTypes.type,
+          value,
+        ),
+      ),
+      tsImports: $convertToScalarSet(
+        $identityConversionFunction,
+        true,
+      )(parameters?.tsImports).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          sh_NodeShape.schema.properties.tsImports.type,
+          value,
+        ),
+      ),
       type: $convertToScalarSet(
         $convertToIri<string>,
         true,
@@ -1113,10 +1286,14 @@ export namespace sh_NodeShape {
     readonly comment?: string | Maybe<string>;
     readonly datatype?: string | NamedNode | Maybe<NamedNode>;
     readonly deactivated?: boolean | Maybe<boolean>;
+    readonly discriminantValue?: string | Maybe<string>;
+    readonly extern?: boolean | Maybe<boolean>;
     readonly flags?: string | Maybe<string>;
+    readonly fromRdfType?: string | NamedNode | Maybe<NamedNode>;
     readonly hasValues?:
       | (NamedNode | Literal)
       | readonly (NamedNode | Literal)[];
+    readonly ignore?: boolean;
     readonly ignoredProperties?:
       | readonly (string | NamedNode)[]
       | Maybe<readonly NamedNode[]>;
@@ -1163,6 +1340,7 @@ export namespace sh_NodeShape {
       | Literal
       | Maybe<Literal>;
     readonly minLength?: bigint | Maybe<bigint>;
+    readonly mutable?: boolean | Maybe<boolean>;
     readonly node?:
       | (NamedNode | sh_NodeShape)
       | Maybe<NamedNode | sh_NodeShape>;
@@ -1203,6 +1381,7 @@ export namespace sh_NodeShape {
     readonly properties?:
       | (NamedNode | sh_PropertyShape)
       | readonly (NamedNode | sh_PropertyShape)[];
+    readonly rdfType?: string | NamedNode | Maybe<NamedNode>;
     readonly severity?:
       | (
           | "http://www.w3.org/ns/shacl#Info"
@@ -1211,6 +1390,7 @@ export namespace sh_NodeShape {
         )
       | sh_Severity
       | Maybe<sh_Severity>;
+    readonly shaclmateName?: string | Maybe<string>;
     readonly subClassOf?: string | NamedNode | readonly (string | NamedNode)[];
     readonly targetClasses?:
       | string
@@ -1227,6 +1407,8 @@ export namespace sh_NodeShape {
       | string
       | NamedNode
       | readonly (string | NamedNode)[];
+    readonly toRdfTypes?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly tsImports?: string | readonly string[];
     readonly type?: string | NamedNode | readonly (string | NamedNode)[];
     readonly xone?:
       | readonly (NamedNode | sh_Shape)[]
@@ -1321,6 +1503,26 @@ export namespace sh_NodeShape {
           itemType: { kind: "Boolean" as const },
         },
       },
+      discriminantValue: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#discriminantValue",
+        ),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "String" as const },
+        },
+      },
+      extern: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#extern",
+        ),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "Boolean" as const },
+        },
+      },
       flags: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#flags"),
@@ -1329,12 +1531,33 @@ export namespace sh_NodeShape {
           itemType: { kind: "String" as const },
         },
       },
+      fromRdfType: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#fromRdfType",
+        ),
+        type: { kind: "Option" as const, itemType: { kind: "Iri" as const } },
+      },
       hasValues: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#hasValue"),
         type: {
           kind: "Set" as const,
           itemType: { kind: "Term" as const, types: ["NamedNode", "Literal"] },
+        },
+      },
+      ignore: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#ignore",
+        ),
+        type: {
+          kind: "DefaultValue" as const,
+          itemType: { kind: "Boolean" as const },
+          defaultValue: dataFactory.literal(
+            "false",
+            $RdfVocabularies.xsd.boolean,
+          ),
         },
       },
       ignoredProperties: {
@@ -1465,6 +1688,16 @@ export namespace sh_NodeShape {
         type: {
           kind: "Option" as const,
           itemType: { kind: "BigInt" as const },
+        },
+      },
+      mutable: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#mutable",
+        ),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "Boolean" as const },
         },
       },
       node: {
@@ -1601,6 +1834,13 @@ export namespace sh_NodeShape {
           };
         },
       },
+      rdfType: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#rdfType",
+        ),
+        type: { kind: "Option" as const, itemType: { kind: "Iri" as const } },
+      },
       severity: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#severity"),
@@ -1618,6 +1858,14 @@ export namespace sh_NodeShape {
               };
             },
           };
+        },
+      },
+      shaclmateName: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#name"),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "String" as const },
         },
       },
       subClassOf: {
@@ -1651,6 +1899,20 @@ export namespace sh_NodeShape {
           "http://www.w3.org/ns/shacl#targetSubjectsOf",
         ),
         type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
+      },
+      toRdfTypes: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#toRdfType",
+        ),
+        type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
+      },
+      tsImports: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#tsImport",
+        ),
+        type: { kind: "Set" as const, itemType: { kind: "String" as const } },
       },
       type: {
         kind: "Shacl",
@@ -1820,6 +2082,22 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
+      sh_NodeShape.schema.properties.discriminantValue.path,
+      parameters.object.discriminantValue
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.extern.path,
+      parameters.object.extern
+        .toList()
+        .flatMap((value) => [
+          $literalFactory.boolean(value, $RdfVocabularies.xsd.boolean),
+        ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
       sh_NodeShape.schema.properties.flags.path,
       parameters.object.flags
         .toList()
@@ -1827,8 +2105,25 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
+      sh_NodeShape.schema.properties.fromRdfType.path,
+      parameters.object.fromRdfType.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
       sh_NodeShape.schema.properties.hasValues.path,
       parameters.object.hasValues.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.ignore.path,
+      $strictEquals(parameters.object.ignore, false).isLeft()
+        ? [
+            $literalFactory.boolean(
+              parameters.object.ignore,
+              $RdfVocabularies.xsd.boolean,
+            ),
+          ]
+        : [],
       parameters.graph,
     );
     parameters.resource.add(
@@ -2077,6 +2372,15 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
+      sh_NodeShape.schema.properties.mutable.path,
+      parameters.object.mutable
+        .toList()
+        .flatMap((value) => [
+          $literalFactory.boolean(value, $RdfVocabularies.xsd.boolean),
+        ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
       sh_NodeShape.schema.properties.node.path,
       parameters.object.node.toList().flatMap((value) =>
         (
@@ -2253,8 +2557,20 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
+      sh_NodeShape.schema.properties.rdfType.path,
+      parameters.object.rdfType.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
       sh_NodeShape.schema.properties.severity.path,
       parameters.object.severity.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.shaclmateName.path,
+      parameters.object.shaclmateName
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -2280,6 +2596,18 @@ export namespace sh_NodeShape {
     parameters.resource.add(
       sh_NodeShape.schema.properties.targetSubjectsOf.path,
       parameters.object.targetSubjectsOf.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.toRdfTypes.path,
+      parameters.object.toRdfTypes.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.tsImports.path,
+      parameters.object.tsImports.flatMap((item) => [
+        $literalFactory.string(item),
+      ]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -2380,6 +2708,9 @@ export namespace sh_NodeShape {
     $compactRecord({
       $identifier: _shNodeShape.$identifier().toString(),
       label: _shNodeShape.label.map((item) => item.toString()).extract(),
+      shaclmateName: _shNodeShape.shaclmateName
+        .map((item) => item.toString())
+        .extract(),
     });
 }
 export type sh_PropertyGroup = {
@@ -2554,6 +2885,11 @@ export type sh_PropertyShape = {
 
   readonly disjoint: readonly NamedNode[];
 
+  /**
+   * Whether to include this property in a toString()-type display, defaults to false
+   */
+  readonly display: boolean;
+
   readonly equals: readonly NamedNode[];
 
   readonly flags: Maybe<string>;
@@ -2561,6 +2897,11 @@ export type sh_PropertyShape = {
   readonly groups: readonly (NamedNode | sh_PropertyGroup)[];
 
   readonly hasValues: readonly (NamedNode | Literal)[];
+
+  /**
+   * Whether to ignore this shape in code generation, defaults to false
+   */
+  readonly ignore: boolean;
 
   readonly in_: Maybe<readonly (NamedNode | Literal)[]>;
 
@@ -2591,6 +2932,8 @@ export type sh_PropertyShape = {
   readonly minInclusive: Maybe<Literal>;
 
   readonly minLength: Maybe<bigint>;
+
+  readonly mutable: Maybe<boolean>;
 
   readonly name: Maybe<string>;
 
@@ -2625,7 +2968,11 @@ export type sh_PropertyShape = {
 
   readonly qualifiedValueShapesDisjoint: Maybe<boolean>;
 
+  readonly resolve: Maybe<BlankNode | NamedNode>;
+
   readonly severity: Maybe<sh_Severity>;
+
+  readonly shaclmateName: Maybe<string>;
 
   readonly targetClasses: readonly NamedNode[];
 
@@ -2657,6 +3004,7 @@ export namespace sh_PropertyShape {
     readonly defaultValue?: (NamedNode | Literal) | Maybe<NamedNode | Literal>;
     readonly description?: string | Maybe<string>;
     readonly disjoint?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly display?: boolean;
     readonly equals?: string | NamedNode | readonly (string | NamedNode)[];
     readonly flags?: string | Maybe<string>;
     readonly groups?:
@@ -2665,6 +3013,7 @@ export namespace sh_PropertyShape {
     readonly hasValues?:
       | (NamedNode | Literal)
       | readonly (NamedNode | Literal)[];
+    readonly ignore?: boolean;
     readonly in_?:
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
@@ -2715,6 +3064,7 @@ export namespace sh_PropertyShape {
       | Literal
       | Maybe<Literal>;
     readonly minLength?: bigint | Maybe<bigint>;
+    readonly mutable?: boolean | Maybe<boolean>;
     readonly name?: string | Maybe<string>;
     readonly node?:
       | (NamedNode | sh_NodeShape)
@@ -2763,6 +3113,11 @@ export namespace sh_PropertyShape {
       | string
       | Maybe<BlankNode | NamedNode>;
     readonly qualifiedValueShapesDisjoint?: boolean | Maybe<boolean>;
+    readonly resolve?:
+      | BlankNode
+      | NamedNode
+      | string
+      | Maybe<BlankNode | NamedNode>;
     readonly severity?:
       | (
           | "http://www.w3.org/ns/shacl#Info"
@@ -2771,6 +3126,7 @@ export namespace sh_PropertyShape {
         )
       | sh_Severity
       | Maybe<sh_Severity>;
+    readonly shaclmateName?: string | Maybe<string>;
     readonly targetClasses?:
       | string
       | NamedNode
@@ -2859,6 +3215,10 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
+      display: $convertWithDefaultValue(
+        $identityConversionFunction,
+        false,
+      )(parameters.display),
       equals: $convertToScalarSet(
         $convertToIri<string>,
         true,
@@ -2894,6 +3254,10 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
+      ignore: $convertWithDefaultValue(
+        $identityConversionFunction,
+        false,
+      )(parameters.ignore),
       in_: $convertToMaybe($convertToList($identityConversionFunction, true))(
         parameters.in_,
       ).chain((value) =>
@@ -3016,6 +3380,14 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
+      mutable: $convertToMaybe($identityConversionFunction)(
+        parameters.mutable,
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.mutable.type,
+          value,
+        ),
+      ),
       name: $convertToMaybe($identityConversionFunction)(parameters.name).chain(
         (value) =>
           $validateMaybe($identityValidationFunction)(
@@ -3111,6 +3483,13 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
+      resolve: $convertToMaybe($convertToIdentifier)(parameters.resolve).chain(
+        (value) =>
+          $validateMaybe($identityValidationFunction)(
+            sh_PropertyShape.schema.properties.resolve.type,
+            value,
+          ),
+      ),
       severity: $convertToMaybe(
         $convertToIri<
           | "http://www.w3.org/ns/shacl#Info"
@@ -3120,6 +3499,14 @@ export namespace sh_PropertyShape {
       )(parameters.severity).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.severity.type,
+          value,
+        ),
+      ),
+      shaclmateName: $convertToMaybe($identityConversionFunction)(
+        parameters.shaclmateName,
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.shaclmateName.type,
           value,
         ),
       ),
@@ -3200,6 +3587,7 @@ export namespace sh_PropertyShape {
     readonly defaultValue?: (NamedNode | Literal) | Maybe<NamedNode | Literal>;
     readonly description?: string | Maybe<string>;
     readonly disjoint?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly display?: boolean;
     readonly equals?: string | NamedNode | readonly (string | NamedNode)[];
     readonly flags?: string | Maybe<string>;
     readonly groups?:
@@ -3208,6 +3596,7 @@ export namespace sh_PropertyShape {
     readonly hasValues?:
       | (NamedNode | Literal)
       | readonly (NamedNode | Literal)[];
+    readonly ignore?: boolean;
     readonly in_?:
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
@@ -3258,6 +3647,7 @@ export namespace sh_PropertyShape {
       | Literal
       | Maybe<Literal>;
     readonly minLength?: bigint | Maybe<bigint>;
+    readonly mutable?: boolean | Maybe<boolean>;
     readonly name?: string | Maybe<string>;
     readonly node?:
       | (NamedNode | sh_NodeShape)
@@ -3306,6 +3696,11 @@ export namespace sh_PropertyShape {
       | string
       | Maybe<BlankNode | NamedNode>;
     readonly qualifiedValueShapesDisjoint?: boolean | Maybe<boolean>;
+    readonly resolve?:
+      | BlankNode
+      | NamedNode
+      | string
+      | Maybe<BlankNode | NamedNode>;
     readonly severity?:
       | (
           | "http://www.w3.org/ns/shacl#Info"
@@ -3314,6 +3709,7 @@ export namespace sh_PropertyShape {
         )
       | sh_Severity
       | Maybe<sh_Severity>;
+    readonly shaclmateName?: string | Maybe<string>;
     readonly targetClasses?:
       | string
       | NamedNode
@@ -3440,6 +3836,20 @@ export namespace sh_PropertyShape {
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#disjoint"),
         type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
       },
+      display: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#display",
+        ),
+        type: {
+          kind: "DefaultValue" as const,
+          itemType: { kind: "Boolean" as const },
+          defaultValue: dataFactory.literal(
+            "false",
+            $RdfVocabularies.xsd.boolean,
+          ),
+        },
+      },
       equals: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#equals"),
@@ -3483,6 +3893,20 @@ export namespace sh_PropertyShape {
         type: {
           kind: "Set" as const,
           itemType: { kind: "Term" as const, types: ["NamedNode", "Literal"] },
+        },
+      },
+      ignore: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#ignore",
+        ),
+        type: {
+          kind: "DefaultValue" as const,
+          itemType: { kind: "Boolean" as const },
+          defaultValue: dataFactory.literal(
+            "false",
+            $RdfVocabularies.xsd.boolean,
+          ),
         },
       },
       in_: {
@@ -3628,6 +4052,16 @@ export namespace sh_PropertyShape {
         type: {
           kind: "Option" as const,
           itemType: { kind: "BigInt" as const },
+        },
+      },
+      mutable: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#mutable",
+        ),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "Boolean" as const },
         },
       },
       name: {
@@ -3800,6 +4234,16 @@ export namespace sh_PropertyShape {
           itemType: { kind: "Boolean" as const },
         },
       },
+      resolve: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#resolve",
+        ),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "Identifier" as const },
+        },
+      },
       severity: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#severity"),
@@ -3817,6 +4261,14 @@ export namespace sh_PropertyShape {
               };
             },
           };
+        },
+      },
+      shaclmateName: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#name"),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "String" as const },
         },
       },
       targetClasses: {
@@ -4027,6 +4479,18 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
+      sh_PropertyShape.schema.properties.display.path,
+      $strictEquals(parameters.object.display, false).isLeft()
+        ? [
+            $literalFactory.boolean(
+              parameters.object.display,
+              $RdfVocabularies.xsd.boolean,
+            ),
+          ]
+        : [],
+      parameters.graph,
+    );
+    parameters.resource.add(
       sh_PropertyShape.schema.properties.equals.path,
       parameters.object.equals.flatMap((item) => [item]),
       parameters.graph,
@@ -4071,6 +4535,18 @@ export namespace sh_PropertyShape {
     parameters.resource.add(
       sh_NodeShape.schema.properties.hasValues.path,
       parameters.object.hasValues.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.ignore.path,
+      $strictEquals(parameters.object.ignore, false).isLeft()
+        ? [
+            $literalFactory.boolean(
+              parameters.object.ignore,
+              $RdfVocabularies.xsd.boolean,
+            ),
+          ]
+        : [],
       parameters.graph,
     );
     parameters.resource.add(
@@ -4292,6 +4768,15 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
+      sh_NodeShape.schema.properties.mutable.path,
+      parameters.object.mutable
+        .toList()
+        .flatMap((value) => [
+          $literalFactory.boolean(value, $RdfVocabularies.xsd.boolean),
+        ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
       sh_PropertyShape.schema.properties.name.path,
       parameters.object.name
         .toList()
@@ -4496,8 +4981,20 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
+      sh_PropertyShape.schema.properties.resolve.path,
+      parameters.object.resolve.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
       sh_NodeShape.schema.properties.severity.path,
       parameters.object.severity.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.shaclmateName.path,
+      parameters.object.shaclmateName
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -4624,6 +5121,9 @@ export namespace sh_PropertyShape {
       label: _shPropertyShape.label.map((item) => item.toString()).extract(),
       name: _shPropertyShape.name.map((item) => item.toString()).extract(),
       path: $PropertyPath.$toString(_shPropertyShape.path),
+      shaclmateName: _shPropertyShape.shaclmateName
+        .map((item) => item.toString())
+        .extract(),
     });
 }
 export type sh_Severity = NamedNode<
@@ -4747,6 +5247,20 @@ export namespace sh_Shape {
           itemType: { kind: "Term" as const, types: ["NamedNode", "Literal"] },
         },
       },
+      ignore: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#ignore",
+        ),
+        type: {
+          kind: "DefaultValue" as const,
+          itemType: { kind: "Boolean" as const },
+          defaultValue: dataFactory.literal(
+            "false",
+            $RdfVocabularies.xsd.boolean,
+          ),
+        },
+      },
       in_: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#in"),
@@ -4862,6 +5376,16 @@ export namespace sh_Shape {
         type: {
           kind: "Option" as const,
           itemType: { kind: "BigInt" as const },
+        },
+      },
+      mutable: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#mutable",
+        ),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "Boolean" as const },
         },
       },
       node: {
@@ -4991,6 +5515,14 @@ export namespace sh_Shape {
               };
             },
           };
+        },
+      },
+      shaclmateName: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#name"),
+        type: {
+          kind: "Option" as const,
+          itemType: { kind: "String" as const },
         },
       },
       targetClasses: {
