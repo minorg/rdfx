@@ -1,0 +1,32 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+skos:ConceptScheme
+    shaclmate:name "skos_ConceptScheme" ;
+    a owl:Class, sh:NodeShape ;
+    sh:property skos:ConceptScheme-concepts, skos:ConceptScheme-topConcepts, skos:prefLabel .
+
+skos:ConceptScheme-concepts
+    a sh:PropertyShape ;
+    sh:name "concepts" ;
+    sh:path [
+        sh:inversePath skos:inScheme
+    ] .
+
+skos:ConceptScheme-topConcepts
+    a sh:PropertyShape ;
+    sh:name "topConcepts" ;
+    sh:path [
+        sh:inversePath skos:topConceptOf
+    ] .
+
+skos:prefLabel
+    a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path skos:prefLabel .
+

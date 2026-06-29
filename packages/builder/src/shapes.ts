@@ -5131,6 +5131,206 @@ export type sh_Severity = NamedNode<
   | "http://www.w3.org/ns/shacl#Warning"
   | "http://www.w3.org/ns/shacl#Violation"
 >;
+export type skos_ConceptScheme = {
+  readonly $identifier: () => skos_ConceptScheme.Identifier;
+
+  readonly termType: "skos_ConceptScheme";
+
+  readonly concepts: readonly (BlankNode | NamedNode)[];
+
+  readonly prefLabel: readonly string[];
+
+  readonly topConcepts: readonly (BlankNode | NamedNode)[];
+};
+
+export namespace skos_ConceptScheme {
+  export const create: (parameters?: {
+    readonly $identifier?:
+      | (() => skos_ConceptScheme.Identifier)
+      | BlankNode
+      | NamedNode
+      | string;
+    readonly concepts?:
+      | BlankNode
+      | NamedNode
+      | string
+      | readonly (BlankNode | NamedNode | string | undefined)[];
+    readonly prefLabel?: string | readonly string[];
+    readonly topConcepts?:
+      | BlankNode
+      | NamedNode
+      | string
+      | readonly (BlankNode | NamedNode | string | undefined)[];
+  }) => Either<Error, skos_ConceptScheme> = (parameters) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters?.$identifier),
+      concepts: $convertToScalarSet(
+        $convertToIdentifier,
+        true,
+      )(parameters?.concepts).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          skos_ConceptScheme.schema.properties.concepts.type,
+          value,
+        ),
+      ),
+      prefLabel: $convertToScalarSet(
+        $identityConversionFunction,
+        true,
+      )(parameters?.prefLabel).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          skos_ConceptScheme.schema.properties.prefLabel.type,
+          value,
+        ),
+      ),
+      topConcepts: $convertToScalarSet(
+        $convertToIdentifier,
+        true,
+      )(parameters?.topConcepts).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          skos_ConceptScheme.schema.properties.topConcepts.type,
+          value,
+        ),
+      ),
+    })
+      .map((properties) => ({
+        ...properties,
+        termType: "skos_ConceptScheme" as const,
+      }))
+      .map((object) =>
+        $monkeyPatchObject(object, { $toString: skos_ConceptScheme.$toString }),
+      );
+
+  export function createUnsafe(parameters?: {
+    readonly $identifier?:
+      | (() => skos_ConceptScheme.Identifier)
+      | BlankNode
+      | NamedNode
+      | string;
+    readonly concepts?:
+      | BlankNode
+      | NamedNode
+      | string
+      | readonly (BlankNode | NamedNode | string | undefined)[];
+    readonly prefLabel?: string | readonly string[];
+    readonly topConcepts?:
+      | BlankNode
+      | NamedNode
+      | string
+      | readonly (BlankNode | NamedNode | string | undefined)[];
+  }): skos_ConceptScheme {
+    return create(parameters).unsafeCoerce();
+  }
+
+  export type Identifier = BlankNode | NamedNode;
+
+  export namespace Identifier {
+    export const parse = $parseIdentifier;
+    export const stringify = NTriplesTerm.stringify;
+  }
+
+  export function isskos_ConceptScheme(
+    object: $Object,
+  ): object is skos_ConceptScheme {
+    return object.termType === "skos_ConceptScheme";
+  }
+
+  export const schema = {
+    fromRdfType: dataFactory.namedNode(
+      "http://www.w3.org/2004/02/skos/core#ConceptScheme",
+    ),
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" as const },
+      },
+      concepts: {
+        kind: "Shacl",
+        path: {
+          path: dataFactory.namedNode(
+            "http://www.w3.org/2004/02/skos/core#inScheme",
+          ),
+          termType: "InversePath",
+        },
+        type: {
+          kind: "Set" as const,
+          itemType: { kind: "Identifier" as const },
+        },
+      },
+      prefLabel: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#prefLabel",
+        ),
+        type: { kind: "Set" as const, itemType: { kind: "String" as const } },
+      },
+      topConcepts: {
+        kind: "Shacl",
+        path: {
+          path: dataFactory.namedNode(
+            "http://www.w3.org/2004/02/skos/core#topConceptOf",
+          ),
+          termType: "InversePath",
+        },
+        type: {
+          kind: "Set" as const,
+          itemType: { kind: "Identifier" as const },
+        },
+      },
+    },
+    toRdfTypes: [
+      dataFactory.namedNode(
+        "http://www.w3.org/2004/02/skos/core#ConceptScheme",
+      ),
+    ],
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    skos_ConceptScheme.Identifier,
+    skos_ConceptScheme
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $RdfVocabularies.rdf.type,
+        skos_ConceptScheme.schema.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.concepts.path,
+      parameters.object.concepts.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.prefLabel.path,
+      parameters.object.prefLabel.flatMap((item) => [
+        $literalFactory.string(item),
+      ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.topConcepts.path,
+      parameters.object.topConcepts.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const toRdfResource = $wrap_ToRdfResourceFunction(_toRdfResource);
+
+  export const $toString: (_skosConceptScheme: skos_ConceptScheme) => string = (
+    _skosConceptScheme,
+  ) =>
+    `skos_ConceptScheme(${JSON.stringify(toStringRecord(_skosConceptScheme))})`;
+
+  export const toStringRecord: (
+    _skosConceptScheme: skos_ConceptScheme,
+  ) => Record<string, string> = (_skosConceptScheme) =>
+    $compactRecord({
+      $identifier: _skosConceptScheme.$identifier().toString(),
+    });
+}
 export type sh_Shape = sh_NodeShape | sh_PropertyShape;
 
 export namespace sh_Shape {
@@ -5628,7 +5828,8 @@ export type $Object =
   | owl_Ontology
   | sh_NodeShape
   | sh_PropertyGroup
-  | sh_PropertyShape;
+  | sh_PropertyShape
+  | skos_ConceptScheme;
 
 export namespace $Object {
   export const $toString = (value: $Object): string => {
@@ -5643,6 +5844,9 @@ export namespace $Object {
     }
     if (sh_PropertyShape.issh_PropertyShape(value)) {
       return sh_PropertyShape.$toString(value);
+    }
+    if (skos_ConceptScheme.isskos_ConceptScheme(value)) {
+      return skos_ConceptScheme.$toString(value);
     }
 
     throw new Error("unable to serialize to string");
@@ -5673,29 +5877,12 @@ export namespace $Object {
         discriminantValues: ["sh_PropertyShape"],
         type: sh_PropertyShape.schema,
       },
-    },
-    properties: {
-      comment: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2000/01/rdf-schema#comment",
-        ),
-        type: {
-          kind: "Option" as const,
-          itemType: { kind: "String" as const },
-        },
-      },
-      label: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2000/01/rdf-schema#label",
-        ),
-        type: {
-          kind: "Option" as const,
-          itemType: { kind: "String" as const },
-        },
+      skos_ConceptScheme: {
+        discriminantValues: ["skos_ConceptScheme"],
+        type: skos_ConceptScheme.schema,
       },
     },
+    properties: {},
   } as const;
 
   export const toRdfResource: $ToRdfResourceFunction<$Object> = (
@@ -5713,6 +5900,9 @@ export namespace $Object {
     }
     if (sh_PropertyShape.issh_PropertyShape(object)) {
       return sh_PropertyShape.toRdfResource(object, options);
+    }
+    if (skos_ConceptScheme.isskos_ConceptScheme(object)) {
+      return skos_ConceptScheme.toRdfResource(object, options);
     }
     throw new Error("unrecognized type");
   };
@@ -5748,6 +5938,14 @@ export namespace $Object {
     if (sh_PropertyShape.issh_PropertyShape(value)) {
       return [
         sh_PropertyShape.toRdfResource(value, {
+          graph: _options.graph,
+          resourceSet: _options.resourceSet,
+        }).identifier,
+      ];
+    }
+    if (skos_ConceptScheme.isskos_ConceptScheme(value)) {
+      return [
+        skos_ConceptScheme.toRdfResource(value, {
           graph: _options.graph,
           resourceSet: _options.resourceSet,
         }).identifier,
