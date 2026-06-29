@@ -6,14 +6,22 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+skos:Concept
+    shaclmate:name "skos_Concept" ;
+    a owl:Class, sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
+    sh:property skos:prefLabel .
+
 skos:ConceptScheme
     shaclmate:name "skos_ConceptScheme" ;
     a owl:Class, sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
     sh:property skos:ConceptScheme-concepts, skos:ConceptScheme-topConcepts, skos:prefLabel .
 
 skos:ConceptScheme-concepts
     a sh:PropertyShape ;
     sh:name "concepts" ;
+    sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node skos:Concept ] ) ;
     sh:path [
         sh:inversePath skos:inScheme
     ] .
@@ -21,6 +29,7 @@ skos:ConceptScheme-concepts
 skos:ConceptScheme-topConcepts
     a sh:PropertyShape ;
     sh:name "topConcepts" ;
+    sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node skos:Concept ] ) ;
     sh:path [
         sh:inversePath skos:topConceptOf
     ] .
