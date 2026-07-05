@@ -10,9 +10,11 @@ export function sh<NamespaceT extends NamespaceBuilder>({
 }: {
   namespace: NamespaceT;
 }) {
+  type NamespaceKeyT = keyof NamespaceT & string;
+
   return {
     PropertyShape: (
-      $identifier: BlankNode | NamedNode | keyof NamespaceT | undefined,
+      $identifier: BlankNode | NamedNode | NamespaceKeyT | undefined,
       parameters: Omit<
         NonNullable<Parameters<typeof sh_PropertyShape.createUnsafe>[0]>,
         | "$identifier"
@@ -25,7 +27,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         | "resolve"
       > & {
         readonly cardinality: "optional" | "required" | "set";
-        readonly classes?: readonly (NamedNode | keyof NamespaceT)[];
+        readonly classes?: readonly (NamedNode | NamespaceKeyT)[];
         readonly in_?:
           | readonly (NamedNode | Literal)[]
           | readonly bigint[]
@@ -33,9 +35,9 @@ export function sh<NamespaceT extends NamespaceBuilder>({
           | readonly number[]
           | readonly string[];
         //   | ConceptScheme<Record<string, unknown>>
-        readonly node?: NamedNode | keyof NamespaceT;
-        readonly path?: PropertyPath | keyof NamespaceT;
-        readonly resolve?: NamedNode | keyof NamespaceT;
+        readonly node?: NamedNode | NamespaceKeyT;
+        readonly path?: PropertyPath | NamespaceKeyT;
+        readonly resolve?: NamedNode | NamespaceKeyT;
       },
     ): ReturnType<typeof sh_PropertyShape.createUnsafe> => {
       // Order of default population matters here.

@@ -47,36 +47,7 @@ describe("sh", () => {
   }
 
   describe("PropertyShape", () => {
-    describe("cardinality", () => {
-      it("optional", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          cardinality: "optional",
-        });
-        expectValidShapes(propertyShape);
-        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
-        expect(propertyShape.minCount.extract()).toBeUndefined();
-      });
-
-      it("required", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          cardinality: "required",
-        });
-        expectValidShapes(propertyShape);
-        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
-        expect(propertyShape.minCount.extract()).toStrictEqual(1n);
-      });
-
-      it("set", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          cardinality: "set",
-        });
-        expectValidShapes(propertyShape);
-        expect(propertyShape.maxCount.extract()).toBeUndefined();
-        expect(propertyShape.minCount.extract()).toBeUndefined();
-      });
-    });
-
-    describe("identifier", () => {
+    describe("$identifier", () => {
       it("blank node", () => {
         const propertyShape = sh.PropertyShape(dataFactory.blankNode(), {
           cardinality: "required",
@@ -109,6 +80,35 @@ describe("sh", () => {
         });
         expectValidShapes(propertyShape);
         expect(propertyShape.$identifier().termType).toStrictEqual("BlankNode");
+      });
+    });
+
+    describe("cardinality", () => {
+      it("optional", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "optional",
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
+        expect(propertyShape.minCount.extract()).toBeUndefined();
+      });
+
+      it("required", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
+        expect(propertyShape.minCount.extract()).toStrictEqual(1n);
+      });
+
+      it("set", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "set",
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toBeUndefined();
+        expect(propertyShape.minCount.extract()).toBeUndefined();
       });
     });
 
