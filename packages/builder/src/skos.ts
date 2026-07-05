@@ -47,43 +47,44 @@ export function skos<NamespaceT extends NamespaceBuilder>({
 }: {
   namespace: NamespaceT;
 }) {
-  type NamespaceKeyT = keyof NamespaceT & string;
+  type NamespaceKey = keyof NamespaceT & string;
 
-  function Concept(
-    $identifier: NamedNode | NamespaceKeyT,
-    parameters?: ConvertibleConceptParameters<NamespaceKeyT>,
+  function ConceptBuilder(
+    $identifier: NamedNode | NamespaceKey,
+    parameters?: ConvertibleConceptParameters<NamespaceKey>,
   ): skos_Concept {
     const { broader: broaderParameter, ...otherParameters } = parameters ?? {};
 
     return skos_Concept.createUnsafe({
       ...otherParameters,
       $identifier: toIri($identifier, namespace),
-      broader: convertRelatedConcepts<NamespaceKeyT>(broaderParameter, (key) =>
+      broader: convertRelatedConcepts<NamespaceKey>(broaderParameter, (key) =>
         toIri(key, namespace),
       ),
     });
   }
 
+  type ConceptSchemeConceptsRecordConstraint<T> = {
+    [K in keyof T]: Omit<
+      ConvertibleConceptParameters<Extract<keyof T, string>>,
+      "broader" | "notation"
+    > & {
+      readonly $identifier?: NamespaceKey | NamedNode;
+      readonly broader?: ConvertibleRelatedConcepts<Extract<keyof T, string>>;
+      readonly notation?:
+        | boolean
+        | ConvertibleConceptParameters<Extract<keyof T, string>>["notation"];
+    };
+  };
+
   return {
-    Concept,
+    Concept: ConceptBuilder,
 
     ConceptScheme: <
-      ConceptsRecordKeyT extends string,
-      ConceptsRecordT extends Record<
-        ConceptsRecordKeyT,
-        Omit<
-          ConvertibleConceptParameters<ConceptsRecordKeyT>,
-          "broader" | "notation"
-        > & {
-          readonly $identifier?: NamespaceKeyT | NamedNode;
-          readonly broader?: ConvertibleRelatedConcepts<ConceptsRecordKeyT>;
-          readonly notation?:
-            | boolean
-            | ConvertibleConceptParameters<ConceptsRecordKeyT>["notation"];
-        }
-      >,
+      ConceptsRecordT extends
+        ConceptSchemeConceptsRecordConstraint<ConceptsRecordT>,
     >(
-      $identifier: NamedNode | NamespaceKeyT,
+      $identifier: NamedNode | NamespaceKey,
       parameters?: Omit<
         Parameters<typeof skos_ConceptScheme.createUnsafe>[0],
         "$identifier" | "concepts" | "termType" | "topConcepts"
@@ -93,15 +94,16 @@ export function skos<NamespaceT extends NamespaceBuilder>({
     ): skos_ConceptScheme => {
       const { concepts: conceptsRecord, ...otherParameters } = parameters ?? {};
 
+      type ConceptsRecordKey = keyof ConceptsRecordT & string;
       type ConceptsRecordValue =
-        ConvertibleConceptParameters<ConceptsRecordKeyT> & {
-          $identifier?: NamespaceKeyT | NamedNode;
+        ConvertibleConceptParameters<ConceptsRecordKey> & {
+          $identifier?: NamespaceKey | NamedNode;
         };
 
       const conceptSchemeIdentifier = toIri($identifier, namespace);
 
       const conceptsRecordKeyToIri = (
-        conceptsRecordKey: ConceptsRecordKeyT,
+        conceptsRecordKey: ConceptsRecordKey,
       ): NamedNode =>
         dataFactory.namedNode(
           `${conceptSchemeIdentifier.value}_${conceptsRecordKey}`,
@@ -110,9 +112,9 @@ export function skos<NamespaceT extends NamespaceBuilder>({
       const concepts: skos_Concept[] = [];
       for (const [partialConceptKey, partialConcept] of Object.entries(
         conceptsRecord ?? {},
-      ) as [ConceptsRecordKeyT, ConceptsRecordValue][]) {
+      ) as [ConceptsRecordKey, ConceptsRecordValue][]) {
         concepts.push(
-          Concept(
+          ConceptBuilder(
             partialConcept.$identifier
               ? toIri(partialConcept.$identifier, namespace)
               : conceptsRecordKeyToIri(partialConceptKey),
