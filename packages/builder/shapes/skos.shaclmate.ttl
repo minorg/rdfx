@@ -10,32 +10,89 @@ skos:Concept
     shaclmate:name "skos_Concept" ;
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
-    sh:property skos:prefLabel .
+    sh:property skos:Concept-broader, skos:altLabel, skos:hiddenLabel, skos:notation, skos:prefLabel .
+
+skos:Concept-broader
+    a sh:PropertyShape ;
+    sh:name "broader" ;
+    sh:path skos:broader ;
+    sh:xone ([
+            sh:nodeKind sh:IRI
+        ]
+        [
+            sh:node skos:Concept
+        ]
+    ) .
 
 skos:ConceptScheme
     shaclmate:name "skos_ConceptScheme" ;
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
-    sh:property skos:ConceptScheme-concepts, skos:ConceptScheme-topConcepts, skos:prefLabel .
+    sh:property skos:ConceptScheme-concepts, skos:ConceptScheme-topConcepts, skos:altLabel, skos:hiddenLabel, skos:notation, skos:prefLabel .
 
 skos:ConceptScheme-concepts
     a sh:PropertyShape ;
     sh:name "concepts" ;
-    sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node skos:Concept ] ) ;
     sh:path [
         sh:inversePath skos:inScheme
-    ] .
+    ] ;
+    sh:xone ([
+            sh:nodeKind sh:IRI
+        ]
+        [
+            sh:node skos:Concept
+        ]
+    ) .
 
 skos:ConceptScheme-topConcepts
     a sh:PropertyShape ;
     sh:name "topConcepts" ;
-    sh:xone ( [ sh:nodeKind sh:IRI ] [ sh:node skos:Concept ] ) ;
     sh:path [
         sh:inversePath skos:topConceptOf
-    ] .
+    ] ;
+    sh:xone ([
+            sh:nodeKind sh:IRI
+        ]
+        [
+            sh:node skos:Concept
+        ]
+    ) .
+
+skos:altLabel
+    a sh:PropertyShape ;
+    sh:path skos:altLabel ;
+    sh:xone ([
+            sh:datatype xsd:string
+        ]
+        [
+            sh:datatype rdf:langString
+        ]
+    ) .
+
+skos:hiddenLabel
+    a sh:PropertyShape ;
+    sh:path skos:hiddenLabel ;
+    sh:xone ([
+            sh:datatype xsd:string
+        ]
+        [
+            sh:datatype rdf:langString
+        ]
+    ) .
+
+skos:notation
+    a sh:PropertyShape ;
+    sh:nodeKind sh:Literal ;
+    sh:path skos:notation .
 
 skos:prefLabel
     a sh:PropertyShape ;
-    sh:datatype xsd:string ;
-    sh:path skos:prefLabel .
+    sh:path skos:prefLabel ;
+    sh:xone ([
+            sh:datatype xsd:string
+        ]
+        [
+            sh:datatype rdf:langString
+        ]
+    ) .
 

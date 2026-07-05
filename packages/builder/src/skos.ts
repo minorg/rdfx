@@ -1,48 +1,102 @@
 import type { NamespaceBuilder } from "@rdfjs/namespace";
-import type { Literal, NamedNode } from "@rdfjs/types";
-import type { skos_Concept, skos_ConceptScheme } from "./shapes.js";
+import type { NamedNode } from "@rdfjs/types";
+import dataFactory from "@rdfx/data-factory";
+import { skos_Concept, skos_ConceptScheme } from "./shapes.js";
+import { toIri } from "./toIri.js";
 
-/** A shallow registry of just $identifiers, safe to pass to broader thunks
- *  since it can be fully constructed before any thunk runs. */
-type PartialConceptScheme<T extends Record<string, unknown>> = {
-  readonly concepts: {
-    readonly [K in keyof T]: { readonly identifier: NamedNode };
-  };
-  readonly identifier: NamedNode;
-};
-
-type PartialConcept<ConceptSchemeT> = Omit<
-  skos_Concept,
-  "broader" | "identifier" | "notations" | "prefLabel" | "types"
-> & {
-  readonly broader?:
-    | readonly NamedNode[]
-    | ((conceptScheme: ConceptSchemeT) => readonly NamedNode[]);
-  readonly notation?: Literal | string | true;
-  readonly notations?: readonly (Literal | string)[];
-  readonly prefLabel?: string;
-};
+interface ConceptBuilderParameters<ConceptIriString extends string>
+  extends Omit<
+    Parameters<typeof skos_Concept.createUnsafe>[0],
+    "$identifier" | "broader" | "termType"
+  > {
+  readonly broader?: readonly (skos_Concept | ConceptIriString | NamedNode)[];
+}
 
 export function skos<NamespaceT extends NamespaceBuilder>({
   namespace,
 }: {
   namespace: NamespaceT;
 }) {
+  function ConceptBuilder(
+    $identifier: NamedNode | keyof NamespaceT,
+    parameters: ConceptBuilderParameters<keyof NamespaceT & string>,
+  ): skos_Concept {
+    const { broader, ...otherParameters } = parameters;
+
+    return skos_Concept.createUnsafe({
+      ...otherParameters,
+      $identifier: toIri($identifier, namespace),
+      broader: broader
+        ? broader.map((broader) =>
+            typeof broader === "string" ? namespace(broader) : broader,
+          )
+        : undefined,
+    });
+  }
+
   return {
+    Concept: ConceptBuilder,
+
     ConceptScheme: <
-      ConceptsT extends Record<
-        string,
-        PartialConcept<PartialConceptScheme<ConceptsT>>
+      ConceptsRecordKeyT extends string,
+      ConceptsRecordT extends Record<
+        ConceptsRecordKeyT,
+        Omit<ConceptBuilderParameters<ConceptsRecordKeyT>, "notation"> & {
+          $identifier?: keyof NamespaceT | NamedNode;
+          notation:
+            | boolean
+            | ConceptBuilderParameters<ConceptsRecordKeyT>["notation"];
+        }
       >,
     >(
-      className: string,
-      parameters: {
-        readonly concepts: ConceptsT;
-        readonly definition?: string;
-        readonly prefLabel?: string;
+      $identifier: NamedNode | keyof NamespaceT,
+      parameters: Omit<
+        Parameters<typeof skos_ConceptScheme.createUnsafe>[0],
+        "$identifier" | "concepts" | "termType" | "topConcepts"
+      > & {
+        readonly concepts: ConceptsRecordT;
       },
     ): skos_ConceptScheme => {
-      const partialConcepts = parameters?.concepts;
+      const { concepts: conceptsRecord, ...otherParameters } = parameters;
+
+      type ConceptsRecordValue =
+        ConceptBuilderParameters<ConceptsRecordKeyT> & {
+          $identifier?: keyof NamespaceT | NamedNode;
+        };
+
+      const conceptSchemeIdentifier = toIri($identifier, namespace);
+
+      const concepts: skos_Concept[] = [];
+      for (const [partialConceptKey, partialConcept] of Object.entries(
+        parameters.concepts,
+      ) as [ConceptsRecordKeyT, ConceptsRecordValue][]) {
+        concepts.push(
+          ConceptBuilder(
+            partialConcept.$identifier
+              ? toIri(partialConcept.$identifier, namespace)
+              : dataFactory.namedNode(
+                  `${conceptSchemeIdentifier}_${partialConceptKey}`,
+                ),
+            {
+              ...partialConcept,
+              notation:
+                typeof partialConcept.notation === "boolean" &&
+                partialConcept.notation
+                  ? [dataFactory.literal(partialConceptKey)]
+                  : partialConcept.notation,
+            },
+          ),
+        );
+      }
+
+      return skos_ConceptScheme.createUnsafe({
+        ...otherParameters,
+        $identifier: conceptSchemeIdentifier,
+        concepts,
+        topConcepts: concepts
+          .filter((concept) => concept.broader.length === 0)
+          .map((concept) => concept.$identifier()),
+      });
     },
   };
 }

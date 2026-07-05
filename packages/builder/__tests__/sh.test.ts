@@ -3,14 +3,14 @@ import dataFactory from "@rdfx/data-factory";
 import { ResourceSet } from "@rdfx/resource";
 import { ShapesGraph } from "@shaclmate/compiler";
 import { shaclShaclDataset, ZazukoValidator } from "@shaclmate/validator";
-import { skos } from "@tpluscode/rdf-ns-builders";
 import { describe, expect, it } from "vitest";
 import { builder } from "../src/builder.js";
 import { sh_NodeShape, sh_Shape } from "../src/shapes.js";
 import "@rdfx/testing";
+import { exTbox } from "./namespaces.js";
 
 describe("sh", () => {
-  const sh = builder({ namespace: skos }).sh;
+  const sh = builder({ namespace: exTbox }).sh;
   const shapesGraphValidator = new ZazukoValidator({
     shapesGraph: shaclShaclDataset,
   });
@@ -49,7 +49,7 @@ describe("sh", () => {
   describe("PropertyShape", () => {
     describe("cardinality", () => {
       it("optional", () => {
-        const propertyShape = sh.PropertyShape("prefLabel", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "optional",
         });
         expectValidShapes(propertyShape);
@@ -58,7 +58,7 @@ describe("sh", () => {
       });
 
       it("required", () => {
-        const propertyShape = sh.PropertyShape("prefLabel", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
         });
         expectValidShapes(propertyShape);
@@ -67,7 +67,7 @@ describe("sh", () => {
       });
 
       it("set", () => {
-        const propertyShape = sh.PropertyShape("prefLabel", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "set",
         });
         expectValidShapes(propertyShape);
@@ -80,32 +80,32 @@ describe("sh", () => {
       it("blank node", () => {
         const propertyShape = sh.PropertyShape(dataFactory.blankNode(), {
           cardinality: "required",
-          path: skos.prefLabel,
+          path: exTbox.property,
         });
         expectValidShapes(propertyShape);
         expect(propertyShape.$identifier().termType).toStrictEqual("BlankNode");
       });
 
       it("IRI", () => {
-        const propertyShape = sh.PropertyShape(skos.prefLabel, {
+        const propertyShape = sh.PropertyShape(exTbox.property, {
           cardinality: "required",
         });
         expectValidShapes(propertyShape);
-        expect(propertyShape.$identifier()).toEqualRdfTerm(skos.prefLabel);
+        expect(propertyShape.$identifier()).toEqualRdfTerm(exTbox.property);
       });
 
       it("string", () => {
-        const propertyShape = sh.PropertyShape("prefLabel", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
         });
         expectValidShapes(propertyShape);
-        expect(propertyShape.$identifier()).toEqualRdfTerm(skos.prefLabel);
+        expect(propertyShape.$identifier()).toEqualRdfTerm(exTbox.property);
       });
 
       it("undefined", () => {
         const propertyShape = sh.PropertyShape(undefined, {
           cardinality: "required",
-          path: skos.prefLabel,
+          path: exTbox.property,
         });
         expectValidShapes(propertyShape);
         expect(propertyShape.$identifier().termType).toStrictEqual("BlankNode");
@@ -114,7 +114,7 @@ describe("sh", () => {
 
     describe("node", () => {
       it("unspecified", () => {
-        const propertyShape = sh.PropertyShape("prefLabel", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
         });
         expectValidShapes(propertyShape);
@@ -122,11 +122,11 @@ describe("sh", () => {
       });
 
       it("IRI", () => {
-        const propertyShape = sh.PropertyShape("broader", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
-          node: skos.Concept,
+          node: exTbox.Class,
         });
-        expect(propertyShape.node.extract()).toEqualRdfTerm(skos.Concept);
+        expect(propertyShape.node.extract()).toEqualRdfTerm(exTbox.Class);
       });
 
       it.skip("inline node shape", () => {
@@ -134,11 +134,11 @@ describe("sh", () => {
       });
 
       it("string", () => {
-        const propertyShape = sh.PropertyShape("broader", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
-          node: skos.Concept,
+          node: exTbox.Class,
         });
-        expect(propertyShape.node.extract()).toEqualRdfTerm(skos.Concept);
+        expect(propertyShape.node.extract()).toEqualRdfTerm(exTbox.Class);
       });
     });
 
@@ -146,25 +146,25 @@ describe("sh", () => {
       it("IRI", () => {
         const propertyShape = sh.PropertyShape(undefined, {
           cardinality: "required",
-          path: skos.prefLabel,
+          path: exTbox.property,
         });
         expectValidShapes(propertyShape);
-        expect(propertyShape.path).toEqualRdfTerm(skos.prefLabel);
+        expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
       });
 
       it("string", () => {
         const propertyShape = sh.PropertyShape(undefined, {
           cardinality: "required",
-          path: "prefLabel",
+          path: "property",
         });
         expectValidShapes(propertyShape);
-        expect(propertyShape.path).toEqualRdfTerm(skos.prefLabel);
+        expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
       });
     });
 
     describe("resolve", () => {
       it("unspecified", () => {
-        const propertyShape = sh.PropertyShape("prefLabel", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
         });
         expectValidShapes(propertyShape);
@@ -172,11 +172,11 @@ describe("sh", () => {
       });
 
       it("IRI", () => {
-        const propertyShape = sh.PropertyShape("broader", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
-          resolve: skos.Concept,
+          resolve: exTbox.Class,
         });
-        expect(propertyShape.resolve.extract()).toEqualRdfTerm(skos.Concept);
+        expect(propertyShape.resolve.extract()).toEqualRdfTerm(exTbox.Class);
       });
 
       it.skip("inline resolve shape", () => {
@@ -184,11 +184,11 @@ describe("sh", () => {
       });
 
       it("string", () => {
-        const propertyShape = sh.PropertyShape("broader", {
+        const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
-          resolve: skos.Concept,
+          resolve: exTbox.Class,
         });
-        expect(propertyShape.resolve.extract()).toEqualRdfTerm(skos.Concept);
+        expect(propertyShape.resolve.extract()).toEqualRdfTerm(exTbox.Class);
       });
     });
   });
