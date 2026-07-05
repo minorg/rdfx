@@ -5163,6 +5163,8 @@ export type skos_Concept = {
 
   readonly broader: readonly (NamedNode | skos_Concept)[];
 
+  readonly definition: readonly (string | Literal)[];
+
   readonly hiddenLabel: readonly (string | Literal)[];
 
   readonly notation: readonly Literal[];
@@ -5177,6 +5179,7 @@ export namespace skos_Concept {
     readonly broader?:
       | (NamedNode | skos_Concept)
       | readonly (NamedNode | skos_Concept)[];
+    readonly definition?: string | Literal | readonly (string | Literal)[];
     readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
     readonly notation?:
       | bigint
@@ -5207,6 +5210,15 @@ export namespace skos_Concept {
       )(parameters.broader).chain((value) =>
         $validateArray($identityValidationFunction, true)(
           skos_Concept.schema.properties.broader.type,
+          value,
+        ),
+      ),
+      definition: $convertToScalarSet(
+        $identityConversionFunction,
+        true,
+      )(parameters.definition).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          skos_Concept.schema.properties.definition.type,
           value,
         ),
       ),
@@ -5252,6 +5264,7 @@ export namespace skos_Concept {
     readonly broader?:
       | (NamedNode | skos_Concept)
       | readonly (NamedNode | skos_Concept)[];
+    readonly definition?: string | Literal | readonly (string | Literal)[];
     readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
     readonly notation?:
       | bigint
@@ -5329,6 +5342,28 @@ export namespace skos_Concept {
               };
             },
           };
+        },
+      },
+      definition: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#definition",
+        ),
+        type: {
+          kind: "Set" as const,
+          itemType: {
+            kind: "DiscriminatedUnion" as const,
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { kind: "String" as const },
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" as const },
+              },
+            },
+          },
         },
       },
       hiddenLabel: {
@@ -5453,6 +5488,29 @@ export namespace skos_Concept {
       parameters.graph,
     );
     parameters.resource.add(
+      skos_Concept.schema.properties.definition.path,
+      parameters.object.definition.flatMap((item) =>
+        (
+          ((value, _options): Literal[] => {
+            if (typeof value === "string") {
+              return [$literalFactory.string(value)];
+            }
+            if (typeof value === "object") {
+              return [value];
+            }
+
+            throw new Error("unable to serialize to RDF");
+          }) satisfies $ToRdfResourceValuesFunction<string | Literal>
+        )(item, {
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_Concept.schema.properties.definition.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
       skos_Concept.schema.properties.hiddenLabel.path,
       parameters.object.hiddenLabel.flatMap((item) =>
         (
@@ -5526,6 +5584,8 @@ export type skos_ConceptScheme = {
 
   readonly concepts: readonly (NamedNode | skos_Concept)[];
 
+  readonly definition: readonly (string | Literal)[];
+
   readonly hiddenLabel: readonly (string | Literal)[];
 
   readonly notation: readonly Literal[];
@@ -5545,6 +5605,7 @@ export namespace skos_ConceptScheme {
     readonly concepts?:
       | (NamedNode | skos_Concept)
       | readonly (NamedNode | skos_Concept)[];
+    readonly definition?: string | Literal | readonly (string | Literal)[];
     readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
     readonly notation?:
       | bigint
@@ -5578,6 +5639,15 @@ export namespace skos_ConceptScheme {
       )(parameters.concepts).chain((value) =>
         $validateArray($identityValidationFunction, true)(
           skos_ConceptScheme.schema.properties.concepts.type,
+          value,
+        ),
+      ),
+      definition: $convertToScalarSet(
+        $identityConversionFunction,
+        true,
+      )(parameters.definition).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          skos_Concept.schema.properties.definition.type,
           value,
         ),
       ),
@@ -5635,6 +5705,7 @@ export namespace skos_ConceptScheme {
     readonly concepts?:
       | (NamedNode | skos_Concept)
       | readonly (NamedNode | skos_Concept)[];
+    readonly definition?: string | Literal | readonly (string | Literal)[];
     readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
     readonly notation?:
       | bigint
@@ -5719,6 +5790,28 @@ export namespace skos_ConceptScheme {
               };
             },
           };
+        },
+      },
+      definition: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#definition",
+        ),
+        type: {
+          kind: "Set" as const,
+          itemType: {
+            kind: "DiscriminatedUnion" as const,
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { kind: "String" as const },
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" as const },
+              },
+            },
+          },
         },
       },
       hiddenLabel: {
@@ -5869,6 +5962,29 @@ export namespace skos_ConceptScheme {
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
           propertyPath: skos_ConceptScheme.schema.properties.concepts.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_Concept.schema.properties.definition.path,
+      parameters.object.definition.flatMap((item) =>
+        (
+          ((value, _options): Literal[] => {
+            if (typeof value === "string") {
+              return [$literalFactory.string(value)];
+            }
+            if (typeof value === "object") {
+              return [value];
+            }
+
+            throw new Error("unable to serialize to RDF");
+          }) satisfies $ToRdfResourceValuesFunction<string | Literal>
+        )(item, {
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_Concept.schema.properties.definition.path,
         }),
       ),
       parameters.graph,
