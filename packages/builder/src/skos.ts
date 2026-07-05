@@ -110,25 +110,25 @@ export function skos<NamespaceT extends NamespaceBuilder>({
         );
 
       const concepts: skos_Concept[] = [];
-      for (const [partialConceptKey, partialConcept] of Object.entries(
+      for (const [conceptsRecordKey, conceptsRecordValue] of Object.entries(
         conceptsRecord ?? {},
       ) as [ConceptsRecordKey, ConceptsRecordValue][]) {
         concepts.push(
           ConceptBuilder(
-            partialConcept.$identifier
-              ? toIri(partialConcept.$identifier, namespace)
-              : conceptsRecordKeyToIri(partialConceptKey),
+            conceptsRecordValue.$identifier
+              ? toIri(conceptsRecordValue.$identifier, namespace)
+              : conceptsRecordKeyToIri(conceptsRecordKey),
             {
-              ...partialConcept,
+              ...conceptsRecordValue,
               broader: convertRelatedConcepts(
-                partialConcept.broader,
+                conceptsRecordValue.broader,
                 conceptsRecordKeyToIri,
               ),
               notation:
-                typeof partialConcept.notation === "boolean" &&
-                partialConcept.notation
-                  ? [dataFactory.literal(partialConceptKey)]
-                  : partialConcept.notation,
+                typeof conceptsRecordValue.notation === "boolean" &&
+                conceptsRecordValue.notation
+                  ? [dataFactory.literal(conceptsRecordKey)]
+                  : conceptsRecordValue.notation,
             },
           ),
         );
