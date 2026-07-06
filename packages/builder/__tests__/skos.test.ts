@@ -164,6 +164,24 @@ describe("skos", () => {
         });
       });
 
+      describe("definition", () => {
+        it("Literal", ({ expect }) => {
+          expect(
+            skos.Concept("TopConcept", {
+              definition: dataFactory.literal("test"),
+            }).definition,
+          ).toEqualRdfTermArray([dataFactory.literal("test")]);
+        });
+
+        it("string", ({ expect }) => {
+          expect(
+            skos.Concept("TopConcept", {
+              definition: "test",
+            }).definition,
+          ).toEqual(["test"]);
+        });
+      });
+
       describe("notation", () => {
         it("Literal", ({ expect }) => {
           expect(
