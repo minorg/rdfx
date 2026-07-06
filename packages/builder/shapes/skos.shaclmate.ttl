@@ -1,0 +1,109 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+skos:Concept
+    shaclmate:name "skos_Concept" ;
+    a owl:Class, sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
+    sh:property skos:Concept-broader, skos:altLabel, skos:definition, skos:hiddenLabel, skos:notation, skos:prefLabel, rdf:type .
+
+skos:Concept-broader
+    a sh:PropertyShape ;
+    sh:name "broader" ;
+    sh:path skos:broader ;
+    sh:xone ([
+            sh:nodeKind sh:IRI
+        ]
+        [
+            sh:node skos:Concept
+        ]
+    ) .
+
+skos:ConceptScheme
+    shaclmate:name "skos_ConceptScheme" ;
+    a owl:Class, sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
+    sh:property skos:ConceptScheme-concepts, skos:ConceptScheme-topConcepts, skos:altLabel, skos:definition, skos:hiddenLabel, skos:notation, skos:prefLabel, rdf:type .
+
+skos:ConceptScheme-concepts
+    a sh:PropertyShape ;
+    sh:name "concepts" ;
+    sh:path [
+        sh:inversePath skos:inScheme
+    ] ;
+    sh:xone ([
+            sh:nodeKind sh:IRI
+        ]
+        [
+            sh:node skos:Concept
+        ]
+    ) .
+
+skos:ConceptScheme-topConcepts
+    a sh:PropertyShape ;
+    sh:name "topConcepts" ;
+    sh:path [
+        sh:inversePath skos:topConceptOf
+    ] ;
+    sh:xone ([
+            sh:nodeKind sh:IRI
+        ]
+        [
+            sh:node skos:Concept
+        ]
+    ) .
+
+skos:altLabel
+    a sh:PropertyShape ;
+    sh:path skos:altLabel ;
+    sh:xone ([
+            sh:datatype xsd:string
+        ]
+        [
+            sh:datatype rdf:langString
+        ]
+    ) .
+
+skos:definition
+    a sh:PropertyShape ;
+    sh:path skos:definition ;
+    sh:xone ([
+            sh:datatype xsd:string
+        ]
+        [
+            sh:datatype rdf:langString
+        ]
+    ) .
+
+skos:hiddenLabel
+    a sh:PropertyShape ;
+    sh:path skos:hiddenLabel ;
+    sh:xone ([
+            sh:datatype xsd:string
+        ]
+        [
+            sh:datatype rdf:langString
+        ]
+    ) .
+
+skos:notation
+    a sh:PropertyShape ;
+    sh:nodeKind sh:Literal ;
+    sh:path skos:notation .
+
+skos:prefLabel
+    a sh:PropertyShape ;
+    sh:path skos:prefLabel ;
+    sh:xone ([
+            sh:datatype xsd:string
+        ]
+        [
+            sh:datatype rdf:langString
+        ]
+    ) .
+

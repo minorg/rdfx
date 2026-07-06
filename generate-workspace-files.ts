@@ -5,9 +5,9 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.30";
+const VERSION = "0.0.31";
 
-const shaclmateVersion = "4.0.52";
+const shaclmateVersion = "4.0.65";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
@@ -26,7 +26,7 @@ const externalDependencies = {
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
   "@shaclmate/compiler": shaclmateVersion,
-  "@shaclmate/shacl-ast": shaclmateVersion,
+  "@shaclmate/validator": shaclmateVersion,
   "@tpluscode/rdf-ns-builders": "~4.3.0",
   "@tsconfig/node24": "^24",
   "@tsconfig/strictest": "~2.0.8",
@@ -143,11 +143,14 @@ const workspaces = {
       },
       devDependencies: {
         external: [
+          "@rdfjs/dataset",
           "@shaclmate/compiler",
+          "@shaclmate/validator",
           "@tpluscode/rdf-ns-builders",
+          "@types/rdfjs__dataset",
           "ts-log",
         ],
-        internal: ["fs"],
+        internal: ["fs", "resource"],
       },
       tsconfig: packageTsconfig,
     },
@@ -316,6 +319,7 @@ const workspaces = {
   } satisfies Record<PackageName, Workspace>,
 } as const;
 
+// @ts-expect-error: this script will never be built into CommonJS, can ignore this error
 const myDirPath = path.dirname(url.fileURLToPath(import.meta.url));
 
 for (const [workspacesDirectoryAny, workspaces_] of Object.entries(

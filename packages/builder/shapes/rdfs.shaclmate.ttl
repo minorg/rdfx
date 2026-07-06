@@ -1,0 +1,38 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+rdfs:comment
+    a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "comment" ;
+    sh:path rdfs:comment .
+
+rdfs:isDefinedBy
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:path rdfs:isDefinedBy ;
+    sh:xone ([
+            sh:nodeKind sh:IRI
+        ]
+        [
+            sh:node owl:Ontology
+        ]
+    ) .
+
+rdfs:label
+    shaclmate:display true ;
+    a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:path rdfs:label .
+
+rdfs:subClassOf
+    a sh:PropertyShape ;
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:subClassOf .
+

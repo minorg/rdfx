@@ -2,7 +2,7 @@ import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type { NamedNode } from "@rdfjs/types";
 
 export function toIri<NamespaceT extends NamespaceBuilder>(
-  iri: keyof NamespaceT | NamedNode,
+  iri: (keyof NamespaceT & string) | NamedNode,
   namespace: NamespaceT,
 ): NamedNode {
   switch (typeof iri) {
