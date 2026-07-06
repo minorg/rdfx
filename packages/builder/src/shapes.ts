@@ -5170,6 +5170,8 @@ export type skos_Concept = {
   readonly notation: readonly Literal[];
 
   readonly prefLabel: readonly (string | Literal)[];
+
+  readonly type: readonly NamedNode[];
 };
 
 export namespace skos_Concept {
@@ -5190,6 +5192,7 @@ export namespace skos_Concept {
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly prefLabel?: string | Literal | readonly (string | Literal)[];
+    readonly type?: string | NamedNode | readonly (string | NamedNode)[];
   }) => Either<Error, skos_Concept> = (parameters) =>
     $sequenceRecord({
       $identifier: $convertToIriIdentifierProperty<string>(
@@ -5249,6 +5252,15 @@ export namespace skos_Concept {
           value,
         ),
       ),
+      type: $convertToScalarSet(
+        $convertToIri<string>,
+        true,
+      )(parameters.type).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          sh_NodeShape.schema.properties.type.type,
+          value,
+        ),
+      ),
     })
       .map((properties) => ({
         ...properties,
@@ -5275,6 +5287,7 @@ export namespace skos_Concept {
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly prefLabel?: string | Literal | readonly (string | Literal)[];
+    readonly type?: string | NamedNode | readonly (string | NamedNode)[];
   }): skos_Concept {
     return create(parameters).unsafeCoerce();
   }
@@ -5416,6 +5429,11 @@ export namespace skos_Concept {
             },
           },
         },
+      },
+      type: {
+        kind: "Shacl",
+        path: $RdfVocabularies.rdf.type,
+        type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
       },
     },
     toRdfTypes: [
@@ -5561,6 +5579,11 @@ export namespace skos_Concept {
       ),
       parameters.graph,
     );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
     return parameters.resource;
   };
 
@@ -5593,6 +5616,8 @@ export type skos_ConceptScheme = {
   readonly prefLabel: readonly (string | Literal)[];
 
   readonly topConcepts: readonly (NamedNode | skos_Concept)[];
+
+  readonly type: readonly NamedNode[];
 };
 
 export namespace skos_ConceptScheme {
@@ -5619,6 +5644,7 @@ export namespace skos_ConceptScheme {
     readonly topConcepts?:
       | (NamedNode | skos_Concept)
       | readonly (NamedNode | skos_Concept)[];
+    readonly type?: string | NamedNode | readonly (string | NamedNode)[];
   }) => Either<Error, skos_ConceptScheme> = (parameters) =>
     $sequenceRecord({
       $identifier: $convertToIriIdentifierProperty<string>(
@@ -5687,6 +5713,15 @@ export namespace skos_ConceptScheme {
           value,
         ),
       ),
+      type: $convertToScalarSet(
+        $convertToIri<string>,
+        true,
+      )(parameters.type).chain((value) =>
+        $validateArray($identityValidationFunction, true)(
+          sh_NodeShape.schema.properties.type.type,
+          value,
+        ),
+      ),
     })
       .map((properties) => ({
         ...properties,
@@ -5719,6 +5754,7 @@ export namespace skos_ConceptScheme {
     readonly topConcepts?:
       | (NamedNode | skos_Concept)
       | readonly (NamedNode | skos_Concept)[];
+    readonly type?: string | NamedNode | readonly (string | NamedNode)[];
   }): skos_ConceptScheme {
     return create(parameters).unsafeCoerce();
   }
@@ -5894,6 +5930,11 @@ export namespace skos_ConceptScheme {
           };
         },
       },
+      type: {
+        kind: "Shacl",
+        path: $RdfVocabularies.rdf.type,
+        type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
+      },
     },
     toRdfTypes: [
       dataFactory.namedNode(
@@ -6066,6 +6107,11 @@ export namespace skos_ConceptScheme {
           propertyPath: skos_ConceptScheme.schema.properties.topConcepts.path,
         }),
       ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
       parameters.graph,
     );
     return parameters.resource;

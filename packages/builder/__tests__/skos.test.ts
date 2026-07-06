@@ -1,10 +1,13 @@
 import { describe, it } from "vitest";
 import { builder } from "../src/builder.js";
 import "@rdfx/testing";
+import datasetFactory from "@rdfjs/dataset";
 import type { Literal } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
-import type { skos_Concept } from "../src/shapes.js";
-import { exCbox } from "./namespaces.js";
+import { rdf, skos as skosNs } from "@tpluscode/rdf-ns-builders";
+import { skos_Concept } from "../src/shapes.js";
+import { exCbox, exTbox } from "./namespaces.js";
+import "@rdfx/testing";
 
 type Mutable<T> = {
   -readonly [P in keyof T]: T[P];
@@ -189,6 +192,61 @@ describe("skos", () => {
               notation: dataFactory.literal("test"),
             }).notation,
           ).toEqualRdfTermArray([dataFactory.literal("test")]);
+        });
+      });
+
+      describe("type", () => {
+        it("unspecified", ({ expect }) => {
+          const concept = skos.Concept("TopConcept");
+          expect(concept.type).toHaveLength(0);
+          expect([
+            ...skos_Concept.toRdfResource(concept).dataset,
+          ]).toEqualRdfQuadArray([
+            dataFactory.quad(
+              concept.$identifier(),
+              rdf.type,
+              skosNs.Concept,
+              dataFactory.defaultGraph(),
+            ),
+          ]);
+        });
+
+        it("skos:Concept", ({ expect }) => {
+          const concept = skos.Concept("TopConcept", { type: skosNs.Concept });
+          expect(concept.type).toHaveLength(1);
+          expect([
+            ...skos_Concept.toRdfResource(concept).dataset,
+          ]).toEqualRdfQuadArray([
+            dataFactory.quad(
+              concept.$identifier(),
+              rdf.type,
+              skosNs.Concept,
+              dataFactory.defaultGraph(),
+            ),
+          ]);
+        });
+
+        it("skos:Concept and ex:Class", ({ expect }) => {
+          const concept = skos.Concept("TopConcept", { type: exTbox.Class });
+          expect(concept.type).toHaveLength(1);
+          expect([
+            ...skos_Concept.toRdfResource(concept).dataset,
+          ]).toBeRdfIsomorphic(
+            datasetFactory.dataset([
+              dataFactory.quad(
+                concept.$identifier(),
+                rdf.type,
+                skosNs.Concept,
+                dataFactory.defaultGraph(),
+              ),
+              dataFactory.quad(
+                concept.$identifier(),
+                rdf.type,
+                exTbox.Class,
+                dataFactory.defaultGraph(),
+              ),
+            ]),
+          );
         });
       });
     }

@@ -10,7 +10,7 @@ skos:Concept
     shaclmate:name "skos_Concept" ;
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
-    sh:property skos:Concept-broader, skos:altLabel, skos:definition, skos:hiddenLabel, skos:notation, skos:prefLabel .
+    sh:property skos:Concept-broader, skos:altLabel, skos:definition, skos:hiddenLabel, skos:notation, skos:prefLabel, rdf:type .
 
 skos:Concept-broader
     a sh:PropertyShape ;
@@ -28,7 +28,7 @@ skos:ConceptScheme
     shaclmate:name "skos_ConceptScheme" ;
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
-    sh:property skos:ConceptScheme-concepts, skos:ConceptScheme-topConcepts, skos:altLabel, skos:definition, skos:hiddenLabel, skos:notation, skos:prefLabel .
+    sh:property skos:ConceptScheme-concepts, skos:ConceptScheme-topConcepts, skos:altLabel, skos:definition, skos:hiddenLabel, skos:notation, skos:prefLabel, rdf:type .
 
 skos:ConceptScheme-concepts
     a sh:PropertyShape ;
