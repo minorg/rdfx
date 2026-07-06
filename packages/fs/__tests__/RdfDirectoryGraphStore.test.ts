@@ -12,6 +12,11 @@ describe("RdfDirectoryGraphStore", () => {
       await using directoryPath = await fs.mkdtempDisposable(
         path.join(os.tmpdir(), "RdfDirectoryGraphStore.test"),
       );
+      const ignoreFileHandle = await fs.open(
+        path.join(directoryPath.path, "README.md"),
+        "w+",
+      );
+      await ignoreFileHandle.close();
       await use(new RdfDirectoryGraphStore(directoryPath.path, { logger }));
     });
   });

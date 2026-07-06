@@ -100,7 +100,10 @@ export class RdfDirectoryGraphStore implements GraphStore {
   async isEmpty(): Promise<Either<Error, boolean>> {
     return EitherAsync(async () => {
       try {
-        return (await fs.promises.readdir(this.directoryPath)).length === 0;
+        for await (const _ of this.files()) {
+          return false;
+        }
+        return true;
       } catch (error) {
         if (errorCode(error) === "ENOENT") {
           return true;
