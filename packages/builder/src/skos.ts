@@ -4,7 +4,7 @@ import dataFactory from "@rdfx/data-factory";
 import { skos_Concept, skos_ConceptScheme } from "./shapes.js";
 import { toIri } from "./toIri.js";
 
-interface ConvertibleConceptParameters<ConceptIriString extends string>
+export interface ConvertibleConceptParameters<ConceptIriString extends string>
   extends Omit<
     Parameters<typeof skos_Concept.createUnsafe>[0],
     "$identifier" | "broader" | "termType"
