@@ -3,8 +3,9 @@ import type { BlankNode, Literal, NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { LiteralFactory } from "@rdfx/literal";
 import type { PropertyPath } from "@rdfx/resource";
-import { sh as _namespace } from "@tpluscode/rdf-ns-builders";
+import { sh as _namespace, owl, rdfs } from "@tpluscode/rdf-ns-builders";
 import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
+import type { IriLike } from "./IriLike.js";
 import {
   sh_NodeShape,
   sh_PropertyShape,
@@ -218,22 +219,26 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         | NamespaceKey,
       parameters?: Omit<
         NonNullable<Parameters<typeof sh_NodeShape.createUnsafe>[0]>,
-        "$identifier" | "in_" | "nodeKind" | "properties" | "xone"
+        "$identifier" | "in_" | "nodeKind" | "properties" | "type" | "xone"
       > & {
         readonly in_?: skos_ConceptScheme | ConvertibleInArray;
+        readonly implicitClassTarget?: true;
         readonly nodeKind?: NodeKindIri | NodeKindString;
         readonly properties?:
           | NodeShapePropertiesRecord
           | NodeShapePropertyArray;
+        readonly type?: IriLike<NamespaceT> | readonly IriLike<NamespaceT>[];
         readonly xone?: readonly (NamedNode | NamespaceKey)[];
       },
     ): sh_NodeShape => {
       const nodeShapeIdentifier = toIdentifier($identifier);
 
       const {
+        implicitClassTarget,
         in_: inParameter,
         nodeKind: nodeKindParameter,
         properties: propertiesParameter,
+        type: typeParameter,
         xone: xoneParameter,
         ...otherParameters
       } = parameters ?? {};
@@ -296,12 +301,28 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         }
       }
 
+      let type: NamedNode[] | undefined;
+      if (typeParameter) {
+        type = toIriArray(typeParameter).concat();
+        if (
+          implicitClassTarget &&
+          !type.some(
+            (type) => type.equals(rdfs.Class) || type.equals(owl.Class),
+          )
+        ) {
+          type.push(rdfs.Class);
+        }
+      } else if (implicitClassTarget) {
+        type = [rdfs.Class];
+      }
+
       return sh_NodeShape.createUnsafe({
         ...otherParameters,
         $identifier: nodeShapeIdentifier,
         in_: convertIn(inParameter),
         nodeKind: convertNodeKind(nodeKindParameter),
         properties,
+        type,
         xone: xoneParameter ? xoneParameter.map(toIri) : undefined,
       });
     },

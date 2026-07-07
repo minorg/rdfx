@@ -12,6 +12,7 @@ import {
 } from "../src/shapes.js";
 import "@rdfx/testing";
 import type { NamespaceBuilder } from "@rdfjs/namespace";
+import { owl, rdfs } from "@tpluscode/rdf-ns-builders";
 import { exCbox, exTbox } from "./namespaces.js";
 
 describe("sh", () => {
@@ -91,6 +92,29 @@ describe("sh", () => {
         const nodeShape = sh.NodeShape(undefined);
         expectValidShapes(nodeShape);
         expect(nodeShape.$identifier().termType).toStrictEqual("BlankNode");
+      });
+    });
+
+    describe("implicitClassTarget", () => {
+      it("unspecified", () => {
+        const nodeShape = sh.NodeShape("Class");
+        expectValidShapes(nodeShape);
+        expect(nodeShape.type).toHaveLength(0);
+      });
+
+      it("true", () => {
+        const nodeShape = sh.NodeShape("Class", { implicitClassTarget: true });
+        expectValidShapes(nodeShape);
+        expect(nodeShape.type).toEqualRdfTermArray([rdfs.Class]);
+      });
+
+      it("with other types", () => {
+        const nodeShape = sh.NodeShape("Class", {
+          implicitClassTarget: true,
+          type: [owl.Class],
+        });
+        expectValidShapes(nodeShape);
+        expect(nodeShape.type).toEqualRdfTermArray([rdfs.Class, owl.Class]);
       });
     });
 
@@ -300,6 +324,26 @@ describe("sh", () => {
       });
     });
 
+    describe("type", () => {
+      it("unspecified", () => {
+        const nodeShape = sh.NodeShape("Class", {});
+        expectValidShapes(nodeShape);
+        expect(nodeShape.type).toHaveLength(0);
+      });
+
+      it("IRI", () => {
+        const nodeShape = sh.NodeShape("Class", { type: owl.Class });
+        expectValidShapes(nodeShape);
+        expect(nodeShape.type).toEqualRdfTermArray([owl.Class]);
+      });
+
+      it("string", () => {
+        const nodeShape = sh.NodeShape("Class", { type: "XoneMember1" });
+        expectValidShapes(nodeShape);
+        expect(nodeShape.type).toEqualRdfTermArray([exTbox.XoneMember1]);
+      });
+    });
+
     describe("xone", () => {
       it("unspecified", () => {
         const nodeShape = sh.NodeShape("Class", {});
@@ -408,14 +452,14 @@ describe("sh", () => {
       });
     });
 
-    describe("classes", () => {
-      it("unspecified", ({ expect }) => {
+    describe("class", () => {
+      it("unspecified", () => {
         const propertyShape = sh.PropertyShape("property");
         expectValidShapes(propertyShape);
         expect(propertyShape.class_).toHaveLength(0);
       });
 
-      it("IRI", ({ expect }) => {
+      it("IRI", () => {
         const propertyShape = sh.PropertyShape("property", {
           class: [exTbox.Class],
         });
@@ -423,7 +467,7 @@ describe("sh", () => {
         expect(propertyShape.class_).toEqualRdfTermArray([exTbox.Class]);
       });
 
-      it("string", ({ expect }) => {
+      it("string", () => {
         const propertyShape = sh.PropertyShape("property", {
           class: ["Class"],
         });
