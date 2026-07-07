@@ -4,8 +4,7 @@ import dataFactory from "@rdfx/data-factory";
 import { LiteralFactory } from "@rdfx/literal";
 import type { PropertyPath } from "@rdfx/resource";
 import { sh as _namespace } from "@tpluscode/rdf-ns-builders";
-import type { IdentifierLike } from "./IdentifierLike.js";
-import type { IriLike } from "./IriLike.js";
+import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
 import {
   sh_NodeShape,
   sh_PropertyShape,
@@ -84,16 +83,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
   toIdentifier,
   toIri,
   toIriArray,
-}: {
-  namespace: NamespaceT;
-  toIdentifier: (
-    identifier: IdentifierLike<NamespaceT>,
-  ) => BlankNode | NamedNode;
-  toIri: (iri: IriLike<NamespaceT>) => NamedNode;
-  toIriArray: (
-    iriArray: IriLike<NamespaceT> | readonly IriLike<NamespaceT>[],
-  ) => readonly NamedNode[];
-}) {
+}: BuilderBuilderParameters<NamespaceT>) {
   type NamespaceKey = keyof NamespaceT & string;
 
   function PropertyShape(

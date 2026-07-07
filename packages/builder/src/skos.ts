@@ -3,7 +3,7 @@ import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { skos as _namespace } from "@tpluscode/rdf-ns-builders";
 import { sentenceCase } from "change-case";
-import type { IriLike } from "./IriLike.js";
+import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
 import { skos_Concept, skos_ConceptScheme } from "./shapes.js";
 
 export interface ConvertibleConceptParameters<ConceptIriString extends string>
@@ -46,10 +46,7 @@ function convertRelatedConcepts<ConceptIriString extends string>(
 
 export function skos<NamespaceT extends NamespaceBuilder>({
   toIri,
-}: {
-  namespace: NamespaceT;
-  toIri: (iri: IriLike<NamespaceT>) => NamedNode;
-}) {
+}: BuilderBuilderParameters<NamespaceT>) {
   type NamespaceKey = keyof NamespaceT & string;
 
   function Concept(
