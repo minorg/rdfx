@@ -11,8 +11,6 @@ import {
 } from "./shapes.js";
 import { toIri } from "./toIri.js";
 
-const literalFactory = new LiteralFactory({ dataFactory });
-
 type InArray = readonly (
   | bigint
   | boolean
@@ -22,6 +20,9 @@ type InArray = readonly (
   | number
   | string
 )[];
+
+const literalFactory = new LiteralFactory({ dataFactory });
+
 function toIn(
   in_?: skos_ConceptScheme | InArray,
 ): readonly (Literal | NamedNode)[] | undefined {
@@ -73,7 +74,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
 
   function PropertyShape(
     $identifier: BlankNode | NamedNode | NamespaceKey | undefined,
-    parameters: Omit<
+    parameters?: Omit<
       NonNullable<Parameters<typeof sh_PropertyShape.createUnsafe>[0]>,
       | "$identifier"
       | "classes"
@@ -84,11 +85,11 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       | "path"
       | "resolve"
     > & {
-      readonly cardinality: "optional" | "required" | "set";
+      readonly cardinality?: "optional" | "required" | "set";
       readonly classes?: readonly (NamedNode | NamespaceKey)[];
       readonly in_?: skos_ConceptScheme | InArray;
       readonly node?: NamedNode | NamespaceKey;
-      readonly path?: PropertyPath | NamespaceKey;
+      readonly path?: NamespaceKey | PropertyPath;
       readonly resolve?: NamedNode | NamespaceKey;
     },
   ): ReturnType<typeof sh_PropertyShape.createUnsafe> {
@@ -102,7 +103,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       node: nodeParameter,
       resolve: resolveParameter,
       ...otherParameters
-    } = parameters;
+    } = parameters ?? {};
 
     const $identifierTerm = toIdentifier($identifier);
 
@@ -128,23 +129,25 @@ export function sh<NamespaceT extends NamespaceBuilder>({
 
     let maxCount: bigint | undefined;
     let minCount: bigint | undefined;
-    switch (cardinalityParameter) {
-      case "optional":
-        maxCount = 1n;
-        break;
-      case "required":
-        maxCount = 1n;
-        minCount = 1n;
-        break;
-      case "set":
-        break;
+    if (cardinalityParameter) {
+      switch (cardinalityParameter) {
+        case "optional":
+          maxCount = 1n;
+          break;
+        case "required":
+          maxCount = 1n;
+          minCount = 1n;
+          break;
+        case "set":
+          break;
+      }
     }
 
     return sh_PropertyShape.createUnsafe({
       ...otherParameters,
       $identifier: $identifierTerm,
-      classes: parameters.classes
-        ? parameters.classes.map((class_) => toIri(class_, namespace))
+      classes: classesParameter
+        ? classesParameter.map((class_) => toIri(class_, namespace))
         : undefined,
       in_: toIn(inParameter),
       maxCount,
@@ -157,20 +160,111 @@ export function sh<NamespaceT extends NamespaceBuilder>({
     });
   }
 
+  type NodeShapePropertyArray = readonly (
+    | NamedNode
+    | NamespaceKey
+    | sh_PropertyShape
+  )[];
+
   return {
     namespace: _namespace as NamespaceBuilder<keyof typeof _namespace>,
 
     NodeShape: (
       $identifier: BlankNode | NamedNode | NamespaceKey | undefined,
-      parameters?: {
-        in_?: skos_ConceptScheme | InArray;
+      parameters?: Omit<
+        NonNullable<Parameters<typeof sh_NodeShape.createUnsafe>[0]>,
+        "$identifier" | "in_" | "properties" | "xone"
+      > & {
+        readonly in_?: skos_ConceptScheme | InArray;
+        readonly properties?:
+          | Record<
+              string,
+              Omit<
+                NonNullable<Parameters<typeof PropertyShape>[1]>,
+                "$identifier" | "path"
+              > & {
+                readonly $identifier?: Parameters<typeof PropertyShape>[0];
+                readonly path?: NamespaceKey | PropertyPath;
+              }
+            >
+          | NodeShapePropertyArray;
+        readonly xone?: readonly (NamedNode | NamespaceKey)[];
       },
     ): sh_NodeShape => {
-      const $identifierTerm = toIdentifier($identifier);
+      const nodeShapeIdentifier = toIdentifier($identifier);
+
+      const {
+        in_: inParameter,
+        properties: propertiesParameter,
+        xone: xoneParameter,
+        ...otherParameters
+      } = parameters ?? {};
+
+      let properties: (NamedNode | sh_PropertyShape)[] | undefined;
+      if (propertiesParameter) {
+        if (Array.isArray(propertiesParameter)) {
+          properties = (propertiesParameter as NodeShapePropertyArray).map(
+            (property) => {
+              if (typeof property === "string") {
+                return toIri(property, namespace);
+              }
+              return property;
+            },
+          );
+        } else {
+          properties = Object.entries(propertiesParameter).map(
+            ([key, propertyParameters]) => {
+              let {
+                $identifier,
+                path,
+                name,
+                shaclmateName,
+                ...otherPropertyParameters
+              } = propertyParameters;
+
+              // Order of checks here is important.
+              if (typeof $identifier === "function") {
+                $identifier = $identifier();
+              }
+
+              if (!$identifier) {
+                if (nodeShapeIdentifier.termType === "NamedNode") {
+                  $identifier = dataFactory.namedNode(
+                    `${nodeShapeIdentifier.value}-${key}`,
+                  );
+                } else {
+                  $identifier = dataFactory.blankNode();
+                }
+              }
+
+              if (!name && !shaclmateName) {
+                name = key;
+              }
+
+              if (!path) {
+                path = (namespace as NamespaceBuilder)(key);
+              }
+
+              return sh_PropertyShape.createUnsafe({
+                ...otherPropertyParameters,
+                $identifier,
+                name,
+                path,
+                shaclmateName,
+              });
+            },
+          );
+        }
+      }
 
       return sh_NodeShape.createUnsafe({
-        $identifier: $identifierTerm,
-        in_: toIn(parameters?.in_),
+        ...otherParameters,
+        $identifier: nodeShapeIdentifier,
+        in_: toIn(inParameter),
+        properties,
+        xone: xoneParameter
+          ? xoneParameter.map((member) => toIri(member, namespace))
+          : undefined,
       });
     },
 
