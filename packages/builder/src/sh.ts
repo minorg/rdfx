@@ -2,6 +2,7 @@ import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type { BlankNode, Literal, NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import type { PropertyPath } from "@rdfx/resource";
+import { sh as _namespace } from "@tpluscode/rdf-ns-builders";
 import { sh_PropertyShape } from "./shapes.js";
 import { toIri } from "./toIri.js";
 
@@ -13,6 +14,8 @@ export function sh<NamespaceT extends NamespaceBuilder>({
   type NamespaceKey = keyof NamespaceT & string;
 
   return {
+    namespace: _namespace,
+
     PropertyShape: (
       $identifier: BlankNode | NamedNode | NamespaceKey | undefined,
       parameters: Omit<

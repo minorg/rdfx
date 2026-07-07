@@ -1,6 +1,7 @@
 import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
+import { skos as _namespace } from "@tpluscode/rdf-ns-builders";
 import { skos_Concept, skos_ConceptScheme } from "./shapes.js";
 import { toIri } from "./toIri.js";
 
@@ -78,6 +79,8 @@ export function skos<NamespaceT extends NamespaceBuilder>({
   };
 
   return {
+    namespace: _namespace,
+
     Concept: ConceptBuilder,
 
     ConceptScheme: <
