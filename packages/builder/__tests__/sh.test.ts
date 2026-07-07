@@ -11,10 +11,23 @@ import { exCbox, exTbox } from "./namespaces.js";
 
 describe("sh", () => {
   const { sh } = builder({ namespace: exTbox });
-  const { skos } = builder({ namespace: exCbox });
   const shapesGraphValidator = new ZazukoValidator({
     shapesGraph: shaclShaclDataset,
   });
+
+  const conceptScheme = builder({ namespace: exCbox }).skos.ConceptScheme(
+    "ConceptScheme",
+    {
+      concepts: {
+        LeafConcept: {
+          $identifier: exCbox.LeafConcept,
+        },
+        TopConcept: {
+          $identifier: exCbox.TopConcept,
+        },
+      },
+    },
+  );
 
   async function expectValidShapes(
     ...shapes: readonly sh_Shape[]
@@ -71,6 +84,41 @@ describe("sh", () => {
         const nodeShape = sh.NodeShape(undefined);
         expectValidShapes(nodeShape);
         expect(nodeShape.$identifier().termType).toStrictEqual("BlankNode");
+      });
+    });
+
+    describe("in", () => {
+      it("unspecified", () => {
+        const nodeShape = sh.NodeShape("Class", {});
+        expectValidShapes(nodeShape);
+        expect(nodeShape.in_.extract()).toBeUndefined();
+      });
+
+      it("primitive", () => {
+        const nodeShape = sh.NodeShape("Class", {
+          in_: ["test"],
+        });
+        expectValidShapes(nodeShape);
+        expect(nodeShape.in_.extract()).toEqualRdfTermArray([
+          dataFactory.literal("test"),
+        ]);
+      });
+
+      it("IRI", () => {
+        const nodeShape = sh.NodeShape("Class", { in_: [exCbox.LeafConcept] });
+        expectValidShapes(nodeShape);
+        expect(nodeShape.in_.extract()).toEqualRdfTermArray([
+          exCbox.LeafConcept,
+        ]);
+      });
+
+      it("skos:ConceptScheme", () => {
+        const nodeShape = sh.NodeShape("Class", { in_: conceptScheme });
+        expectValidShapes(nodeShape);
+        expect(nodeShape.in_.extract()).toEqualRdfTermArray([
+          exCbox.LeafConcept,
+          exCbox.TopConcept,
+        ]);
       });
     });
   });
@@ -178,6 +226,17 @@ describe("sh", () => {
         expect(propertyShape.in_.extract()).toBeUndefined();
       });
 
+      it("primitive", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+          in_: ["test"],
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.in_.extract()).toEqualRdfTermArray([
+          dataFactory.literal("test"),
+        ]);
+      });
+
       it("IRI", () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
@@ -192,16 +251,7 @@ describe("sh", () => {
       it("skos:ConceptScheme", () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
-          in_: skos.ConceptScheme("ConceptScheme", {
-            concepts: {
-              LeafConcept: {
-                $identifier: exCbox.LeafConcept,
-              },
-              TopConcept: {
-                $identifier: exCbox.TopConcept,
-              },
-            },
-          }),
+          in_: conceptScheme,
         });
         expectValidShapes(propertyShape);
         expect(propertyShape.in_.extract()).toEqualRdfTermArray([
