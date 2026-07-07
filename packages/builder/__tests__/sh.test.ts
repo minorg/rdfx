@@ -47,6 +47,34 @@ describe("sh", () => {
     }
   }
 
+  describe("NodeShape", () => {
+    describe("$identifier", () => {
+      it("blank node", () => {
+        const nodeShape = sh.NodeShape(dataFactory.blankNode());
+        expectValidShapes(nodeShape);
+        expect(nodeShape.$identifier().termType).toStrictEqual("BlankNode");
+      });
+
+      it("IRI", () => {
+        const nodeShape = sh.NodeShape(exTbox.property);
+        expectValidShapes(nodeShape);
+        expect(nodeShape.$identifier()).toEqualRdfTerm(exTbox.property);
+      });
+
+      it("string", () => {
+        const nodeShape = sh.NodeShape("property");
+        expectValidShapes(nodeShape);
+        expect(nodeShape.$identifier()).toEqualRdfTerm(exTbox.property);
+      });
+
+      it("undefined", () => {
+        const nodeShape = sh.NodeShape(undefined);
+        expectValidShapes(nodeShape);
+        expect(nodeShape.$identifier().termType).toStrictEqual("BlankNode");
+      });
+    });
+  });
+
   describe("PropertyShape", () => {
     describe("$identifier", () => {
       it("blank node", () => {
