@@ -100,7 +100,7 @@ export function skos<NamespaceT extends NamespaceBuilder>({
       type ConceptsRecordKey = keyof ConceptsRecordT & string;
       type ConceptsRecordValue =
         ConvertibleConceptParameters<ConceptsRecordKey> & {
-          $identifier?: NamespaceKey | NamedNode;
+          $identifier?: NamedNode | NamespaceKey;
         };
 
       const conceptSchemeIdentifier = toIri($identifier, namespace);
