@@ -121,6 +121,44 @@ describe("sh", () => {
         ]);
       });
     });
+
+    describe("xone", () => {
+      it("unspecified", () => {
+        const nodeShape = sh.NodeShape("Class", {});
+        expectValidShapes(nodeShape);
+        expect(nodeShape.xone.extract()).toBeUndefined();
+      });
+
+      it("IRI", () => {
+        const nodeShape = sh.NodeShape("Class", {
+          xone: [exTbox.XoneMember1, exTbox.XoneMember2],
+        });
+        expectValidShapes(
+          nodeShape,
+          sh.NodeShape("XoneMember1"),
+          sh.NodeShape("XoneMember2"),
+        );
+        expect(nodeShape.xone.extract()).toEqualRdfTermArray([
+          exTbox.XoneMember1,
+          exTbox.XoneMember2,
+        ]);
+      });
+
+      it("string", () => {
+        const nodeShape = sh.NodeShape("Class", {
+          xone: ["XoneMember1", "XoneMember2"],
+        });
+        expectValidShapes(
+          nodeShape,
+          sh.NodeShape("XoneMember1"),
+          sh.NodeShape("XoneMember2"),
+        );
+        expect(nodeShape.xone.extract()).toEqualRdfTermArray([
+          exTbox.XoneMember1,
+          exTbox.XoneMember2,
+        ]);
+      });
+    });
   });
 
   describe("PropertyShape", () => {

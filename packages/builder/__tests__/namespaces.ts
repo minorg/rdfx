@@ -17,6 +17,8 @@ interface ExTbox {
   "": NamedNode<"http://example.com/tbox#">;
   Class: NamedNode<"http://example.com/tbox#Class">;
   property: NamedNode<"http://example.com/tbox#property">;
+  XoneMember1: NamedNode<"http://example.com/tbox#XoneMember1">;
+  XoneMember2: NamedNode<"http://example.com/tbox#XoneMember2">;
 }
 
 export const exTbox = namespace("http://example.com/tbox#", {
