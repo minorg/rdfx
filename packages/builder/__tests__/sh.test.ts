@@ -412,23 +412,23 @@ describe("sh", () => {
       it("unspecified", ({ expect }) => {
         const propertyShape = sh.PropertyShape("property");
         expectValidShapes(propertyShape);
-        expect(propertyShape.classes).toHaveLength(0);
+        expect(propertyShape.class_).toHaveLength(0);
       });
 
       it("IRI", ({ expect }) => {
         const propertyShape = sh.PropertyShape("property", {
-          classes: [exTbox.Class],
+          class: [exTbox.Class],
         });
         expectValidShapes(propertyShape);
-        expect(propertyShape.classes).toEqualRdfTermArray([exTbox.Class]);
+        expect(propertyShape.class_).toEqualRdfTermArray([exTbox.Class]);
       });
 
       it("string", ({ expect }) => {
         const propertyShape = sh.PropertyShape("property", {
-          classes: ["Class"],
+          class: ["Class"],
         });
         expectValidShapes(propertyShape);
-        expect(propertyShape.classes).toEqualRdfTermArray([exTbox.Class]);
+        expect(propertyShape.class_).toEqualRdfTermArray([exTbox.Class]);
       });
     });
 

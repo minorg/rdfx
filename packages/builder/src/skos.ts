@@ -3,8 +3,8 @@ import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { skos as _namespace } from "@tpluscode/rdf-ns-builders";
 import { sentenceCase } from "change-case";
+import type { IriLike } from "./IriLike.js";
 import { skos_Concept, skos_ConceptScheme } from "./shapes.js";
-import { toIri } from "./toIri.js";
 
 export interface ConvertibleConceptParameters<ConceptIriString extends string>
   extends Omit<
@@ -45,13 +45,14 @@ function convertRelatedConcepts<ConceptIriString extends string>(
 }
 
 export function skos<NamespaceT extends NamespaceBuilder>({
-  namespace,
+  toIri,
 }: {
   namespace: NamespaceT;
+  toIri: (iri: IriLike<NamespaceT>) => NamedNode;
 }) {
   type NamespaceKey = keyof NamespaceT & string;
 
-  function ConceptBuilder(
+  function Concept(
     $identifier: NamedNode | NamespaceKey,
     parameters?: ConvertibleConceptParameters<NamespaceKey>,
   ): skos_Concept {
@@ -59,9 +60,9 @@ export function skos<NamespaceT extends NamespaceBuilder>({
 
     return skos_Concept.createUnsafe({
       ...otherParameters,
-      $identifier: toIri($identifier, namespace),
+      $identifier: toIri($identifier),
       broader: convertRelatedConcepts<NamespaceKey>(broaderParameter, (key) =>
-        toIri(key, namespace),
+        toIri(key),
       ),
     });
   }
@@ -82,7 +83,7 @@ export function skos<NamespaceT extends NamespaceBuilder>({
   return {
     namespace: _namespace as NamespaceBuilder<keyof typeof _namespace>,
 
-    Concept: ConceptBuilder,
+    Concept: Concept,
 
     ConceptScheme: <
       ConceptsRecordT extends
@@ -104,7 +105,7 @@ export function skos<NamespaceT extends NamespaceBuilder>({
           $identifier?: NamedNode | NamespaceKey;
         };
 
-      const conceptSchemeIdentifier = toIri($identifier, namespace);
+      const conceptSchemeIdentifier = toIri($identifier);
 
       const conceptsRecordKeyToIri = (
         conceptsRecordKey: ConceptsRecordKey,
@@ -118,9 +119,9 @@ export function skos<NamespaceT extends NamespaceBuilder>({
         conceptsRecord ?? {},
       ) as [ConceptsRecordKey, ConceptsRecordValue][]) {
         concepts.push(
-          ConceptBuilder(
+          Concept(
             conceptsRecordValue.$identifier
-              ? toIri(conceptsRecordValue.$identifier, namespace)
+              ? toIri(conceptsRecordValue.$identifier)
               : conceptsRecordKeyToIri(conceptsRecordKey),
             {
               ...conceptsRecordValue,
