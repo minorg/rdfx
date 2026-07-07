@@ -11,6 +11,7 @@ import {
   sh_Shape,
 } from "../src/shapes.js";
 import "@rdfx/testing";
+import type { NamespaceBuilder } from "@rdfjs/namespace";
 import { exCbox, exTbox } from "./namespaces.js";
 
 describe("sh", () => {
@@ -65,6 +66,8 @@ describe("sh", () => {
   }
 
   describe("NodeShape", () => {
+    const propertyShape = sh.PropertyShape("property");
+
     describe("$identifier", () => {
       it("blank node", () => {
         const nodeShape = sh.NodeShape(dataFactory.blankNode());
@@ -73,15 +76,15 @@ describe("sh", () => {
       });
 
       it("IRI", () => {
-        const nodeShape = sh.NodeShape(exTbox.property);
+        const nodeShape = sh.NodeShape(exTbox.Class);
         expectValidShapes(nodeShape);
-        expect(nodeShape.$identifier()).toEqualRdfTerm(exTbox.property);
+        expect(nodeShape.$identifier()).toEqualRdfTerm(exTbox.Class);
       });
 
       it("string", () => {
-        const nodeShape = sh.NodeShape("property");
+        const nodeShape = sh.NodeShape("Class");
         expectValidShapes(nodeShape);
-        expect(nodeShape.$identifier()).toEqualRdfTerm(exTbox.property);
+        expect(nodeShape.$identifier()).toEqualRdfTerm(exTbox.Class);
       });
 
       it("undefined", () => {
@@ -137,7 +140,7 @@ describe("sh", () => {
         const nodeShape = sh.NodeShape("Class", {
           properties: [exTbox.property],
         });
-        expectValidShapes(nodeShape);
+        expectValidShapes(nodeShape, propertyShape);
         expect(nodeShape.properties).toEqualRdfTermArray([exTbox.property]);
       });
 
@@ -145,7 +148,7 @@ describe("sh", () => {
         const nodeShape = sh.NodeShape("Class", {
           properties: ["property"],
         });
-        expectValidShapes(nodeShape);
+        expectValidShapes(nodeShape, propertyShape);
         expect(nodeShape.properties).toEqualRdfTermArray([exTbox.property]);
       });
 
@@ -164,13 +167,135 @@ describe("sh", () => {
       });
 
       describe("Record", () => {
-        describe("no identifier or path specified", () => {
+        it("identifier undefined, path undefined", () => {
           const nodeShape = sh.NodeShape("Class", {
             properties: {
               test: {},
             },
           });
           expectValidShapes(nodeShape);
+          expect(nodeShape.properties).toHaveLength(1);
+          expect(nodeShape.properties[0].termType).toStrictEqual(
+            "sh_PropertyShape",
+          );
+          const propertyShape = nodeShape.properties[0] as sh_PropertyShape;
+          expect(propertyShape.$identifier()).toEqualRdfTerm(
+            dataFactory.namedNode(`${nodeShape.$identifier().value}-test`),
+          );
+          expect(propertyShape.path).toEqualRdfTerm(
+            (exTbox as NamespaceBuilder)("test"),
+          );
+        });
+
+        it("identifier defined, path undefined", () => {
+          const nodeShape = sh.NodeShape("Class", {
+            properties: {
+              test: {
+                $identifier: exTbox.property,
+              },
+            },
+          });
+          expectValidShapes(nodeShape);
+          expect(nodeShape.properties).toHaveLength(1);
+          expect(nodeShape.properties[0].termType).toStrictEqual(
+            "sh_PropertyShape",
+          );
+          const propertyShape = nodeShape.properties[0] as sh_PropertyShape;
+          expect(propertyShape.$identifier()).toEqualRdfTerm(exTbox.property);
+          expect(propertyShape.path).toEqualRdfTerm(
+            (exTbox as NamespaceBuilder)("test"),
+          );
+        });
+
+        it("identifier undefined, path defined", () => {
+          const nodeShape = sh.NodeShape("Class", {
+            properties: {
+              test: {
+                path: exTbox.property,
+              },
+            },
+          });
+          expectValidShapes(nodeShape);
+          expect(nodeShape.properties).toHaveLength(1);
+          expect(nodeShape.properties[0].termType).toStrictEqual(
+            "sh_PropertyShape",
+          );
+          const propertyShape = nodeShape.properties[0] as sh_PropertyShape;
+          expect(propertyShape.$identifier()).toEqualRdfTerm(
+            dataFactory.namedNode(`${nodeShape.$identifier().value}-test`),
+          );
+          expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
+        });
+
+        it("identifier defined, path defined", () => {
+          const nodeShape = sh.NodeShape("Class", {
+            properties: {
+              test: {
+                $identifier: exTbox.property,
+                path: exTbox.property,
+              },
+            },
+          });
+          expectValidShapes(nodeShape);
+          expect(nodeShape.properties).toHaveLength(1);
+          expect(nodeShape.properties[0].termType).toStrictEqual(
+            "sh_PropertyShape",
+          );
+          const propertyShape = nodeShape.properties[0] as sh_PropertyShape;
+          expect(propertyShape.$identifier()).toEqualRdfTerm(exTbox.property);
+          expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
+        });
+
+        it("name from key", () => {
+          const nodeShape = sh.NodeShape("Class", {
+            properties: {
+              test: {},
+            },
+          });
+          expectValidShapes(nodeShape);
+          expect(nodeShape.properties).toHaveLength(1);
+          expect(nodeShape.properties[0].termType).toStrictEqual(
+            "sh_PropertyShape",
+          );
+          const propertyShape = nodeShape.properties[0] as sh_PropertyShape;
+          expect(propertyShape.name.extract()).toStrictEqual("test");
+          expect(
+            (
+              nodeShape.properties[0] as sh_PropertyShape
+            ).shaclmateName.extract(),
+          ).toBeUndefined();
+        });
+
+        it("explicit name", () => {
+          const nodeShape = sh.NodeShape("Class", {
+            properties: {
+              test: { name: "test2" },
+            },
+          });
+          expectValidShapes(nodeShape);
+          expect(nodeShape.properties).toHaveLength(1);
+          expect(nodeShape.properties[0].termType).toStrictEqual(
+            "sh_PropertyShape",
+          );
+          const propertyShape = nodeShape.properties[0] as sh_PropertyShape;
+          expect(propertyShape.name.extract()).toStrictEqual("test2");
+          expect(propertyShape.shaclmateName.extract()).toBeUndefined();
+        });
+
+        it("explicit shaclmateName", () => {
+          const nodeShape = sh.NodeShape("Class", {
+            properties: {
+              test: { shaclmateName: "test2" },
+            },
+          });
+          expectValidShapes(nodeShape);
+          expect(nodeShape.properties).toHaveLength(1);
+          expect(nodeShape.properties[0].termType).toStrictEqual(
+            "sh_PropertyShape",
+          );
+          const propertyShape = nodeShape.properties[0] as sh_PropertyShape;
+          expect(propertyShape.name.extract()).toBeUndefined();
+          expect(propertyShape.shaclmateName.extract()).toStrictEqual("test2");
         });
       });
     });
