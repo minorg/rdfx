@@ -79,7 +79,7 @@ export function skos<NamespaceT extends NamespaceBuilder>({
   };
 
   return {
-    namespace: _namespace,
+    namespace: _namespace as NamespaceBuilder<keyof typeof _namespace>,
 
     Concept: ConceptBuilder,
 

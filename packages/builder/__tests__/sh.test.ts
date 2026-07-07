@@ -7,10 +7,11 @@ import { describe, expect, it } from "vitest";
 import { builder } from "../src/builder.js";
 import { sh_NodeShape, sh_Shape } from "../src/shapes.js";
 import "@rdfx/testing";
-import { exTbox } from "./namespaces.js";
+import { exCbox, exTbox } from "./namespaces.js";
 
 describe("sh", () => {
-  const sh = builder({ namespace: exTbox }).sh;
+  const { sh } = builder({ namespace: exTbox });
+  const { skos } = builder({ namespace: exCbox });
   const shapesGraphValidator = new ZazukoValidator({
     shapesGraph: shaclShaclDataset,
   });
@@ -109,6 +110,76 @@ describe("sh", () => {
         expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toBeUndefined();
         expect(propertyShape.minCount.extract()).toBeUndefined();
+      });
+    });
+
+    describe("classes", () => {
+      it("unspecified", ({ expect }) => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.classes).toHaveLength(0);
+      });
+
+      it("IRI", ({ expect }) => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+          classes: [exTbox.Class],
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.classes).toEqualRdfTermArray([exTbox.Class]);
+      });
+
+      it("string", ({ expect }) => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+          classes: ["Class"],
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.classes).toEqualRdfTermArray([exTbox.Class]);
+      });
+    });
+
+    describe("in", () => {
+      it("unspecified", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.in_.extract()).toBeUndefined();
+      });
+
+      it("IRI", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+          in_: [exCbox.LeafConcept],
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.in_.extract()).toEqualRdfTermArray([
+          exCbox.LeafConcept,
+        ]);
+      });
+
+      it("skos:ConceptScheme", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+          in_: skos.ConceptScheme("ConceptScheme", {
+            concepts: {
+              LeafConcept: {
+                $identifier: exCbox.LeafConcept,
+              },
+              TopConcept: {
+                $identifier: exCbox.TopConcept,
+              },
+            },
+          }),
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.in_.extract()).toEqualRdfTermArray([
+          exCbox.LeafConcept,
+          exCbox.TopConcept,
+        ]);
       });
     });
 

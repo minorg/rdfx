@@ -3,7 +3,7 @@ import type { BlankNode, Literal, NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import type { PropertyPath } from "@rdfx/resource";
 import { sh as _namespace } from "@tpluscode/rdf-ns-builders";
-import { sh_PropertyShape } from "./shapes.js";
+import { sh_PropertyShape, type skos_ConceptScheme } from "./shapes.js";
 import { toIri } from "./toIri.js";
 
 export function sh<NamespaceT extends NamespaceBuilder>({
@@ -14,7 +14,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
   type NamespaceKey = keyof NamespaceT & string;
 
   return {
-    namespace: _namespace,
+    namespace: _namespace as NamespaceBuilder<keyof typeof _namespace>,
 
     PropertyShape: (
       $identifier: BlankNode | NamedNode | NamespaceKey | undefined,
@@ -36,8 +36,8 @@ export function sh<NamespaceT extends NamespaceBuilder>({
           | readonly bigint[]
           | readonly boolean[]
           | readonly number[]
-          | readonly string[];
-        //   | ConceptScheme<Record<string, unknown>>
+          | readonly string[]
+          | skos_ConceptScheme;
         readonly node?: NamedNode | NamespaceKey;
         readonly path?: PropertyPath | NamespaceKey;
         readonly resolve?: NamedNode | NamespaceKey;
@@ -71,17 +71,17 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       }
 
       let in_: readonly NamedNode[] | undefined;
-      // let inConceptScheme: ConceptScheme<any> | undefined;
-      // if (inParameter) {
-      //   if (Array.isArray(inParameter)) {
-      //     in_ = inParameter;
-      //   } else {
-      //     inConceptScheme = inParameter as ConceptScheme<any>;
-      //     in_ = Object.values(inConceptScheme.concepts).map(
-      //       (concept) => concept.identifier,
-      //     );
-      //   }
-      // }
+      let inConceptScheme: skos_ConceptScheme;
+      if (inParameter) {
+        if (Array.isArray(inParameter)) {
+          in_ = inParameter;
+        } else {
+          inConceptScheme = inParameter as skos_ConceptScheme;
+          in_ = inConceptScheme.concepts.map((concept) =>
+            concept.termType === "NamedNode" ? concept : concept.$identifier(),
+          );
+        }
+      }
 
       let path: PropertyPath;
       switch (typeof pathParameter) {
@@ -117,18 +117,12 @@ export function sh<NamespaceT extends NamespaceBuilder>({
           break;
       }
 
-      let classes: readonly NamedNode[] | undefined;
-      if (parameters.classes) {
-        classes = parameters.classes.map((class_) => toIri(class_, namespace));
-      }
-      // else if (inConceptScheme) {
-      //   classes = [(namespace as any)(inConceptScheme.className)];
-      // }
-
       const finalParameters = {
         ...otherParameters,
         $identifier: $identifierTerm,
-        classes,
+        classes: parameters.classes
+          ? parameters.classes.map((class_) => toIri(class_, namespace))
+          : undefined,
         in_,
         maxCount,
         minCount,
