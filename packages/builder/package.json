@@ -5,6 +5,7 @@
     "@rdfjs/namespace": "~2.0.1",
     "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__namespace": "~2.0.10",
+    "change-case": "~5.4.4",
     "purify-ts": "~2.1.4",
     "ts-invariant": "~0.10.3"
   },
