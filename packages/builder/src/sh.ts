@@ -219,7 +219,13 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         | NamespaceKey,
       parameters?: Omit<
         NonNullable<Parameters<typeof sh_NodeShape.createUnsafe>[0]>,
-        "$identifier" | "in_" | "nodeKind" | "properties" | "type" | "xone"
+        | "$identifier"
+        | "in_"
+        | "nodeKind"
+        | "properties"
+        | "shaclmateName"
+        | "type"
+        | "xone"
       > & {
         readonly in_?: skos_ConceptScheme | ConvertibleInArray;
         readonly implicitClassTarget?: true;
@@ -228,16 +234,18 @@ export function sh<NamespaceT extends NamespaceBuilder>({
           | NodeShapePropertiesRecord
           | NodeShapePropertyArray;
         readonly type?: IriLike<NamespaceT> | readonly IriLike<NamespaceT>[];
+        readonly shaclmateName?: string;
         readonly xone?: readonly (NamedNode | NamespaceKey)[];
       },
     ): sh_NodeShape => {
       const nodeShapeIdentifier = toIdentifier($identifier);
 
-      const {
+      let {
         implicitClassTarget,
         in_: inParameter,
         nodeKind: nodeKindParameter,
         properties: propertiesParameter,
+        shaclmateName,
         type: typeParameter,
         xone: xoneParameter,
         ...otherParameters
@@ -287,7 +295,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
               name = key;
             }
 
-            if (!path || typeof path === "string") {
+            if (!path) {
               path = (namespace as NamespaceBuilder)(key);
             }
 
@@ -299,6 +307,10 @@ export function sh<NamespaceT extends NamespaceBuilder>({
             });
           });
         }
+      }
+
+      if (!shaclmateName && typeof $identifier === "string") {
+        shaclmateName = $identifier;
       }
 
       let type: NamedNode[] | undefined;
@@ -322,6 +334,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         in_: convertIn(inParameter),
         nodeKind: convertNodeKind(nodeKindParameter),
         properties,
+        shaclmateName,
         type,
         xone: xoneParameter ? xoneParameter.map(toIri) : undefined,
       });

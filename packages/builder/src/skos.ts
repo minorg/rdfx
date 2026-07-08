@@ -53,7 +53,15 @@ export function skos<NamespaceT extends NamespaceBuilder>({
     $identifier: NamedNode | NamespaceKey,
     parameters?: ConvertibleConceptParameters<NamespaceKey>,
   ): skos_Concept {
-    const { broader: broaderParameter, ...otherParameters } = parameters ?? {};
+    let {
+      broader: broaderParameter,
+      prefLabel,
+      ...otherParameters
+    } = parameters ?? {};
+
+    if (!prefLabel && typeof $identifier === "string") {
+      prefLabel = sentenceCase($identifier);
+    }
 
     return skos_Concept.createUnsafe({
       ...otherParameters,
@@ -61,6 +69,7 @@ export function skos<NamespaceT extends NamespaceBuilder>({
       broader: convertRelatedConcepts<NamespaceKey>(broaderParameter, (key) =>
         toIri(key),
       ),
+      prefLabel,
     });
   }
 
@@ -94,7 +103,11 @@ export function skos<NamespaceT extends NamespaceBuilder>({
         readonly concepts?: ConceptsRecordT;
       },
     ): skos_ConceptScheme => {
-      const { concepts: conceptsRecord, ...otherParameters } = parameters ?? {};
+      let {
+        concepts: conceptsRecord,
+        prefLabel,
+        ...otherParameters
+      } = parameters ?? {};
 
       type ConceptsRecordKey = keyof ConceptsRecordT & string;
       type ConceptsRecordValue =
@@ -139,10 +152,15 @@ export function skos<NamespaceT extends NamespaceBuilder>({
         );
       }
 
+      if (!prefLabel && typeof $identifier === "string") {
+        prefLabel = sentenceCase($identifier);
+      }
+
       return skos_ConceptScheme.createUnsafe({
         ...otherParameters,
         $identifier: conceptSchemeIdentifier,
         concepts,
+        prefLabel,
         topConcepts: concepts
           .filter((concept) => concept.broader.length === 0)
           .map((concept) => concept.$identifier()),

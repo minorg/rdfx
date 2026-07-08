@@ -1,7 +1,6 @@
 import { describe, it } from "vitest";
 import { builder } from "../src/builder.js";
 import "@rdfx/testing";
-import datasetFactory from "@rdfjs/dataset";
 import type { Literal } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { rdf, skos as skosNs } from "@tpluscode/rdf-ns-builders";
@@ -140,6 +139,15 @@ describe("skos", () => {
           return result;
         }
 
+        it("unspecified", ({ expect }) => {
+          const concept = skos.Concept("TopConcept");
+          if (labelPropertyName === "prefLabel") {
+            expect(concept[labelPropertyName]).toEqual(["TopConcept"]);
+          } else {
+            expect(concept[labelPropertyName]).toHaveLength(0);
+          }
+        });
+
         it("string", ({ expect }) => {
           expect(
             skos.Concept("TopConcept", labelProperty("test"))[
@@ -199,53 +207,51 @@ describe("skos", () => {
         it("unspecified", ({ expect }) => {
           const concept = skos.Concept("TopConcept");
           expect(concept.type).toHaveLength(0);
-          expect([
-            ...skos_Concept.toRdfResource(concept).dataset,
-          ]).toEqualRdfQuadArray([
+          expect(
+            skos_Concept.toRdfResource(concept).dataset,
+          ).toBeRdfDatasetContaining(
             dataFactory.quad(
               concept.$identifier(),
               rdf.type,
               skosNs.Concept,
               dataFactory.defaultGraph(),
             ),
-          ]);
+          );
         });
 
         it("skos:Concept", ({ expect }) => {
           const concept = skos.Concept("TopConcept", { type: skosNs.Concept });
           expect(concept.type).toHaveLength(1);
-          expect([
-            ...skos_Concept.toRdfResource(concept).dataset,
-          ]).toEqualRdfQuadArray([
+          expect(
+            skos_Concept.toRdfResource(concept).dataset,
+          ).toBeRdfDatasetContaining(
             dataFactory.quad(
               concept.$identifier(),
               rdf.type,
               skosNs.Concept,
               dataFactory.defaultGraph(),
             ),
-          ]);
+          );
         });
 
         it("skos:Concept and ex:Class", ({ expect }) => {
           const concept = skos.Concept("TopConcept", { type: exTbox.Class });
           expect(concept.type).toHaveLength(1);
-          expect([
-            ...skos_Concept.toRdfResource(concept).dataset,
-          ]).toBeRdfIsomorphic(
-            datasetFactory.dataset([
-              dataFactory.quad(
-                concept.$identifier(),
-                rdf.type,
-                skosNs.Concept,
-                dataFactory.defaultGraph(),
-              ),
-              dataFactory.quad(
-                concept.$identifier(),
-                rdf.type,
-                exTbox.Class,
-                dataFactory.defaultGraph(),
-              ),
-            ]),
+          expect(
+            skos_Concept.toRdfResource(concept).dataset,
+          ).toBeRdfDatasetContaining(
+            dataFactory.quad(
+              concept.$identifier(),
+              rdf.type,
+              skosNs.Concept,
+              dataFactory.defaultGraph(),
+            ),
+            dataFactory.quad(
+              concept.$identifier(),
+              rdf.type,
+              exTbox.Class,
+              dataFactory.defaultGraph(),
+            ),
           );
         });
       });
