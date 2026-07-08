@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.32",
-    "@rdfx/graph-store": "0.0.32",
-    "@rdfx/parsers": "0.0.32",
-    "@rdfx/serializers": "0.0.32",
-    "@rdfx/string": "0.0.32",
+    "@rdfx/data-factory": "0.0.33",
+    "@rdfx/graph-store": "0.0.33",
+    "@rdfx/parsers": "0.0.33",
+    "@rdfx/serializers": "0.0.33",
+    "@rdfx/string": "0.0.33",
     "@rdfjs/dataset": "~2.0.2",
     "@rdfjs/prefix-map": "~0.1.2",
     "@rdfjs/types": "~2.0.1",
@@ -41,5 +41,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.32"
+  "version": "0.0.33"
 }
