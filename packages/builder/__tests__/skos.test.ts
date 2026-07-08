@@ -142,7 +142,7 @@ describe("skos", () => {
         it("unspecified", ({ expect }) => {
           const concept = skos.Concept("TopConcept");
           if (labelPropertyName === "prefLabel") {
-            expect(concept[labelPropertyName]).toEqual(["TopConcept"]);
+            expect(concept[labelPropertyName]).toEqual(["Top concept"]);
           } else {
             expect(concept[labelPropertyName]).toHaveLength(0);
           }
