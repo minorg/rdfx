@@ -1,8 +1,10 @@
 import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
+import { skos as _namespace } from "@tpluscode/rdf-ns-builders";
+import { sentenceCase } from "change-case";
+import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
 import { skos_Concept, skos_ConceptScheme } from "./shapes.js";
-import { toIri } from "./toIri.js";
 
 export interface ConvertibleConceptParameters<ConceptIriString extends string>
   extends Omit<
@@ -43,24 +45,31 @@ function convertRelatedConcepts<ConceptIriString extends string>(
 }
 
 export function skos<NamespaceT extends NamespaceBuilder>({
-  namespace,
-}: {
-  namespace: NamespaceT;
-}) {
+  toIri,
+}: BuilderBuilderParameters<NamespaceT>) {
   type NamespaceKey = keyof NamespaceT & string;
 
-  function ConceptBuilder(
+  function Concept(
     $identifier: NamedNode | NamespaceKey,
     parameters?: ConvertibleConceptParameters<NamespaceKey>,
   ): skos_Concept {
-    const { broader: broaderParameter, ...otherParameters } = parameters ?? {};
+    let {
+      broader: broaderParameter,
+      prefLabel,
+      ...otherParameters
+    } = parameters ?? {};
+
+    if (!prefLabel && typeof $identifier === "string") {
+      prefLabel = sentenceCase($identifier);
+    }
 
     return skos_Concept.createUnsafe({
       ...otherParameters,
-      $identifier: toIri($identifier, namespace),
+      $identifier: toIri($identifier),
       broader: convertRelatedConcepts<NamespaceKey>(broaderParameter, (key) =>
-        toIri(key, namespace),
+        toIri(key),
       ),
+      prefLabel,
     });
   }
 
@@ -78,7 +87,9 @@ export function skos<NamespaceT extends NamespaceBuilder>({
   };
 
   return {
-    Concept: ConceptBuilder,
+    namespace: _namespace as NamespaceBuilder<keyof typeof _namespace>,
+
+    Concept: Concept,
 
     ConceptScheme: <
       ConceptsRecordT extends
@@ -92,15 +103,19 @@ export function skos<NamespaceT extends NamespaceBuilder>({
         readonly concepts?: ConceptsRecordT;
       },
     ): skos_ConceptScheme => {
-      const { concepts: conceptsRecord, ...otherParameters } = parameters ?? {};
+      let {
+        concepts: conceptsRecord,
+        prefLabel,
+        ...otherParameters
+      } = parameters ?? {};
 
       type ConceptsRecordKey = keyof ConceptsRecordT & string;
       type ConceptsRecordValue =
         ConvertibleConceptParameters<ConceptsRecordKey> & {
-          $identifier?: NamespaceKey | NamedNode;
+          $identifier?: NamedNode | NamespaceKey;
         };
 
-      const conceptSchemeIdentifier = toIri($identifier, namespace);
+      const conceptSchemeIdentifier = toIri($identifier);
 
       const conceptsRecordKeyToIri = (
         conceptsRecordKey: ConceptsRecordKey,
@@ -114,9 +129,9 @@ export function skos<NamespaceT extends NamespaceBuilder>({
         conceptsRecord ?? {},
       ) as [ConceptsRecordKey, ConceptsRecordValue][]) {
         concepts.push(
-          ConceptBuilder(
+          Concept(
             conceptsRecordValue.$identifier
-              ? toIri(conceptsRecordValue.$identifier, namespace)
+              ? toIri(conceptsRecordValue.$identifier)
               : conceptsRecordKeyToIri(conceptsRecordKey),
             {
               ...conceptsRecordValue,
@@ -129,15 +144,23 @@ export function skos<NamespaceT extends NamespaceBuilder>({
                 conceptsRecordValue.notation
                   ? [dataFactory.literal(conceptsRecordKey)]
                   : conceptsRecordValue.notation,
+              prefLabel:
+                conceptsRecordValue.prefLabel ??
+                sentenceCase(conceptsRecordKey),
             },
           ),
         );
+      }
+
+      if (!prefLabel && typeof $identifier === "string") {
+        prefLabel = sentenceCase($identifier);
       }
 
       return skos_ConceptScheme.createUnsafe({
         ...otherParameters,
         $identifier: conceptSchemeIdentifier,
         concepts,
+        prefLabel,
         topConcepts: concepts
           .filter((concept) => concept.broader.length === 0)
           .map((concept) => concept.$identifier()),

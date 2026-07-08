@@ -100,7 +100,7 @@ shaclmate:StringList
 sh:NodeShape
     shaclmate:name "sh_NodeShape" ;
     a owl:Class, sh:NodeShape ;
-    sh:property rdf:type, rdfs:comment, rdfs:isDefinedBy, rdfs:label, rdfs:subClassOf, sh:NodeShape-closed, sh:NodeShape-discriminantValue, sh:NodeShape-extern, sh:NodeShape-fromRdfType, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, sh:NodeShape-rdfType, sh:NodeShape-toRdfTypes, sh:NodeShape-tsImports, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-ignore, sh:Shape-in, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-mutable, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-shaclmateName, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
+    sh:property rdf:type, rdfs:comment, rdfs:isDefinedBy, rdfs:label, rdfs:subClassOf, sh:NodeShape-closed, sh:NodeShape-discriminantValue, sh:NodeShape-extern, sh:NodeShape-fromRdfType, sh:NodeShape-ignoredProperties, sh:NodeShape-properties, sh:NodeShape-rdfType, sh:NodeShape-toRdfTypes, sh:NodeShape-tsImports, sh:Shape-and, sh:Shape-class, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-ignore, sh:Shape-in, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-mutable, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-shaclmateName, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:NodeShape-closed
     a sh:PropertyShape ;
@@ -168,7 +168,7 @@ sh:PropertyGroup
 sh:PropertyShape
     shaclmate:name "sh_PropertyShape" ;
     a owl:Class, sh:NodeShape ;
-    sh:property rdfs:comment, rdfs:isDefinedBy, rdfs:label, sh:PropertyShape-defaultValue, sh:PropertyShape-description, sh:PropertyShape-disjoint, sh:PropertyShape-display, sh:PropertyShape-equals, sh:PropertyShape-groups, sh:PropertyShape-lessThan, sh:PropertyShape-lessThanOrEquals, sh:PropertyShape-maxCount, sh:PropertyShape-minCount, sh:PropertyShape-name, sh:PropertyShape-order, sh:PropertyShape-path, sh:PropertyShape-qualifiedMaxCount, sh:PropertyShape-qualifiedMinCount, sh:PropertyShape-qualifiedValueShape, sh:PropertyShape-qualifiedValueShapesDisjoint, sh:PropertyShape-resolve, sh:PropertyShape-uniqueLang, sh:Shape-and, sh:Shape-classes, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-ignore, sh:Shape-in, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-mutable, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-shaclmateName, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
+    sh:property rdfs:comment, rdfs:isDefinedBy, rdfs:label, sh:PropertyShape-defaultValue, sh:PropertyShape-description, sh:PropertyShape-disjoint, sh:PropertyShape-display, sh:PropertyShape-equals, sh:PropertyShape-groups, sh:PropertyShape-lessThan, sh:PropertyShape-lessThanOrEquals, sh:PropertyShape-maxCount, sh:PropertyShape-minCount, sh:PropertyShape-name, sh:PropertyShape-order, sh:PropertyShape-path, sh:PropertyShape-qualifiedMaxCount, sh:PropertyShape-qualifiedMinCount, sh:PropertyShape-qualifiedValueShape, sh:PropertyShape-qualifiedValueShapesDisjoint, sh:PropertyShape-resolve, sh:PropertyShape-uniqueLang, sh:Shape-and, sh:Shape-class, sh:Shape-datatype, sh:Shape-deactivated, sh:Shape-flags, sh:Shape-hasValues, sh:Shape-ignore, sh:Shape-in, sh:Shape-languageIn, sh:Shape-maxExclusive, sh:Shape-maxInclusive, sh:Shape-maxLength, sh:Shape-message, sh:Shape-minExclusive, sh:Shape-minInclusive, sh:Shape-minLength, sh:Shape-mutable, sh:Shape-node, sh:Shape-nodeKind, sh:Shape-not, sh:Shape-or, sh:Shape-pattern, sh:Shape-severity, sh:Shape-shaclmateName, sh:Shape-targetClass, sh:Shape-targetNode, sh:Shape-targetObjectsOf, sh:Shape-targetSubjectsOf, sh:Shape-xone .
 
 sh:PropertyShape-defaultValue
     a sh:PropertyShape ;
@@ -312,9 +312,9 @@ sh:Shape-and
     sh:node shaclmate:ShapeList ;
     sh:path sh:and .
 
-sh:Shape-classes
+sh:Shape-class
     a sh:PropertyShape ;
-    sh:name "classes" ;
+    sh:name "class_" ;
     sh:nodeKind sh:IRI ;
     sh:path sh:class .
 

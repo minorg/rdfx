@@ -683,7 +683,7 @@ export type sh_NodeShape = {
 
   readonly and: Maybe<readonly (NamedNode | sh_Shape)[]>;
 
-  readonly classes: readonly NamedNode[];
+  readonly class_: readonly NamedNode[];
 
   readonly closed: Maybe<boolean>;
 
@@ -790,7 +790,7 @@ export namespace sh_NodeShape {
     readonly and?:
       | readonly (NamedNode | sh_Shape)[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
-    readonly classes?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly class_?: string | NamedNode | readonly (string | NamedNode)[];
     readonly closed?: boolean | Maybe<boolean>;
     readonly comment?: string | Maybe<string>;
     readonly datatype?: string | NamedNode | Maybe<NamedNode>;
@@ -933,12 +933,12 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      classes: $convertToScalarSet(
+      class_: $convertToScalarSet(
         $convertToIri<string>,
         true,
-      )(parameters?.classes).chain((value) =>
+      )(parameters?.class_).chain((value) =>
         $validateArray($identityValidationFunction, true)(
-          sh_NodeShape.schema.properties.classes.type,
+          sh_NodeShape.schema.properties.class_.type,
           value,
         ),
       ),
@@ -1306,7 +1306,7 @@ export namespace sh_NodeShape {
     readonly and?:
       | readonly (NamedNode | sh_Shape)[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
-    readonly classes?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly class_?: string | NamedNode | readonly (string | NamedNode)[];
     readonly closed?: boolean | Maybe<boolean>;
     readonly comment?: string | Maybe<string>;
     readonly datatype?: string | NamedNode | Maybe<NamedNode>;
@@ -1492,7 +1492,7 @@ export namespace sh_NodeShape {
           };
         },
       },
-      classes: {
+      class_: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#class"),
         type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
@@ -2072,8 +2072,8 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.classes.path,
-      parameters.object.classes.flatMap((item) => [item]),
+      sh_NodeShape.schema.properties.class_.path,
+      parameters.object.class_.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -2895,7 +2895,7 @@ export type sh_PropertyShape = {
 
   readonly and: Maybe<readonly (NamedNode | sh_Shape)[]>;
 
-  readonly classes: readonly NamedNode[];
+  readonly class_: readonly NamedNode[];
 
   readonly comment: Maybe<string>;
 
@@ -3021,7 +3021,7 @@ export namespace sh_PropertyShape {
     readonly and?:
       | readonly (NamedNode | sh_Shape)[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
-    readonly classes?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly class_?: string | NamedNode | readonly (string | NamedNode)[];
     readonly comment?: string | Maybe<string>;
     readonly datatype?: string | NamedNode | Maybe<NamedNode>;
     readonly deactivated?: boolean | Maybe<boolean>;
@@ -3181,12 +3181,12 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
-      classes: $convertToScalarSet(
+      class_: $convertToScalarSet(
         $convertToIri<string>,
         true,
-      )(parameters.classes).chain((value) =>
+      )(parameters.class_).chain((value) =>
         $validateArray($identityValidationFunction, true)(
-          sh_NodeShape.schema.properties.classes.type,
+          sh_NodeShape.schema.properties.class_.type,
           value,
         ),
       ),
@@ -3604,7 +3604,7 @@ export namespace sh_PropertyShape {
     readonly and?:
       | readonly (NamedNode | sh_Shape)[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
-    readonly classes?: string | NamedNode | readonly (string | NamedNode)[];
+    readonly class_?: string | NamedNode | readonly (string | NamedNode)[];
     readonly comment?: string | Maybe<string>;
     readonly datatype?: string | NamedNode | Maybe<NamedNode>;
     readonly deactivated?: boolean | Maybe<boolean>;
@@ -3810,7 +3810,7 @@ export namespace sh_PropertyShape {
           };
         },
       },
-      classes: {
+      class_: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#class"),
         type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },
@@ -4459,8 +4459,8 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.classes.path,
-      parameters.object.classes.flatMap((item) => [item]),
+      sh_NodeShape.schema.properties.class_.path,
+      parameters.object.class_.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -6203,7 +6203,7 @@ export namespace sh_Shape {
           };
         },
       },
-      classes: {
+      class_: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://www.w3.org/ns/shacl#class"),
         type: { kind: "Set" as const, itemType: { kind: "Iri" as const } },

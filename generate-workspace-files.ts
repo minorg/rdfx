@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.32";
+const VERSION = "0.0.33";
 
 const shaclmateVersion = "4.0.65";
 const vitestVersion = "~4.1.5";
@@ -47,6 +47,7 @@ const externalDependencies = {
   "@types/readable-stream": "~4.0.23",
   "@types/unbzip2-stream": "~1.4.3",
   "@vitest/coverage-v8": vitestVersion,
+  "change-case": "~5.4.4",
   "decimal.js": "~10.6.0",
   depcheck: "~1.4.7",
   "get-stream": "~9.0.1",
@@ -136,6 +137,7 @@ const workspaces = {
           "@rdfjs/namespace",
           "@rdfjs/types",
           "@types/rdfjs__namespace",
+          "change-case",
           "purify-ts",
           "ts-invariant",
         ],
