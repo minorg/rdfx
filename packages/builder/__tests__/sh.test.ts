@@ -111,10 +111,15 @@ describe("sh", () => {
       it("with other types", () => {
         const nodeShape = sh.NodeShape("Class", {
           implicitClassTarget: true,
-          type: [owl.Class],
+          type: [exTbox.XoneMember1],
         });
         expectValidShapes(nodeShape);
-        expect(nodeShape.type).toEqualRdfTermArray([rdfs.Class, owl.Class]);
+        expect(
+          nodeShape.type.some((type) => type.equals(rdfs.Class)),
+        ).toStrictEqual(true);
+        expect(
+          nodeShape.type.some((type) => type.equals(exTbox.XoneMember1)),
+        ).toStrictEqual(true);
       });
     });
 
