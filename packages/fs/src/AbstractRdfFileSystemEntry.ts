@@ -2,14 +2,18 @@ import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import type { Either } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
+import type { FileSystem } from "./FileSystem.js";
+import { nodeFileSystem } from "./NodeFileSystem.js";
 
 export abstract class AbstractRdfFileSystemEntry {
+  protected readonly fileSystem: FileSystem;
   protected readonly logger: Logger;
 
   constructor(
     readonly path: string,
-    options?: { logger?: Logger },
+    options?: { fileSystem?: FileSystem; logger?: Logger },
   ) {
+    this.fileSystem = options?.fileSystem ?? nodeFileSystem;
     this.logger = options?.logger ?? dummyLogger;
     this.path = path;
   }

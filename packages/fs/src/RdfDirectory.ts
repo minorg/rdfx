@@ -1,4 +1,3 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
@@ -6,55 +5,13 @@ import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { type Either, EitherAsync } from "purify-ts";
 import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
 import { RdfFile } from "./RdfFile.js";
-import { stat } from "./stat.js";
 
 /**
  * Abstraction for iterating over a directory of files with RDF data in them.
  */
 export class RdfDirectory extends AbstractRdfFileSystemEntry {
   async *files(options?: { recursive?: boolean }): AsyncGenerator<RdfFile> {
-    const logger = this.logger;
-    const recursive = !!options?.recursive;
-
-    async function* visitDirectory(
-      directoryPath: string,
-    ): AsyncGenerator<RdfFile> {
-      for (const dirent of await fs.readdir(directoryPath, {
-        withFileTypes: true,
-      })) {
-        if (dirent.name.startsWith(".")) {
-          continue;
-        }
-        let direntPath = path.resolve(directoryPath, dirent.name);
-        let direntIsDirectory: boolean;
-        let direntIsFile: boolean;
-        if (dirent.isSymbolicLink()) {
-          direntPath = await fs.realpath(direntPath);
-          const stat = await fs.stat(direntPath);
-          direntIsDirectory = stat.isDirectory();
-          direntIsFile = stat.isFile();
-        } else {
-          direntIsDirectory = dirent.isDirectory();
-          direntIsFile = dirent.isFile();
-        }
-        if (direntIsDirectory && recursive) {
-          yield* visitDirectory(direntPath);
-        } else if (direntIsFile) {
-          yield* visitFile(direntPath);
-        } else {
-          logger.warn("%s is not a directory or file", direntPath);
-        }
-      }
-    }
-
-    async function* visitFile(filePath: string): AsyncGenerator<RdfFile> {
-      const file = RdfFile.fromPath(filePath, { logger });
-      if (file.isRight()) {
-        yield file.extract();
-      }
-    }
-
-    const statEither = await stat(this.path);
+    const statEither = await this.fileSystem.stat(this.path);
     if (statEither.isLeft()) {
       this.logger.debug(
         "%s does not exist or is not accessible: %s",
@@ -66,14 +23,39 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
     let stat_ = statEither.unsafeCoerce();
     let thisPath = this.path;
     if (stat_.isSymbolicLink()) {
-      thisPath = await fs.realpath(this.path);
-      stat_ = await fs.stat(thisPath);
+      thisPath = (await this.fileSystem.realpath(this.path)).unsafeCoerce();
+      stat_ = (await this.fileSystem.stat(thisPath)).unsafeCoerce();
     }
 
-    if (stat_.isDirectory()) {
-      yield* visitDirectory(thisPath);
-    } else {
+    if (!stat_.isDirectory()) {
       this.logger.warn("%s is not an (RDF) directory", this.path);
+      return;
+    }
+
+    for (const dirent of (
+      await this.fileSystem.readdir(this.path, options)
+    ).unsafeCoerce()) {
+      if (dirent.name.startsWith(".")) {
+        continue;
+      }
+      let direntPath = path.resolve(dirent.parentPath, dirent.name);
+      let direntIsFile: boolean;
+      if (dirent.isSymbolicLink()) {
+        direntPath = (
+          await this.fileSystem.realpath(direntPath)
+        ).unsafeCoerce();
+        const stat = (await this.fileSystem.stat(direntPath)).unsafeCoerce();
+        direntIsFile = stat.isFile();
+      } else {
+        direntIsFile = dirent.isFile();
+      }
+
+      if (direntIsFile) {
+        const file = RdfFile.fromPath(direntPath, { logger: this.logger });
+        if (file.isRight()) {
+          yield file.extract();
+        }
+      }
     }
   }
 

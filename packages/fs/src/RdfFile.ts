@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import * as path from "node:path";
 import type { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
@@ -23,6 +22,7 @@ import {
 import type { Logger } from "ts-log";
 import bz2 from "unbzip2-stream";
 import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
+import type { FileSystem } from "./FileSystem.js";
 import { RDF_FORMATS, type RdfFormat } from "./RdfFormat.js";
 
 const parsers = parsersFactory({ dataFactory });
@@ -49,7 +49,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
 
   static fromPath(
     filePath: string,
-    options?: { logger?: Logger },
+    options?: { fileSystem?: FileSystem; logger?: Logger },
   ): Either<Error, RdfFile> {
     const mimeType = mime.getType(filePath);
     if (mimeType === null) {
@@ -72,6 +72,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
           if (uncompressedMimeType === rdfFormat) {
             return Right(
               new RdfFile(filePath, {
+                fileSystem: options?.fileSystem,
                 format: {
                   compressionMethod: Just(compressionMethod),
                   rdfFormat,
@@ -102,7 +103,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
   }
 
   override parse(): Stream<Quad> {
-    let fileStream: Readable = fs.createReadStream(this.path);
+    let fileStream: Readable = this.fileSystem.createReadStream(this.path);
 
     if (this.format.compressionMethod.isJust()) {
       switch (this.format.compressionMethod.unsafeCoerce()) {
@@ -179,7 +180,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
         );
       }
 
-      const fileStream = fs.createWriteStream(this.path);
+      const fileStream = this.fileSystem.createWriteStream(this.path);
 
       if (this.format.compressionMethod.isJust()) {
         let compressor: Transform;

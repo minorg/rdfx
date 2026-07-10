@@ -6,7 +6,6 @@ import dataFactory from "@rdfx/data-factory";
 import { GraphIdentifier, type GraphStore } from "@rdfx/graph-store";
 import { NTriplesTerm } from "@rdfx/string";
 import { Either, EitherAsync, Left, Maybe } from "purify-ts";
-import { AbstractRdfFileSystemGraphStore } from "./AbstractRdfFileSystemGraphStore.js";
 import { RdfDirectory } from "./RdfDirectory.js";
 import type { RdfFile } from "./RdfFile.js";
 import { stat } from "./stat.js";
@@ -14,10 +13,7 @@ import { stat } from "./stat.js";
 /**
  * A GraphStore implementation backed by files in a directory.
  */
-export class RdfDirectoryGraphStore
-  extends AbstractRdfFileSystemGraphStore
-  implements GraphStore
-{
+export class RdfDirectoryGraphStore implements GraphStore {
   async clear(): Promise<Either<Error, object>> {
     return EitherAsync(async ({ liftEither }) => {
       await liftEither(
