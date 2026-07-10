@@ -76,6 +76,7 @@ type PackageName =
   | "builder"
   | "data-factory"
   | "fs"
+  | "git"
   | "graph-store"
   | "literal"
   | "parsers"
@@ -193,11 +194,15 @@ const workspaces = {
         ...packageTsconfig,
         compilerOptions: {
           ...packageTsconfig.compilerOptions,
-          module: "Node16" as any,
-          moduleResolution: "node16" as any,
           types: ["node"],
         },
       },
+    },
+    git: {
+      dependencies: {
+        internal: ["fs", "graph-store"],
+      },
+      tsconfig: packageTsconfig,
     },
     "graph-store": {
       dependencies: {
@@ -536,7 +541,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 20 dev dev:tests",
+        dev: "turbo run --concurrency 22 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

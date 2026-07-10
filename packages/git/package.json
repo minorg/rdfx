@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "@rdfx/fs": "0.0.34",
+    "@rdfx/graph-store": "0.0.34"
+  },
+  "devDependencies": {},
+  "files": [
+    "LICENSE"
+  ],
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "name": "@rdfx/git",
+  "packageManager": "npm@11.11.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minorg/rdfx.git"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist",
+    "depcheck": "depcheck .",
+    "dev": "tsc -w --preserveWatchOutput"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "0.0.34"
+}
