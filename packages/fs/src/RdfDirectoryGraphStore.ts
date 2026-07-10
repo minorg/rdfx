@@ -1,15 +1,12 @@
 import { Buffer } from "node:buffer";
-import fs from "node:fs";
 import path from "node:path";
-import type { Readable } from "node:stream";
 import datasetFactory from "@rdfjs/dataset";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { GraphIdentifier, type GraphStore } from "@rdfx/graph-store";
-import parsers from "@rdfx/parsers";
 import { NTriplesTerm } from "@rdfx/string";
 import { Either, EitherAsync, Left, Maybe } from "purify-ts";
-import { dummyLogger, type Logger } from "ts-log";
+import { AbstractRdfFileSystemGraphStore } from "./AbstractRdfFileSystemGraphStore.js";
 import { RdfDirectory } from "./RdfDirectory.js";
 import type { RdfFile } from "./RdfFile.js";
 import { stat } from "./stat.js";
@@ -17,35 +14,27 @@ import { stat } from "./stat.js";
 /**
  * A GraphStore implementation backed by files in a directory.
  */
-export class RdfDirectoryGraphStore implements GraphStore {
-  private readonly logger: Logger;
-
-  constructor(
-    readonly directoryPath: string,
-    options?: { logger?: Logger },
-  ) {
-    this.logger = options?.logger ?? dummyLogger;
-  }
-
+export class RdfDirectoryGraphStore
+  extends AbstractRdfFileSystemGraphStore
+  implements GraphStore
+{
   async clear(): Promise<Either<Error, object>> {
-    return EitherAsync(async () => {
-      await fs.promises.rm(this.directoryPath, {
-        force: true,
-        recursive: true,
-      });
+    return EitherAsync(async ({ liftEither }) => {
+      await liftEither(
+        await this.deleteDirectory(this.path, {
+          force: true,
+          recursive: true,
+        }),
+      );
       return {};
     });
   }
 
   async delete(identifier: GraphIdentifier): Promise<Either<Error, object>> {
-    return EitherAsync(async () => {
-      try {
-        await fs.promises.rm(this.graphFilePath(identifier));
-      } catch (error) {
-        if (errorCode(error) !== "ENOENT") {
-          throw error;
-        }
-      }
+    return EitherAsync(async ({ liftEither }) => {
+      await liftEither(
+        await this.deleteFile(this.graphFilePath(identifier), { force: true }),
+      );
       return {};
     });
   }
@@ -58,32 +47,23 @@ export class RdfDirectoryGraphStore implements GraphStore {
         return Maybe.empty();
       }
 
-      let stream: Stream = parser.import(
-        fs.createReadStream(this.graphFilePath(identifier)),
+      return Maybe.of(
+        this.readFileStream(
+          this.graphFilePath(identifier),
+          identifier.termType !== "DefaultGraph"
+            ? { overrideGraph: identifier }
+            : undefined,
+        ),
       );
-      if (identifier.termType !== "DefaultGraph") {
-        stream = (stream as Readable).map((quad: Quad) =>
-          dataFactory.quad(
-            quad.subject,
-            quad.predicate,
-            quad.object,
-            identifier,
-          ),
-        );
-      }
-      return Maybe.of(stream);
     });
   }
 
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
-    return (
-      await EitherAsync<Error, boolean>(async ({ liftEither }) =>
-        (await liftEither(await stat(this.graphFilePath(identifier)))).isFile(),
-      )
-    ).chainLeft((error) =>
-      errorCode(error) === "ENOENT"
-        ? Either.of<Error, boolean>(false)
-        : Left<Error, boolean>(error),
+    return EitherAsync(
+      async ({ liftEither }) =>
+        (await liftEither(await stat(this.graphFilePath(identifier))))
+          .extract()
+          ?.isFile() ?? false,
     );
   }
 
@@ -99,17 +79,10 @@ export class RdfDirectoryGraphStore implements GraphStore {
 
   async isEmpty(): Promise<Either<Error, boolean>> {
     return EitherAsync(async () => {
-      try {
-        for await (const _ of this.files()) {
-          return false;
-        }
-        return true;
-      } catch (error) {
-        if (errorCode(error) === "ENOENT") {
-          return true;
-        }
-        throw error;
+      for await (const _ of this.files()) {
+        return false;
       }
+      return true;
     });
   }
 
@@ -123,7 +96,7 @@ export class RdfDirectoryGraphStore implements GraphStore {
 
   async unionDataset(): Promise<Either<Error, DatasetCore>> {
     return EitherAsync(async ({ liftEither }) => {
-      this.logger.debug("parsing dataset from %s", this.directoryPath);
+      this.logger.debug("parsing dataset from %s", this.path);
       const unionDataset = datasetFactory.dataset();
 
       for await (const [file, graphIdentifier] of this.files()) {
@@ -153,7 +126,7 @@ export class RdfDirectoryGraphStore implements GraphStore {
       this.logger.debug(
         "parsed %d quads from %s",
         unionDataset.size,
-        this.directoryPath,
+        this.path,
       );
 
       return unionDataset;
@@ -161,7 +134,7 @@ export class RdfDirectoryGraphStore implements GraphStore {
   }
 
   private async *files(): AsyncIterable<[RdfFile, GraphIdentifier]> {
-    for await (const file of new RdfDirectory(this.directoryPath, {
+    for await (const file of new RdfDirectory(this.path, {
       logger: this.logger,
     }).files()) {
       const fileStem = path.basename(file.path, path.extname(file.path));
@@ -194,7 +167,7 @@ export class RdfDirectoryGraphStore implements GraphStore {
         ? GraphIdentifier.stringify(identifier)
         : identifier;
     return path.join(
-      this.directoryPath,
+      this.path,
       identifierString.length === 0
         ? "default.nq"
         : `${Buffer.from(identifierString).toString("base64url")}.nq`,
@@ -206,6 +179,15 @@ export class RdfDirectoryGraphStore implements GraphStore {
     quads: Stream,
   ): Promise<Either<Error, object>> {
     return EitherAsync(async ({ liftEither }) => {
+      if (this.rdfFileFormat.compressionMethod.isJust()) {
+        throw new RangeError(
+          "only uncompressed writes are currently supported",
+        );
+      }
+      if (this.rdfFileFormat.rdfFormat !== "application/n-triples") {
+        throw new RangeError("only NTriples writes are currently supported");
+      }
+
       const ntriplesByGraphIdentifier = new Map<string, string[]>();
       await liftEither(
         await new Promise<Either<Error, void>>((resolve) => {
@@ -231,39 +213,20 @@ export class RdfDirectoryGraphStore implements GraphStore {
         graphIdentifierString,
         ntriples,
       ] of ntriplesByGraphIdentifier.entries()) {
-        await fs.promises.mkdir(this.directoryPath, {
-          recursive: true,
-        });
+        await liftEither(
+          await this.createDirectory(this.path, { recursive: true }),
+        );
         const graphFilePath = this.graphFilePath(graphIdentifierString);
         if (method === "post") {
-          try {
-            ntriples = (await fs.promises.readFile(graphFilePath))
-              .toString("utf-8")
-              .split("\n")
-              .concat(ntriples);
-          } catch (error) {
-            if (errorCode(error) !== "ENOENT") {
-              throw error;
-            }
-          }
+          ntriples = (
+            await liftEither(await this.readFileLines(graphFilePath))
+          ).concat(ntriples);
         }
         ntriples.sort();
-        await fs.promises.writeFile(
-          graphFilePath,
-          ntriples.join("\n"),
-          "utf-8",
-        );
+        await liftEither(await this.writeFileLines(graphFilePath, ntriples));
       }
 
       return {};
     });
   }
 }
-
-function errorCode(error: unknown): string | undefined {
-  return error instanceof Error && "code" in error
-    ? (error.code as string)
-    : undefined;
-}
-
-const parser = parsers({ dataFactory }).get("application/n-quads")!;
