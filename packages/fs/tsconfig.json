@@ -7,13 +7,12 @@
     "lib": [
       "ES2023"
     ],
-    "module": "Node16",
+    "module": "NodeNext",
     "noUncheckedIndexedAccess": false,
     "outDir": "dist",
     "rootDir": "src",
     "sourceMap": true,
     "target": "ES2023",
-    "moduleResolution": "node16",
     "types": [
       "node"
     ]
