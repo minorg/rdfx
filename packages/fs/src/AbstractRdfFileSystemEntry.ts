@@ -3,7 +3,7 @@ import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import type { Either } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 import type { FileSystem } from "./FileSystem.js";
-import { nodeFileSystem } from "./NodeFileSystem.js";
+import { nodeFileSystem } from "./nodeFileSystem.js";
 
 export abstract class AbstractRdfFileSystemEntry {
   protected readonly fileSystem: FileSystem;

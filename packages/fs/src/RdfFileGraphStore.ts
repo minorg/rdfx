@@ -1,4 +1,6 @@
 import path from "node:path";
+import datasetFactory from "@rdfjs/dataset";
+import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Stream } from "@rdfjs/types";
 import {
   type GraphIdentifier,
@@ -6,19 +8,39 @@ import {
   RdfjsDatasetGraphStore,
 } from "@rdfx/graph-store";
 import intoStream from "into-stream";
-import { type Either, EitherAsync, type Maybe } from "purify-ts";
-import { AbstractRdfFileSystemGraphStore } from "./AbstractRdfFileSystemGraphStore.js";
+import { Either, EitherAsync, Left, type Maybe } from "purify-ts";
+import { dummyLogger, type Logger } from "ts-log";
+import { isErrnoException } from "./ErrnoException.js";
+import type { FileSystem } from "./FileSystem.js";
+import { nodeFileSystem } from "./nodeFileSystem.js";
+import { RdfFile } from "./RdfFile.js";
 
 /**
  * A GraphStore implementation backed by a single RdfFile.
  */
-export class RdfFileGraphStore
-  extends AbstractRdfFileSystemGraphStore
-  implements GraphStore
-{
+export class RdfFileGraphStore implements GraphStore {
+  private readonly fileSystem: FileSystem;
+  private readonly logger: Logger;
+  private readonly prefixMap?: PrefixMap;
+
+  constructor(
+    readonly path: string,
+    options?: {
+      fileSystem?: FileSystem;
+      logger?: Logger;
+      prefixMap?: PrefixMap;
+    },
+  ) {
+    this.fileSystem = options?.fileSystem ?? nodeFileSystem;
+    this.logger = options?.logger ?? dummyLogger;
+    this.prefixMap = options?.prefixMap;
+  }
+
   async clear(): Promise<Either<Error, object>> {
     return EitherAsync(async ({ liftEither }) => {
-      await liftEither(await this.deleteFile(this.path, { force: true }));
+      await liftEither(
+        await this.fileSystem.deleteFile(this.path, { force: true }),
+      );
       return {};
     });
   }
@@ -87,8 +109,32 @@ export class RdfFileGraphStore
     );
   }
 
+  private get file(): Either<Error, RdfFile> {
+    return RdfFile.fromPath(this.path, {
+      fileSystem: this.fileSystem,
+      logger: this.logger,
+    });
+  }
+
   async unionDataset(): Promise<Either<Error, DatasetCore>> {
-    return this.readFileDataset(this.path);
+    return (
+      await EitherAsync<Error, DatasetCore>(async ({ liftEither }) => {
+        this.logger.debug("parsing dataset from %s", this.path);
+        const dataset = await liftEither(
+          await (await liftEither(this.file)).parseInto(
+            datasetFactory.dataset(),
+          ),
+        );
+        this.logger.debug("parsed %d quads from %d", dataset.size, this.path);
+        return dataset;
+      })
+    ).chainLeft((error) => {
+      if (isErrnoException(error) && error.code === "ENOENT") {
+        return Either.of(datasetFactory.dataset());
+      } else {
+        return Left(error);
+      }
+    });
   }
 
   private async mutate<ReturnT>(
@@ -104,18 +150,25 @@ export class RdfFileGraphStore
       );
 
       if (unionDataset.size === 0) {
-        await liftEither(await this.deleteFile(this.path, { force: true }));
+        await liftEither(
+          await this.fileSystem.deleteFile(this.path, { force: true }),
+        );
         return return_;
       }
 
       await liftEither(
-        await this.createDirectory(path.dirname(this.path), {
+        await this.fileSystem.createDirectory(path.dirname(this.path), {
           recursive: true,
         }),
       );
 
       await liftEither(
-        await this.writeFileQuads(this.path, intoStream.object(unionDataset)),
+        await (await liftEither(this.file)).serialize(
+          intoStream.object(unionDataset),
+          {
+            prefixes: this.prefixMap,
+          },
+        ),
       );
 
       return return_;

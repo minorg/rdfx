@@ -33,7 +33,7 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
     }
 
     for (const dirent of (
-      await this.fileSystem.readdir(this.path, options)
+      await this.fileSystem.readDirectory(this.path, options)
     ).unsafeCoerce()) {
       if (dirent.name.startsWith(".")) {
         continue;
