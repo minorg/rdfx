@@ -10,7 +10,7 @@ import { NTriplesTerm } from "@rdfx/string";
 import { Either, EitherAsync, Left, Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 import type { FileSystem } from "./FileSystem.js";
-import { nodeFileSystem } from "./nodeFileSystem.js";
+import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfDirectory } from "./RdfDirectory.js";
 import type { RdfFile } from "./RdfFile.js";
 
@@ -28,7 +28,7 @@ export class RdfDirectoryGraphStore implements GraphStore {
       logger?: Logger;
     },
   ) {
-    this.fileSystem = options?.fileSystem ?? nodeFileSystem;
+    this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
     this.logger = options?.logger ?? dummyLogger;
   }
 

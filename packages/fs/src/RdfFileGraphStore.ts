@@ -12,7 +12,7 @@ import { Either, EitherAsync, Left, type Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 import { isErrnoException } from "./ErrnoException.js";
 import type { FileSystem } from "./FileSystem.js";
-import { nodeFileSystem } from "./nodeFileSystem.js";
+import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfFile } from "./RdfFile.js";
 
 /**
@@ -31,7 +31,7 @@ export class RdfFileGraphStore implements GraphStore {
       prefixMap?: PrefixMap;
     },
   ) {
-    this.fileSystem = options?.fileSystem ?? nodeFileSystem;
+    this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
     this.logger = options?.logger ?? dummyLogger;
     this.prefixMap = options?.prefixMap;
   }

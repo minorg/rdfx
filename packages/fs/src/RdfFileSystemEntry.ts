@@ -1,7 +1,7 @@
 import { type Either, EitherAsync } from "purify-ts";
 import type { Logger } from "ts-log";
 import type { FileSystem } from "./FileSystem.js";
-import { nodeFileSystem } from "./nodeFileSystem.js";
+import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfDirectory } from "./RdfDirectory.js";
 import { RdfFile } from "./RdfFile.js";
 
@@ -12,7 +12,7 @@ export namespace RdfFileSystemEntry {
     path: string,
     options?: { fileSystem?: FileSystem; logger?: Logger },
   ): Promise<Either<Error, RdfFileSystemEntry>> {
-    const fileSystem = options?.fileSystem ?? nodeFileSystem;
+    const fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
 
     return EitherAsync(async ({ liftEither }) => {
       const stat_ = await liftEither(await fileSystem.stat(path));
