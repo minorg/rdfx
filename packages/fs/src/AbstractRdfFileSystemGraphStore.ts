@@ -5,7 +5,7 @@ import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import type { GraphIdentifier } from "@rdfx/graph-store";
-import { Either, EitherAsync, Left } from "purify-ts";
+import { Either, EitherAsync, Left, Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 
 import { RdfFile } from "./RdfFile.js";
@@ -16,23 +16,27 @@ export abstract class AbstractRdfFileSystemGraphStore {
   protected readonly logger: Logger;
   protected readonly rdfFileFormat: RdfFile.Format;
 
-  readonly path: string;
-
-  constructor({
-    logger,
-    path,
-    prefixMap,
-    rdfFileFormat,
-  }: {
-    logger?: Logger;
-    path: string;
-    prefixMap?: PrefixMap;
-    rdfFileFormat: RdfFile.Format;
-  }) {
-    this.logger = logger ?? dummyLogger;
+  constructor(
+    readonly path: string,
+    options?: {
+      logger?: Logger;
+      prefixMap?: PrefixMap;
+      rdfFileFormat?: RdfFile.Format;
+    },
+  ) {
+    this.logger = options?.logger ?? dummyLogger;
     this.path = path;
-    this.rdfFileFormat = rdfFileFormat;
-    this.prefixMap = prefixMap;
+    if (options?.rdfFileFormat) {
+      this.rdfFileFormat = options.rdfFileFormat;
+    } else {
+      this.rdfFileFormat = RdfFile.fromPath(this.path)
+        .map((_) => _.format)
+        .orDefault({
+          compressionMethod: Maybe.empty(),
+          rdfFormat: "application/n-quads",
+        });
+    }
+    this.prefixMap = options?.prefixMap;
   }
 
   protected async createDirectory(

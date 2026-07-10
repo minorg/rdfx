@@ -59,12 +59,16 @@ export class RdfDirectoryGraphStore
   }
 
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
-    return EitherAsync(
-      async ({ liftEither }) =>
-        (await liftEither(await stat(this.graphFilePath(identifier))))
-          .extract()
-          ?.isFile() ?? false,
-    );
+    return EitherAsync(async ({ liftEither }) => {
+      const statEither = await stat(this.graphFilePath(identifier));
+      if (
+        statEither.isLeft() &&
+        this.errorCode(statEither.extract()) === "ENOENT"
+      ) {
+        return false;
+      }
+      return (await liftEither(statEither)).isFile();
+    });
   }
 
   async identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>> {
@@ -184,8 +188,14 @@ export class RdfDirectoryGraphStore
           "only uncompressed writes are currently supported",
         );
       }
-      if (this.rdfFileFormat.rdfFormat !== "application/n-triples") {
-        throw new RangeError("only NTriples writes are currently supported");
+      switch (this.rdfFileFormat.rdfFormat) {
+        case "application/n-quads":
+        case "application/n-triples":
+          break;
+        default:
+          throw new RangeError(
+            "only N-Quads/N-Triples writes are currently supported",
+          );
       }
 
       const ntriplesByGraphIdentifier = new Map<string, string[]>();

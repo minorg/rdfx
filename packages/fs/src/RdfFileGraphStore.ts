@@ -104,7 +104,7 @@ export class RdfFileGraphStore
       );
 
       if (unionDataset.size === 0) {
-        await liftEither(await this.deleteFile(this.path));
+        await liftEither(await this.deleteFile(this.path, { force: true }));
         return return_;
       }
 
