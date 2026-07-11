@@ -12,7 +12,8 @@ export namespace RdfFileSystemEntry {
     path: string,
     options?: { fileSystem?: FileSystem; logger?: Logger },
   ): Promise<Either<Error, RdfFileSystemEntry>> {
-    const fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
+    const fileSystem: FileSystem =
+      options?.fileSystem ?? NodeFileSystem.instance;
 
     return EitherAsync(async ({ liftEither }) => {
       const stat_ = await liftEither(await fileSystem.stat(path));

@@ -169,7 +169,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
     quads: Stream,
     options?: Parameters<typeof serializers>[0],
   ): Promise<Either<Error, void>> {
-    return EitherAsync(async () => {
+    return EitherAsync(async ({ liftEither }) => {
       const rdfStream = serializers(options).import(
         this.format.rdfFormat,
         quads,
@@ -180,29 +180,33 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
         );
       }
 
-      const fileStream = this.fileSystem.createWriteStream(this.path);
+      await liftEither(
+        await this.fileSystem.writeFileStream(this.path, async (fileStream) =>
+          EitherAsync(async () => {
+            if (this.format.compressionMethod.isJust()) {
+              let compressor: Transform;
+              switch (this.format.compressionMethod.extract()) {
+                case "application/gzip":
+                  compressor = zlib.createGzip();
+                  break;
+                case "application/x-brotli":
+                  compressor = zlib.createBrotliCompress();
+                  break;
+                case "application/x-bzip2":
+                  throw new RangeError("bzip2 compression unsupported");
+              }
 
-      if (this.format.compressionMethod.isJust()) {
-        let compressor: Transform;
-        switch (this.format.compressionMethod.extract()) {
-          case "application/gzip":
-            compressor = zlib.createGzip();
-            break;
-          case "application/x-brotli":
-            compressor = zlib.createBrotliCompress();
-            break;
-          case "application/x-bzip2":
-            throw new RangeError("bzip2 compression unsupported");
-        }
-
-        await pipeline(
-          rdfStream as unknown as Readable,
-          compressor,
-          fileStream,
-        );
-      } else {
-        await pipeline(rdfStream as unknown as Readable, fileStream);
-      }
+              await pipeline(
+                rdfStream as unknown as Readable,
+                compressor,
+                fileStream,
+              );
+            } else {
+              await pipeline(rdfStream as unknown as Readable, fileStream);
+            }
+          }),
+        ),
+      );
     });
   }
 }

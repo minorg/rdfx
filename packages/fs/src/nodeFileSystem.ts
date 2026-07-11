@@ -23,11 +23,7 @@ export class NodeFileSystem implements FileSystem {
   }
 
   createReadStream(path: string): Readable {
-    return fs.createReadStream(path) as Readable;
-  }
-
-  createWriteStream(path: string): Writable {
-    return fs.createWriteStream(path);
+    return fs.createReadStream(path);
   }
 
   async deleteDirectory(
@@ -70,5 +66,15 @@ export class NodeFileSystem implements FileSystem {
     data: Uint8Array,
   ): Promise<Either<ErrnoException, void>> {
     return EitherAsync(() => fs.promises.writeFile(path, data));
+  }
+
+  async writeFileStream<ReturnT>(
+    path: string,
+    write: (stream: Writable) => Promise<Either<Error, ReturnT>>,
+  ): Promise<Either<Error, ReturnT>> {
+    return EitherAsync(async ({ liftEither }) => {
+      const stream = fs.createWriteStream(path) as Writable;
+      return await liftEither(await write(stream));
+    });
   }
 }
