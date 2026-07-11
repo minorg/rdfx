@@ -53,6 +53,7 @@ const externalDependencies = {
   "get-stream": "~9.0.1",
   housemd: "0.1.3",
   "into-stream": "~9.1.0",
+  "isomorphic-git": "~1.38.3",
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
@@ -200,6 +201,7 @@ const workspaces = {
     },
     git: {
       dependencies: {
+        external: ["isomorphic-git"],
         internal: ["fs", "graph-store"],
       },
       tsconfig: packageTsconfig,

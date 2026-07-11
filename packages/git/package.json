@@ -1,11 +1,14 @@
 {
   "dependencies": {
     "@rdfx/fs": "0.0.34",
-    "@rdfx/graph-store": "0.0.34"
+    "@rdfx/graph-store": "0.0.34",
+    "isomorphic-git": "~1.38.3"
   },
   "devDependencies": {},
   "files": [
-    "LICENSE"
+    "LICENSE",
+    "dist/*.d.ts",
+    "dist/*.js"
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
@@ -19,7 +22,9 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "depcheck": "depcheck .",
-    "dev": "tsc -w --preserveWatchOutput"
+    "dev": "tsc -w --preserveWatchOutput",
+    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/git/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
