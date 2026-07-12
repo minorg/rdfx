@@ -15,14 +15,13 @@ import { VersionedFileSystem } from "./VersionedFileSystem.js";
 export abstract class AbstractVersionedRdfFileGraphStore
   implements VersionedGraphStore<string>
 {
-  private readonly gitParameters: AbstractVersionedRdfFileGraphStore.GitParameters & {
-    readonly fs: git.PromiseFsClient;
-  };
-
   protected abstract readonly delegate:
     | RdfDirectoryGraphStore
     | RdfFileGraphStore;
   protected readonly fileSystem: VersionedFileSystem;
+  protected readonly gitParameters: AbstractVersionedRdfFileGraphStore.GitParameters & {
+    readonly fs: git.PromiseFsClient;
+  };
   protected readonly logger: Logger;
 
   readonly path: string;

@@ -10,6 +10,7 @@ import { type Either, EitherAsync } from "purify-ts";
  */
 export class VersionedFileSystem implements FileSystem {
   private readonly delegate: FileSystem;
+
   readonly gitParameters: VersionedFileSystem.GitParameters & {
     readonly fs: git.PromiseFsClient;
   };
@@ -69,6 +70,10 @@ export class VersionedFileSystem implements FileSystem {
     });
   }
 
+  gitFilePath(path: string): string {
+    return relative(this.gitParameters.dir, path);
+  }
+
   readDirectory(
     path: string,
     options?: FileSystem.ReadDirectoryOptions,
@@ -115,10 +120,6 @@ export class VersionedFileSystem implements FileSystem {
       });
       return result;
     });
-  }
-
-  private gitFilePath(path: string): string {
-    return relative(this.gitParameters.dir, path);
   }
 }
 

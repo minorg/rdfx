@@ -1,17 +1,21 @@
 import { dirname } from "node:path";
+import { Readable } from "node:stream";
 import type { Stream } from "@rdfjs/types";
-import { RdfFileGraphStore } from "@rdfx/fs";
+import { CompressedRdfStream, RdfFileGraphStore, RdfFormat } from "@rdfx/fs";
 import type { GraphIdentifier } from "@rdfx/graph-store";
-import type { Either, Maybe } from "purify-ts";
+import * as git from "isomorphic-git";
+import { type Either, EitherAsync, Maybe } from "purify-ts";
 import type { Logger } from "ts-log";
 import { Memoize } from "typescript-memoize";
-
 import { AbstractVersionedRdfFileGraphStore } from "./AbstractVersionedRdfFileGraphStore.js";
 
 export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphStore {
+  private readonly format: RdfFormat;
+
   constructor(
     path: string,
     options?: {
+      format?: RdfFormat;
       gitParameters?: AbstractVersionedRdfFileGraphStore.GitParameters;
       logger?: Logger;
     },
@@ -23,32 +27,77 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
       logger: options?.logger,
       path,
     });
+    this.format = options?.format ?? RdfFormat.fromPath(path).unsafeCoerce();
   }
 
   @Memoize()
   protected get delegate(): RdfFileGraphStore {
     return new RdfFileGraphStore(this.path, {
       fileSystem: this.fileSystem,
+      format: this.format,
       logger: this.logger,
     });
   }
 
-  override get(
+  override async get(
     identifier: GraphIdentifier,
     options?: { readonly version?: string } | undefined,
   ): Promise<Either<Error, Maybe<Stream>>> {
-    if (!options?.version) {
+    const version = options?.version;
+    if (!version) {
       return this.delegate.get(identifier);
     }
+
+    return EitherAsync<Error, Maybe<Stream>>(async () => {
+      let blob: Uint8Array;
+      try {
+        blob = (
+          await git.readBlob({
+            ...this.gitParameters,
+            oid: version,
+            filepath: this.fileSystem.gitFilePath(this.path),
+          })
+        ).blob;
+      } catch (error) {
+        if (error instanceof git.Errors.NotFoundError) {
+          return Maybe.empty();
+        } else {
+          throw error;
+        }
+      }
+      return Maybe.of(
+        CompressedRdfStream.parse(
+          this.format,
+          Readable.from(Buffer.from(blob)),
+        ),
+      );
+    });
   }
 
-  override head(
+  override async head(
     identifier: GraphIdentifier,
     options?: { readonly version?: string } | undefined,
   ): Promise<Either<Error, boolean>> {
-    if (!options?.version) {
+    const version = options?.version;
+    if (!version) {
       return this.delegate.head(identifier);
     }
-    throw new Error("Method not implemented.");
+
+    return EitherAsync<Error, boolean>(async () => {
+      try {
+        await git.readBlob({
+          ...this.gitParameters,
+          oid: version,
+          filepath: this.fileSystem.gitFilePath(this.path),
+        });
+        return true;
+      } catch (error) {
+        if (error instanceof git.Errors.NotFoundError) {
+          return false;
+        } else {
+          throw error;
+        }
+      }
+    });
   }
 }
