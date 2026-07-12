@@ -5,24 +5,21 @@ import type { Dirent, ErrnoException, FileSystem, Stat } from "@rdfx/fs";
 import * as git from "isomorphic-git";
 import { type Either, EitherAsync } from "purify-ts";
 
-interface GitParameters {
-  readonly dir: string;
-  readonly gitdir?: string;
-}
-
 /**
  * FileSystem implementation that git adds/removes files that are written or deleted successfully from the underlying node:fs.
  */
 export class VersionedFileSystem implements FileSystem {
   private readonly delegate: FileSystem;
-  private readonly gitParameters: GitParameters & { fs: git.FsClient };
+  readonly gitParameters: VersionedFileSystem.GitParameters & {
+    readonly fs: git.PromiseFsClient;
+  };
 
   constructor({
     delegate,
     gitParameters,
   }: {
     delegate: FileSystem;
-    gitParameters: GitParameters;
+    gitParameters: VersionedFileSystem.GitParameters;
   }) {
     this.delegate = delegate;
     this.gitParameters = { ...gitParameters, fs: fs.promises };
@@ -122,5 +119,12 @@ export class VersionedFileSystem implements FileSystem {
 
   private gitFilePath(path: string): string {
     return relative(this.gitParameters.dir, path);
+  }
+}
+
+export namespace VersionedFileSystem {
+  export interface GitParameters {
+    readonly dir: string;
+    readonly gitdir?: string;
   }
 }
