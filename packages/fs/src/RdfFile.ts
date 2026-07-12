@@ -4,10 +4,9 @@ import type serializers from "@rdfx/serializers";
 import { Either, EitherAsync, Left } from "purify-ts";
 import type { Logger } from "ts-log";
 import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
+import { CompressedRdfStream } from "./CompressedRdfStream.js";
 import type { FileSystem } from "./FileSystem.js";
-import { parseRdfStream } from "./parseRdfStream.js";
 import { RdfFormat } from "./RdfFormat.js";
-import { serializeRdfStream } from "./serializeRdfStream.js";
 
 export class RdfFile extends AbstractRdfFileSystemEntry {
   readonly format: RdfFormat;
@@ -40,7 +39,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
   }
 
   override parse(): Stream<Quad> {
-    return parseRdfStream(
+    return CompressedRdfStream.parse(
       this.format,
       this.fileSystem.createReadStream(this.path),
     );
@@ -97,7 +96,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
       async ({ liftEither }) =>
         await liftEither(
           await this.fileSystem.writeFileStream(this.path, (fileStream) =>
-            serializeRdfStream({
+            CompressedRdfStream.serialize({
               format: this.format,
               source: quads,
               destination: fileStream,
