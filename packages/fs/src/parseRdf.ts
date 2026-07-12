@@ -14,13 +14,13 @@ export function parseRdf(format: RdfFormat, input: Readable): Stream<Quad> {
   if (RdfFormat.isCompressed(format)) {
     switch (format.mimeType) {
       case "application/gzip":
-        input.pipe(zlib.createGunzip());
+        input = input.pipe(zlib.createGunzip());
         break;
       case "application/x-brotli":
-        input.pipe(zlib.createBrotliDecompress());
+        input = input.pipe(zlib.createBrotliDecompress());
         break;
       case "application/x-bzip2":
-        input.pipe(bz2());
+        input = input.pipe(bz2());
         break;
     }
 
@@ -30,7 +30,7 @@ export function parseRdf(format: RdfFormat, input: Readable): Stream<Quad> {
   }
 
   const output = parsers.import(uncompressedMimeType, input);
-  if (!output) {
+  if (output === null) {
     throw new RangeError(
       `unsupported RDF serialization format: ${uncompressedMimeType}`,
     );
