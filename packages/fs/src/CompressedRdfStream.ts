@@ -13,7 +13,7 @@ import type { UncompressedRdfFormat } from "./UncompressedRdfFormat.js";
 const parsers = parsersFactory({ dataFactory });
 
 export namespace CompressedRdfStream {
-  export function parse(format: RdfFormat, input: Readable): Stream<Quad> {
+  export function parse(format: RdfFormat, input: Readable): Stream {
     let uncompressedMimeType: UncompressedRdfFormat["mimeType"];
     if (RdfFormat.isCompressed(format)) {
       switch (format.mimeType) {
@@ -51,7 +51,7 @@ export namespace CompressedRdfStream {
     destination: Writable;
     format: RdfFormat;
     serializerOptions?: Parameters<typeof serializers>[0];
-    source: Stream<Quad>;
+    source: Stream;
   }): Promise<Either<Error, void>> {
     return EitherAsync(async () => {
       const uncompressedMimeType = RdfFormat.isCompressed(format)

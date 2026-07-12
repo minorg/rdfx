@@ -38,7 +38,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
     );
   }
 
-  override parse(): Stream<Quad> {
+  override parse(): Stream {
     return CompressedRdfStream.parse(
       this.format,
       this.fileSystem.createReadStream(this.path),

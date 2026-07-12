@@ -59,7 +59,7 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
     }
   }
 
-  parse(options?: { recursive?: boolean }): Stream<Quad> {
+  parse(options?: { recursive?: boolean }): Stream {
     const self = this;
     async function* parseFiles() {
       for await (const file of self.files(options)) {
@@ -71,7 +71,7 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
 
     return Readable.from(parseFiles(), {
       objectMode: true,
-    }) as unknown as Stream<Quad>;
+    }) as unknown as Stream;
   }
 
   override async parseInto(

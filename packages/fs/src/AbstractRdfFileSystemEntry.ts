@@ -18,7 +18,7 @@ export abstract class AbstractRdfFileSystemEntry {
     this.path = path;
   }
 
-  abstract parse(options?: { recursive?: boolean }): Stream<Quad>;
+  abstract parse(options?: { recursive?: boolean }): Stream;
 
   abstract parseInto(
     dataset: DatasetCore,
