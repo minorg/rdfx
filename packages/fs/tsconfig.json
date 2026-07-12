@@ -3,6 +3,7 @@
     "declaration": true,
     "declarationMap": true,
     "exactOptionalPropertyTypes": false,
+    "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "lib": [
       "ES2023"

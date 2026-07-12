@@ -68,6 +68,7 @@ const externalDependencies = {
   tsx: "~4.16.2",
   turbo: "~2.5.5",
   typescript: "6.0.3",
+  "typescript-memoize": "~1.1.1",
   "unbzip2-stream": "~1.4.3",
   vitest: vitestVersion,
   "vitest-fetch-mock": "~0.4.5",
@@ -118,6 +119,7 @@ const packageTsconfig: Tsconfig = {
     declaration: true,
     declarationMap: true,
     exactOptionalPropertyTypes: false,
+    experimentalDecorators: true,
     forceConsistentCasingInFileNames: true,
     lib: ["ES2023"],
     module: "NodeNext" as any,
@@ -201,7 +203,7 @@ const workspaces = {
     },
     git: {
       dependencies: {
-        external: ["isomorphic-git"],
+        external: ["isomorphic-git", "ts-log", "typescript-memoize"],
         internal: ["fs", "graph-store"],
       },
       tsconfig: packageTsconfig,
