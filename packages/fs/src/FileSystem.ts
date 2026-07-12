@@ -16,7 +16,7 @@ export interface FileSystem {
    */
   createDirectory(
     path: string,
-    options?: { recursive?: boolean },
+    options?: FileSystem.CreateDirectoryOptions,
   ): Promise<Either<ErrnoException, void>>;
 
   /**
@@ -28,7 +28,7 @@ export interface FileSystem {
    */
   deleteDirectory(
     path: string,
-    options?: { force?: boolean; recursive?: boolean },
+    options?: FileSystem.DeleteDirectoryOptions,
   ): Promise<Either<ErrnoException, void>>;
 
   /**
@@ -39,7 +39,7 @@ export interface FileSystem {
    */
   deleteFile(
     path: string,
-    options?: { force?: boolean },
+    options?: FileSystem.DeleteFileOptions,
   ): Promise<Either<ErrnoException, void>>;
 
   /**
@@ -50,7 +50,7 @@ export interface FileSystem {
    */
   readDirectory(
     path: string,
-    options?: { recursive?: boolean },
+    options?: FileSystem.ReadDirectoryOptions,
   ): Promise<Either<ErrnoException, readonly Dirent[]>>;
 
   /**
@@ -102,4 +102,14 @@ export interface FileSystem {
     path: string,
     write: (stream: Writable) => Promise<Either<Error, ReturnT>>,
   ): Promise<Either<Error, ReturnT>>;
+}
+
+export namespace FileSystem {
+  export type CreateDirectoryOptions = Readonly<{ recursive?: boolean }>;
+  export type DeleteDirectoryOptions = Readonly<{
+    force?: boolean;
+    recursive?: boolean;
+  }>;
+  export type DeleteFileOptions = Readonly<{ force?: boolean }>;
+  export type ReadDirectoryOptions = Readonly<{ recursive?: boolean }>;
 }
