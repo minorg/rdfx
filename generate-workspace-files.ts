@@ -183,6 +183,7 @@ const workspaces = {
           "mime",
           "purify-ts",
           "ts-log",
+          "typescript-memoize",
           "unbzip2-stream",
         ],
         internal: [

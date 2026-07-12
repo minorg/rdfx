@@ -10,10 +10,13 @@ import {
 import intoStream from "into-stream";
 import { Either, EitherAsync, Left, type Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
+import { Memoize } from "typescript-memoize";
+
 import { isErrnoException } from "./ErrnoException.js";
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfFile } from "./RdfFile.js";
+import { RdfFormat } from "./RdfFormat.js";
 
 /**
  * A GraphStore implementation backed by a single RdfFile.
@@ -23,17 +26,29 @@ export class RdfFileGraphStore implements GraphStore {
   private readonly logger: Logger;
   private readonly prefixMap?: PrefixMap;
 
+  readonly format: RdfFormat;
+
   constructor(
     readonly path: string,
     options?: {
       fileSystem?: FileSystem;
+      format?: RdfFormat;
       logger?: Logger;
       prefixMap?: PrefixMap;
     },
   ) {
     this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
+    this.format = options?.format ?? RdfFormat.fromPath(path).unsafeCoerce();
     this.logger = options?.logger ?? dummyLogger;
     this.prefixMap = options?.prefixMap;
+  }
+
+  @Memoize()
+  private get rdfFile(): RdfFile {
+    return new RdfFile(this.path, {
+      format: this.format,
+      logger: this.logger,
+    });
   }
 
   async clear(): Promise<Either<Error, object>> {
@@ -109,21 +124,12 @@ export class RdfFileGraphStore implements GraphStore {
     );
   }
 
-  private get file(): Either<Error, RdfFile> {
-    return RdfFile.fromPath(this.path, {
-      fileSystem: this.fileSystem,
-      logger: this.logger,
-    });
-  }
-
   async unionDataset(): Promise<Either<Error, DatasetCore>> {
     return (
       await EitherAsync<Error, DatasetCore>(async ({ liftEither }) => {
         this.logger.debug("parsing dataset from %s", this.path);
         const dataset = await liftEither(
-          await (await liftEither(this.file)).parseInto(
-            datasetFactory.dataset(),
-          ),
+          await this.rdfFile.parseInto(datasetFactory.dataset()),
         );
         this.logger.debug("parsed %d quads from %d", dataset.size, this.path);
         return dataset;
@@ -163,12 +169,9 @@ export class RdfFileGraphStore implements GraphStore {
       );
 
       await liftEither(
-        await (await liftEither(this.file)).serialize(
-          intoStream.object(unionDataset),
-          {
-            prefixes: this.prefixMap,
-          },
-        ),
+        await this.rdfFile.serialize(intoStream.object(unionDataset), {
+          prefixes: this.prefixMap,
+        }),
       );
 
       return return_;
