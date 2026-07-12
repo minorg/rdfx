@@ -9,7 +9,10 @@ import type { UncompressedRdfFormat } from "./UncompressedRdfFormat.js";
 
 const parsers = parsersFactory({ dataFactory });
 
-export function parseRdf(format: RdfFormat, input: Readable): Stream<Quad> {
+export function parseRdfStream(
+  format: RdfFormat,
+  input: Readable,
+): Stream<Quad> {
   let uncompressedMimeType: UncompressedRdfFormat["mimeType"];
   if (RdfFormat.isCompressed(format)) {
     switch (format.mimeType) {

@@ -6,7 +6,7 @@ import serializers from "@rdfx/serializers";
 import { type Either, EitherAsync } from "purify-ts";
 import { RdfFormat } from "./RdfFormat.js";
 
-export async function serializeRdf({
+export async function serializeRdfStream({
   destination,
   format,
   serializerOptions,

@@ -5,9 +5,9 @@ import { Either, EitherAsync, Left } from "purify-ts";
 import type { Logger } from "ts-log";
 import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
 import type { FileSystem } from "./FileSystem.js";
-import { parseRdf } from "./parseRdf.js";
+import { parseRdfStream } from "./parseRdfStream.js";
 import { RdfFormat } from "./RdfFormat.js";
-import { serializeRdf } from "./serializeRdf.js";
+import { serializeRdfStream } from "./serializeRdfStream.js";
 
 export class RdfFile extends AbstractRdfFileSystemEntry {
   readonly format: RdfFormat;
@@ -40,7 +40,10 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
   }
 
   override parse(): Stream<Quad> {
-    return parseRdf(this.format, this.fileSystem.createReadStream(this.path));
+    return parseRdfStream(
+      this.format,
+      this.fileSystem.createReadStream(this.path),
+    );
   }
 
   override parseInto(
@@ -94,7 +97,7 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
       async ({ liftEither }) =>
         await liftEither(
           await this.fileSystem.writeFileStream(this.path, (fileStream) =>
-            serializeRdf({
+            serializeRdfStream({
               format: this.format,
               source: quads,
               destination: fileStream,
