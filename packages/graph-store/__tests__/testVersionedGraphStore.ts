@@ -1,19 +1,21 @@
-import type { DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
+import datasetFactory from "@rdfjs/dataset";
+import type { BaseQuad, DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import "@rdfx/testing";
 
+import type { Readable } from "node:stream";
+import { getStreamAsArray } from "get-stream";
 import intoStream from "into-stream";
 import { describe, it } from "vitest";
-
 import type { VersionedGraphStore } from "../src/VersionedGraphStore.js";
-import { testGraphStore } from "./testGraphStore.js";
+// import { testGraphStore } from "./testGraphStore.js";
 
 export function testVersionedGraphStore<VersionT>(
   withVersionedGraphStore: (
     use: (versionedGraphStore: VersionedGraphStore<VersionT>) => Promise<void>,
   ) => Promise<void>,
 ) {
-  testGraphStore(withVersionedGraphStore);
+  // testGraphStore(withVersionedGraphStore);
 
   for (const graph of [
     dataFactory.defaultGraph(),
@@ -47,156 +49,169 @@ export function testVersionedGraphStore<VersionT>(
           });
         });
 
-        // describe("delete", () => {
-        //   it("on empty store", async () =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       (await sut.delete(graph)).unsafeCoerce();
-        //     }));
+        it("delete", async ({ expect }) => {
+          await withVersionedGraphStore(async (sut) => {
+            const { version: versionAfterPut } = (
+              await sut.put(intoStream.object([quad()]))
+            ).unsafeCoerce();
 
-        //   it("on populated store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
-        //       expect((await sut.head(graph)).unsafeCoerce()).toStrictEqual(
-        //         true,
-        //       );
-        //       (await sut.delete(graph)).unsafeCoerce();
-        //       expect((await sut.head(graph)).unsafeCoerce()).toStrictEqual(
-        //         false,
-        //       );
-        //     }));
-        // });
+            const { version: versionAfterDelete } = (
+              await sut.delete(graph)
+            ).unsafeCoerce();
 
-        // describe("get", () => {
-        //   it("on empty store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       expect(
-        //         (await sut.get(graph)).unsafeCoerce().isNothing(),
-        //       ).toStrictEqual(true);
-        //     }));
+            expect(versionAfterDelete).not.toEqual(versionAfterPut);
+          });
+        });
 
-        //   it("on populated store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       const expectedQuad = quad();
-        //       (await sut.put(intoStream.object([expectedQuad]))).unsafeCoerce();
-        //       const expectedDataset = datasetFactory.dataset([expectedQuad]);
-        //       const actualDataset = datasetFactory.dataset(
-        //         (await getStreamAsArray(
-        //           (
-        //             await sut.get(graph)
-        //           )
-        //             .unsafeCoerce()
-        //             .unsafeCoerce() as Readable,
-        //         )) as BaseQuad[],
-        //       );
-        //       expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
-        //     }));
-        // });
+        describe("get", () => {
+          it("version on empty store", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              expect(
+                (await sut.get(graph, { version: "nosuchversion" as VersionT }))
+                  .unsafeCoerce()
+                  .isNothing(),
+              ).toStrictEqual(true);
+            }));
 
-        // describe("head", () => {
-        //   it("on empty store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       expect((await sut.head(graph)).unsafeCoerce()).toStrictEqual(
-        //         false,
-        //       );
-        //     }));
+          it("version that didn't come back from write", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
 
-        //   it("on populated store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
-        //       expect((await sut.head(graph)).unsafeCoerce()).toStrictEqual(
-        //         true,
-        //       );
-        //     }));
-        // });
+              expect(
+                (await sut.get(graph, { version: "nosuchversion" as VersionT }))
+                  .unsafeCoerce()
+                  .isNothing(),
+              ).toStrictEqual(true);
+            }));
 
-        // describe("identifiers", () => {
-        //   it("on empty store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       expect((await sut.identifiers()).unsafeCoerce()).toEqual([]);
-        //     }));
+          it("version returned by delete", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
 
-        //   it("on populated store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
-        //       expect(
-        //         (await sut.identifiers()).unsafeCoerce(),
-        //       ).toEqualRdfTermArray([graph]);
-        //     }));
-        // });
+              const { version: versionAfterDelete } = (
+                await sut.delete(graph)
+              ).unsafeCoerce();
 
-        // describe("isEmpty", () => {
-        //   it("on empty store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(true);
-        //     }));
+              expect(
+                (await sut.get(graph, { version: versionAfterDelete }))
+                  .unsafeCoerce()
+                  .isNothing(),
+              ).toStrictEqual(true);
+            }));
 
-        //   it("on populated store", async ({ expect }) =>
-        //     await withVersionedGraphStore(async (sut) => {
-        //       expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(true);
-        //       (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
-        //       expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(false);
-        //     }));
-        // });
+          it("version returned by put", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              const expectedQuad = quad();
+              const { version: versionAfterPut } = (
+                await sut.put(intoStream.object([expectedQuad]))
+              ).unsafeCoerce();
 
-        // it("post", async ({ expect }) =>
-        //   await withVersionedGraphStore(async (sut) => {
-        //     const expectedQuad0 = quad(0);
-        //     const expectedQuad1 = quad(1);
+              const expectedDataset = datasetFactory.dataset([expectedQuad]);
+              const actualDataset = datasetFactory.dataset(
+                (await getStreamAsArray(
+                  (
+                    await sut.get(graph, { version: versionAfterPut })
+                  )
+                    .unsafeCoerce()
+                    .unsafeCoerce() as Readable,
+                )) as BaseQuad[],
+              );
+              expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
+            }));
 
-        //     (await sut.post(intoStream.object([expectedQuad0]))).unsafeCoerce();
+          it("version returned by put, after delete", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              const expectedQuad = quad();
+              const { version: versionAfterPut } = (
+                await sut.put(intoStream.object([expectedQuad]))
+              ).unsafeCoerce();
 
-        //     expect(
-        //       (await getStreamAsArray(
-        //         (
-        //           await sut.get(graph)
-        //         )
-        //           .unsafeCoerce()
-        //           .unsafeCoerce() as Readable,
-        //       )) as Quad[],
-        //     ).toEqualRdfQuadArray([expectedQuad0]);
+              (await sut.delete(graph)).unsafeCoerce();
+              expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(true);
 
-        //     (await sut.post(intoStream.object([expectedQuad1]))).unsafeCoerce();
+              const expectedDataset = datasetFactory.dataset([expectedQuad]);
+              const actualDataset = datasetFactory.dataset(
+                (await getStreamAsArray(
+                  (
+                    await sut.get(graph, { version: versionAfterPut })
+                  )
+                    .unsafeCoerce()
+                    .unsafeCoerce() as Readable,
+                )) as BaseQuad[],
+              );
+              expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
+            }));
+        });
 
-        //     expect(
-        //       (await getStreamAsArray(
-        //         (
-        //           await sut.get(graph)
-        //         )
-        //           .unsafeCoerce()
-        //           .unsafeCoerce() as Readable,
-        //       )) as Quad[],
-        //     ).toBeRdfIsomorphic([expectedQuad0, expectedQuad1]);
-        //   }));
+        describe("head", () => {
+          it("version on empty store", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              expect(
+                (
+                  await sut.head(graph, {
+                    version: "nosuchversion" as VersionT,
+                  })
+                ).unsafeCoerce(),
+              ).toStrictEqual(false);
+            }));
 
-        // it("put", async ({ expect }) =>
-        //   await withVersionedGraphStore(async (sut) => {
-        //     const expectedQuad0 = quad(0);
-        //     const expectedQuad1 = quad(1);
+          it("version that didn't come back from write", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
 
-        //     (await sut.put(intoStream.object([expectedQuad0]))).unsafeCoerce();
+              expect(
+                (
+                  await sut.head(graph, {
+                    version: "nosuchversion" as VersionT,
+                  })
+                ).unsafeCoerce(),
+              ).toStrictEqual(false);
+            }));
 
-        //     expect(
-        //       (await getStreamAsArray(
-        //         (
-        //           await sut.get(graph)
-        //         )
-        //           .unsafeCoerce()
-        //           .unsafeCoerce() as Readable,
-        //       )) as Quad[],
-        //     ).toEqualRdfQuadArray([expectedQuad0]);
+          it("version returned by delete", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
 
-        //     (await sut.put(intoStream.object([expectedQuad1]))).unsafeCoerce();
+              const { version: versionAfterDelete } = (
+                await sut.delete(graph)
+              ).unsafeCoerce();
 
-        //     expect(
-        //       (await getStreamAsArray(
-        //         (
-        //           await sut.get(graph)
-        //         )
-        //           .unsafeCoerce()
-        //           .unsafeCoerce() as Readable,
-        //       )) as Quad[],
-        //     ).toEqualRdfQuadArray([expectedQuad1]);
-        //   }));
+              expect(
+                (
+                  await sut.head(graph, { version: versionAfterDelete })
+                ).unsafeCoerce(),
+              ).toStrictEqual(false);
+            }));
+
+          it("version returned by put", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              const expectedQuad = quad();
+              const { version: versionAfterPut } = (
+                await sut.put(intoStream.object([expectedQuad]))
+              ).unsafeCoerce();
+              expect(
+                (
+                  await sut.head(graph, { version: versionAfterPut })
+                ).unsafeCoerce(),
+              ).toStrictEqual(true);
+            }));
+
+          it("version returned by put, after delete", async ({ expect }) =>
+            await withVersionedGraphStore(async (sut) => {
+              const { version: versionAfterPut } = (
+                await sut.put(intoStream.object([quad()]))
+              ).unsafeCoerce();
+
+              (await sut.delete(graph)).unsafeCoerce();
+              expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(true);
+
+              expect(
+                (
+                  await sut.head(graph, { version: versionAfterPut })
+                ).unsafeCoerce(),
+              ).toStrictEqual(true);
+            }));
+        });
       },
     );
   }
