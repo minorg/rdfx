@@ -7,32 +7,14 @@ import { RdfFileGraphStore } from "../src/RdfFileGraphStore.js";
 import { logger } from "./logger.js";
 
 describe("RdfFileGraphStore", () => {
-  describe("existing directory", () => {
-    testGraphStore(async (use) => {
-      await using directoryPath = await fs.mkdtempDisposable(
-        path.join(os.tmpdir(), "RdfFileGraphStore.test"),
-      );
-      await use(
-        new RdfFileGraphStore(path.join(directoryPath.path, "file.nq"), {
-          logger,
-        }),
-      );
-    });
-  });
-
-  describe("non-extant directory", () => {
-    testGraphStore(async (use) => {
-      await using directoryPath = await fs.mkdtempDisposable(
-        path.join(os.tmpdir(), "RdfFileGraphStore.test"),
-      );
-      await use(
-        new RdfFileGraphStore(
-          path.join(directoryPath.path, "nonextant", "file.nq"),
-          {
-            logger,
-          },
-        ),
-      );
-    });
+  testGraphStore(async (use) => {
+    await using directoryPath = await fs.mkdtempDisposable(
+      path.join(os.tmpdir(), "RdfFileGraphStore.test"),
+    );
+    await use(
+      new RdfFileGraphStore(path.join(directoryPath.path, "file.nq"), {
+        logger,
+      }),
+    );
   });
 });

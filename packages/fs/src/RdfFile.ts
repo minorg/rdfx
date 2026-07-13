@@ -1,127 +1,56 @@
-import fs from "node:fs";
-import * as path from "node:path";
-import type { Readable, Transform } from "node:stream";
-import { pipeline } from "node:stream/promises";
-import zlib from "node:zlib";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
-import type { DatasetCore, NamedNode, Quad, Stream } from "@rdfjs/types";
-import dataFactory from "@rdfx/data-factory";
-import parsersFactory from "@rdfx/parsers";
-import serializers from "@rdfx/serializers";
-import { Mime } from "mime";
-import otherMimeTypes from "mime/types/other.js";
-import standardMimeTypes from "mime/types/standard.js";
-import {
-  Either,
-  EitherAsync,
-  Just,
-  Left,
-  type Maybe,
-  Nothing,
-  Right,
-} from "purify-ts";
-import type { Logger } from "ts-log";
-import bz2 from "unbzip2-stream";
-import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
-import { RDF_FORMATS, type RdfFormat } from "./RdfFormat.js";
+import type { DatasetCore, NamedNode, Stream } from "@rdfjs/types";
+import type serializers from "@rdfx/serializers";
+import { Either, EitherAsync, Left } from "purify-ts";
+import { dummyLogger, type Logger } from "ts-log";
+import { CompressedRdfStream } from "./CompressedRdfStream.js";
+import type { FileSystem } from "./FileSystem.js";
+import { NodeFileSystem } from "./NodeFileSystem.js";
+import { RdfFormat } from "./RdfFormat.js";
+import { uncompressedRdfFormatsByMimeType } from "./uncompressedRdfFormatsByMimeType.js";
 
-const parsers = parsersFactory({ dataFactory });
-
-const mime = new Mime(standardMimeTypes, otherMimeTypes, {
-  "application/x-brotli": ["br"],
-});
-
-export class RdfFile extends AbstractRdfFileSystemEntry {
-  readonly format: RdfFile.Format;
+export class RdfFile {
+  readonly format: RdfFormat;
+  private readonly fileSystem: FileSystem;
+  private readonly logger: Logger;
 
   constructor(
-    path: string,
-    {
-      format,
-      ...superParameters
-    }: {
-      format: RdfFile.Format;
-    } & ConstructorParameters<typeof AbstractRdfFileSystemEntry>[1],
+    readonly path: string,
+    options?: {
+      fileSystem?: FileSystem;
+      format?: RdfFormat;
+      logger?: Logger;
+    },
   ) {
-    super(path, superParameters);
-    this.format = format;
+    this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
+    this.format =
+      options?.format ??
+      uncompressedRdfFormatsByMimeType["application/n-quads"];
+    this.logger = options?.logger ?? dummyLogger;
   }
 
   static fromPath(
     filePath: string,
-    options?: { logger?: Logger },
+    options?: { fileSystem?: FileSystem; logger?: Logger },
   ): Either<Error, RdfFile> {
-    const mimeType = mime.getType(filePath);
-    if (mimeType === null) {
-      return Left(new Error(`unable to infer MIME type of ${filePath}`));
-    }
-
-    for (const compressionMethod of RdfFile.COMPRESSION_METHODS) {
-      if (compressionMethod === mimeType) {
-        const uncompressedFileName = path.basename(
-          path.basename(filePath),
-          path.extname(filePath),
-        );
-        const uncompressedMimeType = mime.getType(uncompressedFileName);
-        if (uncompressedMimeType === null) {
-          return Left(
-            new Error(`unable to infer MIME type of ${uncompressedFileName}`),
-          );
-        }
-        for (const rdfFormat of RDF_FORMATS) {
-          if (uncompressedMimeType === rdfFormat) {
-            return Right(
-              new RdfFile(filePath, {
-                format: {
-                  compressionMethod: Just(compressionMethod),
-                  rdfFormat,
-                },
-                logger: options?.logger,
-              }),
-            );
-          }
-        }
-      }
-    }
-
-    for (const rdfFormat of RDF_FORMATS) {
-      if (mimeType === rdfFormat) {
-        return Right(
-          new RdfFile(filePath, {
-            format: {
-              compressionMethod: Nothing,
-              rdfFormat,
-            },
-            logger: options?.logger,
-          }),
-        );
-      }
-    }
-
-    return Left(new Error(`${filePath} has a non-RDF MIME type: ${mimeType}`));
+    return RdfFormat.fromPath(filePath).map(
+      (format) =>
+        new RdfFile(filePath, {
+          fileSystem: options?.fileSystem,
+          format,
+          logger: options?.logger,
+        }),
+    );
   }
 
-  override parse(): Stream<Quad> {
-    let fileStream: Readable = fs.createReadStream(this.path);
-
-    if (this.format.compressionMethod.isJust()) {
-      switch (this.format.compressionMethod.unsafeCoerce()) {
-        case "application/gzip":
-          fileStream = fileStream.pipe(zlib.createGunzip());
-          break;
-        case "application/x-brotli":
-          fileStream = fileStream.pipe(zlib.createBrotliDecompress());
-          break;
-        case "application/x-bzip2":
-          fileStream = fileStream.pipe(bz2());
-          break;
-      }
-    }
-
-    return parsers.import(this.format.rdfFormat, fileStream)!;
+  parse(): Stream {
+    return CompressedRdfStream.parse(
+      this.format,
+      this.fileSystem.createReadStream(this.path),
+    );
   }
 
-  override parseInto(
+  parseInto(
     dataset: DatasetCore,
     options?: { prefixMap?: PrefixMap },
   ): Promise<Either<Error, DatasetCore>> {
@@ -168,55 +97,20 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
     quads: Stream,
     options?: Parameters<typeof serializers>[0],
   ): Promise<Either<Error, void>> {
-    return EitherAsync(async () => {
-      const rdfStream = serializers(options).import(
-        this.format.rdfFormat,
-        quads,
-      );
-      if (rdfStream === null) {
-        throw new RangeError(
-          `unsupported RDF serialization format: ${this.format.rdfFormat}`,
-        );
-      }
-
-      const fileStream = fs.createWriteStream(this.path);
-
-      if (this.format.compressionMethod.isJust()) {
-        let compressor: Transform;
-        switch (this.format.compressionMethod.extract()) {
-          case "application/gzip":
-            compressor = zlib.createGzip();
-            break;
-          case "application/x-brotli":
-            compressor = zlib.createBrotliCompress();
-            break;
-          case "application/x-bzip2":
-            throw new RangeError("bzip2 compression unsupported");
-        }
-
-        await pipeline(
-          rdfStream as unknown as Readable,
-          compressor,
-          fileStream,
-        );
-      } else {
-        await pipeline(rdfStream as unknown as Readable, fileStream);
-      }
-    });
+    return EitherAsync(
+      async ({ liftEither }) =>
+        await liftEither(
+          await this.fileSystem.writeFileStream(this.path, (fileStream) =>
+            CompressedRdfStream.serialize({
+              format: this.format,
+              source: quads,
+              destination: fileStream,
+              serializerOptions: options,
+            }),
+          ),
+        ),
+    );
   }
 }
 
-export namespace RdfFile {
-  export const COMPRESSION_METHODS = [
-    "application/gzip",
-    "application/x-brotli",
-    "application/x-bzip2",
-  ] as const;
-
-  export type CompressionMethod = (typeof COMPRESSION_METHODS)[number];
-
-  export interface Format {
-    compressionMethod: Maybe<CompressionMethod>;
-    rdfFormat: RdfFormat;
-  }
-}
+export namespace RdfFile {}

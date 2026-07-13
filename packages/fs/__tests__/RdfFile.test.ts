@@ -9,7 +9,9 @@ import { RdfFile } from "../src/RdfFile.js";
 import { testDataDirPath } from "./paths.js";
 import "@rdfx/testing";
 import intoStream from "into-stream";
-import { Maybe } from "purify-ts";
+import { RdfFormat } from "../src/RdfFormat.js";
+import type { UncompressedRdfFormat } from "../src/UncompressedRdfFormat.js";
+import { uncompressedRdfFormats } from "../src/uncompressedRdfFormats.js";
 
 describe("RdfFile", () => {
   describe("fromPath", () => {
@@ -75,14 +77,26 @@ describe("RdfFile", () => {
       { factory: dataFactory },
     );
 
-    async function testSerialize(format: RdfFile.Format): Promise<void> {
+    async function testSerialize(
+      format: RdfFormat | UncompressedRdfFormat["mimeType"],
+    ): Promise<void> {
+      if (typeof format === "string") {
+        format = uncompressedRdfFormats.find(
+          (uncompressedRdfFormat) => uncompressedRdfFormat.mimeType === format,
+        )!;
+      }
+
       await using tempDir = await fs.mkdtempDisposable(
         path.join(os.tmpdir(), "rdfx-"),
       );
       const tempFilePath = path.join(tempDir.path, "file.tmp");
       const tempFile = new RdfFile(tempFilePath, { format });
 
-      switch (format.rdfFormat) {
+      switch (
+        RdfFormat.isCompressed(format)
+          ? format.uncompressedMimeType
+          : format.mimeType
+      ) {
         case "application/ld+json":
         case "application/n-quads":
         case "application/trig":
@@ -125,17 +139,9 @@ describe("RdfFile", () => {
       }
     }
 
-    it("n3", () =>
-      testSerialize({
-        compressionMethod: Maybe.empty(),
-        rdfFormat: "text/n3",
-      }));
+    it("n3", () => testSerialize("text/n3"));
 
-    it("nq", () =>
-      testSerialize({
-        compressionMethod: Maybe.empty(),
-        rdfFormat: "application/n-quads",
-      }));
+    it("nq", () => testSerialize("application/n-quads"));
 
     // it("nq.gz", () =>
     //   testSerialize({
@@ -143,23 +149,11 @@ describe("RdfFile", () => {
     //     rdfFormat: "application/n-quads",
     //   }));
 
-    it("nt", () =>
-      testSerialize({
-        compressionMethod: Maybe.empty(),
-        rdfFormat: "application/n-triples",
-      }));
+    it("nt", () => testSerialize("application/n-triples"));
 
-    it("trig", () =>
-      testSerialize({
-        compressionMethod: Maybe.empty(),
-        rdfFormat: "application/trig",
-      }));
+    it("trig", () => testSerialize("application/trig"));
 
-    it("ttl", () =>
-      testSerialize({
-        compressionMethod: Maybe.empty(),
-        rdfFormat: "text/turtle",
-      }));
+    it("ttl", () => testSerialize("text/turtle"));
 
     // it("ttl.gz", () =>
     //   testSerialize({

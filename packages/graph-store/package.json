@@ -7,7 +7,7 @@
     "ts-log": "~3.0.2"
   },
   "devDependencies": {
-    "@rdfx/data-factory": "0.0.34",
+    "@rdfx/data-factory": "0.0.35",
     "@rdfjs/dataset": "~2.0.2",
     "get-stream": "~9.0.1",
     "into-stream": "~9.1.0"
@@ -35,5 +35,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.34"
+  "version": "0.0.35"
 }

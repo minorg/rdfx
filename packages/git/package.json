@@ -1,22 +1,10 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.35",
+    "@rdfx/fs": "0.0.35",
     "@rdfx/graph-store": "0.0.35",
-    "@rdfx/parsers": "0.0.35",
-    "@rdfx/serializers": "0.0.35",
-    "@rdfx/string": "0.0.35",
-    "@rdfjs/dataset": "~2.0.2",
-    "@rdfjs/prefix-map": "~0.1.2",
-    "@rdfjs/types": "~2.0.1",
-    "@types/rdfjs__dataset": "~2.0.7",
-    "@types/rdfjs__prefix-map": "~0.1.5",
-    "@types/unbzip2-stream": "~1.4.3",
-    "into-stream": "~9.1.0",
-    "mime": "~4.1.0",
-    "purify-ts": "~2.1.4",
+    "isomorphic-git": "~1.38.3",
     "ts-log": "~3.0.2",
-    "typescript-memoize": "~1.1.1",
-    "unbzip2-stream": "~1.4.3"
+    "typescript-memoize": "~1.1.1"
   },
   "devDependencies": {},
   "files": [
@@ -26,7 +14,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/fs",
+  "name": "@rdfx/git",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -38,7 +26,7 @@
     "depcheck": "depcheck .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/fs/__tests__"
+    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/git/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

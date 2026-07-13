@@ -1,5 +1,3 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import datasetFactory from "@rdfjs/dataset";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Stream } from "@rdfjs/types";
@@ -11,42 +9,53 @@ import {
 import intoStream from "into-stream";
 import { Either, EitherAsync, Left, type Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
+import { Memoize } from "typescript-memoize";
+
+import { isErrnoException } from "./ErrnoException.js";
+import type { FileSystem } from "./FileSystem.js";
+import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfFile } from "./RdfFile.js";
+import { RdfFormat } from "./RdfFormat.js";
 
 /**
  * A GraphStore implementation backed by a single RdfFile.
  */
 export class RdfFileGraphStore implements GraphStore {
-  private readonly file: RdfFile;
+  private readonly fileSystem: FileSystem;
   private readonly logger: Logger;
   private readonly prefixMap?: PrefixMap;
 
+  readonly format: RdfFormat;
+
   constructor(
-    readonly filePath: string,
+    readonly path: string,
     options?: {
-      format?: RdfFile.Format;
+      fileSystem?: FileSystem;
+      format?: RdfFormat;
       logger?: Logger;
       prefixMap?: PrefixMap;
     },
   ) {
+    this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
+    this.format = options?.format ?? RdfFormat.fromPath(path).unsafeCoerce();
     this.logger = options?.logger ?? dummyLogger;
-    this.file = options?.format
-      ? new RdfFile(this.filePath, { format: options.format })
-      : RdfFile.fromPath(this.filePath, {
-          logger: this.logger,
-        }).unsafeCoerce();
     this.prefixMap = options?.prefixMap;
   }
 
+  @Memoize()
+  private get rdfFile(): RdfFile {
+    return new RdfFile(this.path, {
+      fileSystem: this.fileSystem,
+      format: this.format,
+      logger: this.logger,
+    });
+  }
+
   async clear(): Promise<Either<Error, object>> {
-    return EitherAsync(async () => {
-      try {
-        await fs.unlink(this.filePath);
-      } catch (error) {
-        if (errorCode(error) !== "ENOENT") {
-          throw error;
-        }
-      }
+    return EitherAsync(async ({ liftEither }) => {
+      await liftEither(
+        await this.fileSystem.deleteFile(this.path, { force: true }),
+      );
       return {};
     });
   }
@@ -118,19 +127,15 @@ export class RdfFileGraphStore implements GraphStore {
   async unionDataset(): Promise<Either<Error, DatasetCore>> {
     return (
       await EitherAsync<Error, DatasetCore>(async ({ liftEither }) => {
-        this.logger.debug("parsing dataset from %s", this.filePath);
+        this.logger.debug("parsing dataset from %s", this.path);
         const dataset = await liftEither(
-          await this.file.parseInto(datasetFactory.dataset()),
+          await this.rdfFile.parseInto(datasetFactory.dataset()),
         );
-        this.logger.debug(
-          "parsed %d quads from %d",
-          dataset.size,
-          this.filePath,
-        );
+        this.logger.debug("parsed %d quads from %d", dataset.size, this.path);
         return dataset;
       })
     ).chainLeft((error) => {
-      if (errorCode(error) === "ENOENT") {
+      if (isErrnoException(error) && error.code === "ENOENT") {
         return Either.of(datasetFactory.dataset());
       } else {
         return Left(error);
@@ -151,20 +156,14 @@ export class RdfFileGraphStore implements GraphStore {
       );
 
       if (unionDataset.size === 0) {
-        try {
-          await fs.unlink(this.filePath);
-        } catch (error) {
-          if (errorCode(error) !== "ENOENT") {
-            throw error;
-          }
-        }
+        await liftEither(
+          await this.fileSystem.deleteFile(this.path, { force: true }),
+        );
         return return_;
       }
 
-      await fs.mkdir(path.dirname(this.filePath), { recursive: true });
-
       await liftEither(
-        await this.file.serialize(intoStream.object(unionDataset), {
+        await this.rdfFile.serialize(intoStream.object(unionDataset), {
           prefixes: this.prefixMap,
         }),
       );
@@ -180,10 +179,4 @@ export class RdfFileGraphStore implements GraphStore {
       (dataset) => new RdfjsDatasetGraphStore(dataset),
     );
   }
-}
-
-function errorCode(error: unknown): string | undefined {
-  return error instanceof Error && "code" in error
-    ? (error.code as string)
-    : undefined;
 }

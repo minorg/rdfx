@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.34";
+const VERSION = "0.0.35";
 
 const shaclmateVersion = "4.0.65";
 const vitestVersion = "~4.1.5";
@@ -53,6 +53,7 @@ const externalDependencies = {
   "get-stream": "~9.0.1",
   housemd: "0.1.3",
   "into-stream": "~9.1.0",
+  "isomorphic-git": "~1.38.3",
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
@@ -67,6 +68,7 @@ const externalDependencies = {
   tsx: "~4.16.2",
   turbo: "~2.5.5",
   typescript: "6.0.3",
+  "typescript-memoize": "~1.1.1",
   "unbzip2-stream": "~1.4.3",
   vitest: vitestVersion,
   "vitest-fetch-mock": "~0.4.5",
@@ -76,6 +78,7 @@ type PackageName =
   | "builder"
   | "data-factory"
   | "fs"
+  | "git"
   | "graph-store"
   | "literal"
   | "parsers"
@@ -116,6 +119,7 @@ const packageTsconfig: Tsconfig = {
     declaration: true,
     declarationMap: true,
     exactOptionalPropertyTypes: false,
+    experimentalDecorators: true,
     forceConsistentCasingInFileNames: true,
     lib: ["ES2023"],
     module: "NodeNext" as any,
@@ -179,6 +183,7 @@ const workspaces = {
           "mime",
           "purify-ts",
           "ts-log",
+          "typescript-memoize",
           "unbzip2-stream",
         ],
         internal: [
@@ -193,11 +198,16 @@ const workspaces = {
         ...packageTsconfig,
         compilerOptions: {
           ...packageTsconfig.compilerOptions,
-          module: "Node16" as any,
-          moduleResolution: "node16" as any,
           types: ["node"],
         },
       },
+    },
+    git: {
+      dependencies: {
+        external: ["isomorphic-git", "ts-log", "typescript-memoize"],
+        internal: ["fs", "graph-store"],
+      },
+      tsconfig: packageTsconfig,
     },
     "graph-store": {
       dependencies: {
@@ -536,7 +546,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 20 dev dev:tests",
+        dev: "turbo run --concurrency 22 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },
