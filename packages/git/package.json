@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "@rdfx/fs": "0.0.35",
-    "@rdfx/graph-store": "0.0.35",
+    "@rdfx/fs": "0.0.36",
+    "@rdfx/graph-store": "0.0.36",
     "isomorphic-git": "~1.38.3",
     "ts-log": "~3.0.2",
     "typescript-memoize": "~1.1.1"
@@ -30,5 +30,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.35"
+  "version": "0.0.36"
 }
