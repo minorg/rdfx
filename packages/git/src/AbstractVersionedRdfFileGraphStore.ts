@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { join, relative } from "node:path";
 import type { Readable, Writable } from "node:stream";
-import type { Quad, Stream } from "@rdfjs/types";
+import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import {
   type Dirent,
   type ErrnoException,
@@ -61,11 +61,6 @@ export abstract class AbstractVersionedRdfFileGraphStore
     return this.getVersion(identifier, version);
   }
 
-  protected abstract getVersion(
-    identifier: GraphIdentifier,
-    version: string,
-  ): Promise<Either<Error, Maybe<Stream>>>;
-
   async head(
     identifier: GraphIdentifier,
     options?: { readonly version?: string },
@@ -108,9 +103,22 @@ export abstract class AbstractVersionedRdfFileGraphStore
     return this.mutate((delegate) => delegate.put(quads));
   }
 
+  async unionDataset(): Promise<Either<Error, DatasetCore>> {
+    return this.delegate().unionDataset();
+  }
+
   protected abstract delegate(options?: {
     fileSystem?: FileSystem;
   }): RdfDirectoryGraphStore | RdfFileGraphStore;
+
+  protected abstract getVersion(
+    identifier: GraphIdentifier,
+    version: string,
+  ): Promise<Either<Error, Maybe<Stream>>>;
+
+  protected gitRelativeFilePath(path: string): string {
+    return relative(this.gitParameters.dir, path);
+  }
 
   private async mutate(
     mutator: (
@@ -255,10 +263,6 @@ export abstract class AbstractVersionedRdfFileGraphStore
 
       return { version: objectId };
     });
-  }
-
-  protected gitRelativeFilePath(path: string): string {
-    return relative(this.gitParameters.dir, path);
   }
 }
 
