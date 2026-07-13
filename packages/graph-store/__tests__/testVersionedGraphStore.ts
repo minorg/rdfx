@@ -11,6 +11,7 @@ import type { VersionedGraphStore } from "../src/VersionedGraphStore.js";
 // import { testGraphStore } from "./testGraphStore.js";
 
 export function testVersionedGraphStore<VersionT>(
+  nonExtantVersion: VersionT,
   withVersionedGraphStore: (
     use: (versionedGraphStore: VersionedGraphStore<VersionT>) => Promise<void>,
   ) => Promise<void>,
@@ -67,7 +68,7 @@ export function testVersionedGraphStore<VersionT>(
           it("version on empty store", async ({ expect }) =>
             await withVersionedGraphStore(async (sut) => {
               expect(
-                (await sut.get(graph, { version: "nosuchversion" as VersionT }))
+                (await sut.get(graph, { version: nonExtantVersion }))
                   .unsafeCoerce()
                   .isNothing(),
               ).toStrictEqual(true);
@@ -78,7 +79,7 @@ export function testVersionedGraphStore<VersionT>(
               (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
 
               expect(
-                (await sut.get(graph, { version: "nosuchversion" as VersionT }))
+                (await sut.get(graph, { version: nonExtantVersion }))
                   .unsafeCoerce()
                   .isNothing(),
               ).toStrictEqual(true);
@@ -149,7 +150,7 @@ export function testVersionedGraphStore<VersionT>(
               expect(
                 (
                   await sut.head(graph, {
-                    version: "nosuchversion" as VersionT,
+                    version: nonExtantVersion,
                   })
                 ).unsafeCoerce(),
               ).toStrictEqual(false);
@@ -162,7 +163,7 @@ export function testVersionedGraphStore<VersionT>(
               expect(
                 (
                   await sut.head(graph, {
-                    version: "nosuchversion" as VersionT,
+                    version: nonExtantVersion,
                   })
                 ).unsafeCoerce(),
               ).toStrictEqual(false);

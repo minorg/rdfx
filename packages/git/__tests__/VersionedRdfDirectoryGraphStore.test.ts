@@ -8,7 +8,7 @@ import { VersionedRdfDirectoryGraphStore } from "../src/VersionedRdfDirectoryGra
 import { logger } from "./logger.js";
 
 describe("VersionedRdfDirectoryGraphStore", () => {
-  testVersionedGraphStore(async (use) => {
+  testVersionedGraphStore("nonextantversion", async (use) => {
     await using directoryPath = await fs.promises.mkdtempDisposable(
       path.join(os.tmpdir(), "VersionedRdfDirectoryGraphStore.test"),
     );
