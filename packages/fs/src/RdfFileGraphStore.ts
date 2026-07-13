@@ -45,6 +45,7 @@ export class RdfFileGraphStore implements GraphStore {
   @Memoize()
   private get rdfFile(): RdfFile {
     return new RdfFile(this.path, {
+      fileSystem: this.fileSystem,
       format: this.format,
       logger: this.logger,
     });

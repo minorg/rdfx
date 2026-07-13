@@ -233,6 +233,10 @@ export abstract class AbstractVersionedRdfFileGraphStore
 
       await liftEither(await mutator(delegate));
 
+      if (addedFilePaths.length === 0 && removedFilePaths.length === 0) {
+        throw new Error("didn't add or remove any file paths from git");
+      }
+
       const objectId = await git.commit({
         ...gitParameters,
         author: gitParameters.author ?? {
