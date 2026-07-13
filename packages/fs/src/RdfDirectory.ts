@@ -3,13 +3,26 @@ import { Readable } from "node:stream";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { type Either, EitherAsync } from "purify-ts";
-import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
+import { dummyLogger, type Logger } from "ts-log";
+import type { FileSystem } from "./FileSystem.js";
+import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfFile } from "./RdfFile.js";
 
 /**
  * Abstraction for iterating over a directory of files with RDF data in them.
  */
-export class RdfDirectory extends AbstractRdfFileSystemEntry {
+export class RdfDirectory {
+  private readonly fileSystem: FileSystem;
+  private readonly logger: Logger;
+
+  constructor(
+    readonly path: string,
+    options?: { fileSystem?: FileSystem; logger?: Logger },
+  ) {
+    this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
+    this.logger = options?.logger ?? dummyLogger;
+  }
+
   async *files(options?: { recursive?: boolean }): AsyncGenerator<RdfFile> {
     const statEither = await this.fileSystem.stat(this.path);
     if (statEither.isLeft()) {
@@ -74,7 +87,7 @@ export class RdfDirectory extends AbstractRdfFileSystemEntry {
     }) as unknown as Stream;
   }
 
-  override async parseInto(
+  async parseInto(
     dataset: DatasetCore,
     options?: { prefixMap?: PrefixMap; recursive?: boolean },
   ): Promise<Either<Error, DatasetCore>> {

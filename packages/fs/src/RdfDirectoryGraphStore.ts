@@ -13,6 +13,9 @@ import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfDirectory } from "./RdfDirectory.js";
 import type { RdfFile } from "./RdfFile.js";
+import { uncompressedRdfFormatsByMimeType } from "./uncompressedRdfFormatsByMimeType.js";
+
+const format = uncompressedRdfFormatsByMimeType["application/n-triples"];
 
 /**
  * A GraphStore implementation backed by files in a directory.
@@ -20,6 +23,7 @@ import type { RdfFile } from "./RdfFile.js";
 export class RdfDirectoryGraphStore implements GraphStore {
   private readonly fileSystem: FileSystem;
   private readonly logger: Logger;
+  readonly format = format;
 
   constructor(
     readonly path: string,
@@ -268,4 +272,4 @@ export class RdfDirectoryGraphStore implements GraphStore {
   }
 }
 
-const parser = parsers({ dataFactory }).get("application/n-quads")!;
+const parser = parsers({ dataFactory }).get(format.mimeType)!;

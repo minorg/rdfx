@@ -1,27 +1,32 @@
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
-import type { DatasetCore, NamedNode, Quad, Stream } from "@rdfjs/types";
+import type { DatasetCore, NamedNode, Stream } from "@rdfjs/types";
 import type serializers from "@rdfx/serializers";
 import { Either, EitherAsync, Left } from "purify-ts";
-import type { Logger } from "ts-log";
-import { AbstractRdfFileSystemEntry } from "./AbstractRdfFileSystemEntry.js";
+import { dummyLogger, type Logger } from "ts-log";
 import { CompressedRdfStream } from "./CompressedRdfStream.js";
 import type { FileSystem } from "./FileSystem.js";
+import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfFormat } from "./RdfFormat.js";
+import { uncompressedRdfFormatsByMimeType } from "./uncompressedRdfFormatsByMimeType.js";
 
-export class RdfFile extends AbstractRdfFileSystemEntry {
+export class RdfFile {
   readonly format: RdfFormat;
+  private readonly fileSystem: FileSystem;
+  private readonly logger: Logger;
 
   constructor(
-    path: string,
-    {
-      format,
-      ...superParameters
-    }: {
-      format: RdfFormat;
-    } & ConstructorParameters<typeof AbstractRdfFileSystemEntry>[1],
+    readonly path: string,
+    options?: {
+      fileSystem?: FileSystem;
+      format?: RdfFormat;
+      logger?: Logger;
+    },
   ) {
-    super(path, superParameters);
-    this.format = format;
+    this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
+    this.format =
+      options?.format ??
+      uncompressedRdfFormatsByMimeType["application/n-quads"];
+    this.logger = options?.logger ?? dummyLogger;
   }
 
   static fromPath(
@@ -38,14 +43,14 @@ export class RdfFile extends AbstractRdfFileSystemEntry {
     );
   }
 
-  override parse(): Stream {
+  parse(): Stream {
     return CompressedRdfStream.parse(
       this.format,
       this.fileSystem.createReadStream(this.path),
     );
   }
 
-  override parseInto(
+  parseInto(
     dataset: DatasetCore,
     options?: { prefixMap?: PrefixMap },
   ): Promise<Either<Error, DatasetCore>> {

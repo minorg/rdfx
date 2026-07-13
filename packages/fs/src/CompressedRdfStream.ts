@@ -1,7 +1,7 @@
 import type { Readable, Transform, Writable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import zlib from "node:zlib";
-import type { Quad, Stream } from "@rdfjs/types";
+import type { Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import parsersFactory from "@rdfx/parsers";
 import serializers from "@rdfx/serializers";

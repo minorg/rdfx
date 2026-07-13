@@ -7,15 +7,9 @@ import type { CompressedRdfFormat } from "./CompressedRdfFormat.js";
 import type { CompressionMethod } from "./CompressionMethod.js";
 import { compressionMethods } from "./compressionMethods.js";
 import type { UncompressedRdfFormat } from "./UncompressedRdfFormat.js";
-import { uncompressedRdfFormats } from "./uncompressedRdfFormats.js";
+import { uncompressedRdfFormatsByMimeType } from "./uncompressedRdfFormatsByMimeType.js";
 
 const compressionMethodsSet = new Set<string>(compressionMethods);
-const uncompressedRdfFormatsMap = new Map<string, UncompressedRdfFormat>(
-  uncompressedRdfFormats.map((uncompressedRdfFormat) => [
-    uncompressedRdfFormat.mimeType,
-    uncompressedRdfFormat,
-  ]),
-);
 
 const mime = new Mime(standardMimeTypes, otherMimeTypes, {
   "application/x-brotli": ["br"],
@@ -43,8 +37,12 @@ export namespace RdfFormat {
         );
       }
 
-      const uncompressedRdfFormat =
-        uncompressedRdfFormatsMap.get(uncompressedMimeType);
+      const uncompressedRdfFormat = (
+        uncompressedRdfFormatsByMimeType as Record<
+          string,
+          UncompressedRdfFormat
+        >
+      )[uncompressedMimeType];
       if (uncompressedRdfFormat === undefined) {
         return Left(
           new Error(
@@ -61,7 +59,9 @@ export namespace RdfFormat {
       } satisfies CompressedRdfFormat);
     }
 
-    const uncompressedRdfFormat = uncompressedRdfFormatsMap.get(mimeType);
+    const uncompressedRdfFormat = (
+      uncompressedRdfFormatsByMimeType as Record<string, UncompressedRdfFormat>
+    )[mimeType];
     if (uncompressedRdfFormat === undefined) {
       return Left(
         new Error(`${filePath} has a non-RDF MIME type: ${mimeType}`),

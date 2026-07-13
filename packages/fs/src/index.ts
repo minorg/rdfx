@@ -15,3 +15,4 @@ export * from "./RdfFormat.js";
 export * from "./Stat.js";
 export * from "./UncompressedRdfFormat.js";
 export * from "./uncompressedRdfFormats.js";
+export * from "./uncompressedRdfFormatsByMimeType.js";
