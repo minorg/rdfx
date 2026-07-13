@@ -13,25 +13,25 @@ export class NodeFileSystem implements FileSystem {
 
   protected constructor() {}
 
-  async createDirectory(
-    path: string,
-    options?: { recursive?: boolean },
-  ): Promise<Either<ErrnoException, void>> {
-    return EitherAsync(async () => {
-      await fs.promises.mkdir(path, options);
-    });
-  }
+  // async createDirectory(
+  //   path: string,
+  //   options?: { recursive?: boolean },
+  // ): Promise<Either<ErrnoException, void>> {
+  //   return EitherAsync(async () => {
+  //     await fs.promises.mkdir(path, options);
+  //   });
+  // }
 
   createReadStream(path: string): Readable {
     return fs.createReadStream(path);
   }
 
-  async deleteDirectory(
-    path: string,
-    options?: { force?: boolean; recursive?: boolean },
-  ): Promise<Either<ErrnoException, void>> {
-    return EitherAsync(() => fs.promises.rm(path, options));
-  }
+  // async deleteDirectory(
+  //   path: string,
+  //   options?: { force?: boolean; recursive?: boolean },
+  // ): Promise<Either<ErrnoException, void>> {
+  //   return EitherAsync(() => fs.promises.rm(path, options));
+  // }
 
   async deleteFile(
     path: string,

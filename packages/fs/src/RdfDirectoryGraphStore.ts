@@ -14,6 +14,7 @@ import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfDirectory } from "./RdfDirectory.js";
 import type { RdfFile } from "./RdfFile.js";
+import { RdfFormat } from "./RdfFormat.js";
 import { uncompressedRdfFormatsByMimeType } from "./uncompressedRdfFormatsByMimeType.js";
 
 /**
@@ -39,12 +40,20 @@ export class RdfDirectoryGraphStore implements GraphStore {
 
   async clear(): Promise<Either<Error, object>> {
     return EitherAsync(async ({ liftEither }) => {
-      await liftEither(
-        await this.fileSystem.deleteDirectory(this.path, {
-          force: true,
-          recursive: true,
-        }),
-      );
+      for (const dirent of await liftEither(
+        await this.fileSystem.readDirectory(this.path, { recursive: true }),
+      )) {
+        if (!dirent.isFile()) {
+          continue;
+        }
+        const direntPath = path.join(dirent.parentPath, dirent.name);
+        const formatEither = RdfFormat.fromPath(direntPath);
+        if (formatEither.isLeft()) {
+          this.logger.debug("%s is not an RDF file, ignoring", direntPath);
+          continue;
+        }
+        await liftEither(await this.fileSystem.deleteFile(direntPath));
+      }
       return {};
     });
   }
@@ -235,9 +244,6 @@ export class RdfDirectoryGraphStore implements GraphStore {
         graphIdentifierString,
         ntriples,
       ] of ntriplesByGraphIdentifier.entries()) {
-        await liftEither(
-          await this.fileSystem.createDirectory(this.path, { recursive: true }),
-        );
         const graphFilePath = this.graphFilePath(graphIdentifierString);
 
         if (method === "post") {

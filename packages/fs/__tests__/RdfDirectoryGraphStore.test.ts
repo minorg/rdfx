@@ -7,30 +7,15 @@ import { RdfDirectoryGraphStore } from "../src/RdfDirectoryGraphStore.js";
 import { logger } from "./logger.js";
 
 describe("RdfDirectoryGraphStore", () => {
-  describe("test data (existing directory)", () => {
-    testGraphStore(async (use) => {
-      await using directoryPath = await fs.mkdtempDisposable(
-        path.join(os.tmpdir(), "RdfDirectoryGraphStore.test"),
-      );
-      const ignoreFileHandle = await fs.open(
-        path.join(directoryPath.path, "README.md"),
-        "w+",
-      );
-      await ignoreFileHandle.close();
-      await use(new RdfDirectoryGraphStore(directoryPath.path, { logger }));
-    });
-  });
-
-  describe("test data (non-extant directory)", () => {
-    testGraphStore(async (use) => {
-      await using directoryPath = await fs.mkdtempDisposable(
-        path.join(os.tmpdir(), "RdfDirectoryGraphStore.test"),
-      );
-      await use(
-        new RdfDirectoryGraphStore(path.join(directoryPath.path, "nonextant"), {
-          logger,
-        }),
-      );
-    });
+  testGraphStore(async (use) => {
+    await using directoryPath = await fs.mkdtempDisposable(
+      path.join(os.tmpdir(), "RdfDirectoryGraphStore.test"),
+    );
+    const ignoreFileHandle = await fs.open(
+      path.join(directoryPath.path, "README.md"),
+      "w+",
+    );
+    await ignoreFileHandle.close();
+    await use(new RdfDirectoryGraphStore(directoryPath.path, { logger }));
   });
 });

@@ -14,10 +14,10 @@ export interface FileSystem {
    * @param path path to the new directory
    * @param recursive: create any parent directories as necessary
    */
-  createDirectory(
-    path: string,
-    options?: FileSystem.CreateDirectoryOptions,
-  ): Promise<Either<ErrnoException, void>>;
+  // createDirectory(
+  //   path: string,
+  //   options?: FileSystem.CreateDirectoryOptions,
+  // ): Promise<Either<ErrnoException, void>>;
 
   /**
    * Delete a directory.
@@ -26,10 +26,10 @@ export interface FileSystem {
    * @param force ignore ENOENT errors
    * @param recursive: recursively delete files and subdirectories in the directory
    */
-  deleteDirectory(
-    path: string,
-    options?: FileSystem.DeleteDirectoryOptions,
-  ): Promise<Either<ErrnoException, void>>;
+  // deleteDirectory(
+  //   path: string,
+  //   options?: FileSystem.DeleteDirectoryOptions,
+  // ): Promise<Either<ErrnoException, void>>;
 
   /**
    * Delete a file (unlink).

@@ -1,4 +1,3 @@
-import path from "node:path";
 import datasetFactory from "@rdfjs/dataset";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Stream } from "@rdfjs/types";
@@ -161,12 +160,6 @@ export class RdfFileGraphStore implements GraphStore {
         );
         return return_;
       }
-
-      await liftEither(
-        await this.fileSystem.createDirectory(path.dirname(this.path), {
-          recursive: true,
-        }),
-      );
 
       await liftEither(
         await this.rdfFile.serialize(intoStream.object(unionDataset), {
