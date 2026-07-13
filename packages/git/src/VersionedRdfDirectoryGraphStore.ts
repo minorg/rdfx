@@ -14,16 +14,15 @@ import { AbstractVersionedRdfFileGraphStore } from "./AbstractVersionedRdfFileGr
 export class VersionedRdfDirectoryGraphStore extends AbstractVersionedRdfFileGraphStore {
   constructor(
     path: string,
-    options?: ConstructorParameters<
-      typeof AbstractVersionedRdfFileGraphStore
-    >[0],
+    options?: Partial<
+      ConstructorParameters<typeof AbstractVersionedRdfFileGraphStore>[1]
+    >,
   ) {
-    super({
+    super(path, {
       gitParameters: options?.gitParameters ?? {
         dir: path,
       },
       logger: options?.logger,
-      path,
     });
   }
 

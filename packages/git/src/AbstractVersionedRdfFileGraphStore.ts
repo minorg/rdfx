@@ -22,23 +22,21 @@ export abstract class AbstractVersionedRdfFileGraphStore
   protected readonly gitParameters: GitParameters;
   protected readonly logger: Logger;
 
-  readonly path: string;
-
-  constructor({
-    gitParameters,
-    logger,
-    path,
-  }: {
-    gitParameters: Omit<GitParameters, "fs">;
-    logger?: Logger;
-    path: string;
-  }) {
+  constructor(
+    readonly path: string,
+    {
+      gitParameters,
+      logger,
+    }: {
+      gitParameters: Omit<GitParameters, "fs">;
+      logger?: Logger;
+    },
+  ) {
     this.gitParameters = {
       ...gitParameters,
       fs,
     };
     this.logger = logger ?? dummyLogger;
-    this.path = path;
   }
 
   async clear(): Promise<Either<Error, { readonly version: string }>> {

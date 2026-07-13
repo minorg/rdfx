@@ -19,16 +19,15 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
 
   constructor(
     path: string,
-    options?: ConstructorParameters<
-      typeof AbstractVersionedRdfFileGraphStore
-    >[0] & { format?: RdfFormat },
+    options?: Partial<
+      ConstructorParameters<typeof AbstractVersionedRdfFileGraphStore>[1]
+    > & { format?: RdfFormat },
   ) {
-    super({
+    super(path, {
       gitParameters: options?.gitParameters ?? {
         dir: dirname(path),
       },
       logger: options?.logger,
-      path,
     });
     this.format = options?.format ?? RdfFormat.fromPath(path).unsafeCoerce();
   }
