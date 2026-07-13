@@ -1,21 +1,22 @@
 import { Readable } from "node:stream";
 import type { Quad, Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
-import { CompressedRdfStream, RdfDirectoryGraphStore } from "@rdfx/fs";
+import {
+  CompressedRdfStream,
+  type FileSystem,
+  RdfDirectoryGraphStore,
+} from "@rdfx/fs";
 import type { GraphIdentifier } from "@rdfx/graph-store";
 import * as git from "isomorphic-git";
 import { type Either, EitherAsync, Maybe } from "purify-ts";
-import type { Logger } from "ts-log";
-import { Memoize } from "typescript-memoize";
 import { AbstractVersionedRdfFileGraphStore } from "./AbstractVersionedRdfFileGraphStore.js";
 
 export class VersionedRdfDirectoryGraphStore extends AbstractVersionedRdfFileGraphStore {
   constructor(
     path: string,
-    options?: {
-      gitParameters?: AbstractVersionedRdfFileGraphStore.GitParameters;
-      logger?: Logger;
-    },
+    options?: ConstructorParameters<
+      typeof AbstractVersionedRdfFileGraphStore
+    >[0],
   ) {
     super({
       gitParameters: options?.gitParameters ?? {
@@ -26,15 +27,10 @@ export class VersionedRdfDirectoryGraphStore extends AbstractVersionedRdfFileGra
     });
   }
 
-  override async get(
+  protected override async getVersion(
     identifier: GraphIdentifier,
-    options?: { readonly version?: string },
+    version: string,
   ): Promise<Either<Error, Maybe<Stream>>> {
-    const version = options?.version;
-    if (!version) {
-      return this.delegate.get(identifier);
-    }
-
     return EitherAsync<Error, Maybe<Stream>>(async () => {
       let blob: Uint8Array;
       try {
@@ -42,8 +38,8 @@ export class VersionedRdfDirectoryGraphStore extends AbstractVersionedRdfFileGra
           await git.readBlob({
             ...this.gitParameters,
             oid: version,
-            filepath: this.fileSystem.gitRelativeFilePath(
-              this.delegate.graphFilePath(identifier),
+            filepath: this.gitRelativeFilePath(
+              this.delegate().graphFilePath(identifier),
             ),
           })
         ).blob;
@@ -56,7 +52,7 @@ export class VersionedRdfDirectoryGraphStore extends AbstractVersionedRdfFileGra
       }
 
       const stream = CompressedRdfStream.parse(
-        RdfDirectoryGraphStore.format,
+        RdfDirectoryGraphStore.fileFormat,
         Readable.from(Buffer.from(blob)),
       );
 
@@ -75,10 +71,11 @@ export class VersionedRdfDirectoryGraphStore extends AbstractVersionedRdfFileGra
     });
   }
 
-  @Memoize()
-  protected get delegate(): RdfDirectoryGraphStore {
+  protected delegate(options?: {
+    fileSystem?: FileSystem;
+  }): RdfDirectoryGraphStore {
     return new RdfDirectoryGraphStore(this.path, {
-      fileSystem: this.fileSystem,
+      ...options,
       logger: this.logger,
     });
   }

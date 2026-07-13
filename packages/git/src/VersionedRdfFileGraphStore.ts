@@ -1,12 +1,17 @@
 import { dirname } from "node:path";
 import { Readable } from "node:stream";
 import type { Quad, Stream } from "@rdfjs/types";
-import { CompressedRdfStream, RdfFileGraphStore, RdfFormat } from "@rdfx/fs";
+import {
+  CompressedRdfStream,
+  type FileSystem,
+  RdfFileGraphStore,
+  RdfFormat,
+} from "@rdfx/fs";
 import type { GraphIdentifier } from "@rdfx/graph-store";
 import * as git from "isomorphic-git";
 import { type Either, EitherAsync, Maybe } from "purify-ts";
-import type { Logger } from "ts-log";
 import { Memoize } from "typescript-memoize";
+
 import { AbstractVersionedRdfFileGraphStore } from "./AbstractVersionedRdfFileGraphStore.js";
 
 export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphStore {
@@ -14,11 +19,9 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
 
   constructor(
     path: string,
-    options?: {
-      format?: RdfFormat;
-      gitParameters?: AbstractVersionedRdfFileGraphStore.GitParameters;
-      logger?: Logger;
-    },
+    options?: ConstructorParameters<
+      typeof AbstractVersionedRdfFileGraphStore
+    >[0] & { format?: RdfFormat },
   ) {
     super({
       gitParameters: options?.gitParameters ?? {
@@ -31,23 +34,18 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
   }
 
   @Memoize()
-  protected get delegate(): RdfFileGraphStore {
+  protected delegate(options?: { fileSystem?: FileSystem }): RdfFileGraphStore {
     return new RdfFileGraphStore(this.path, {
-      fileSystem: this.fileSystem,
+      ...options,
       format: this.format,
       logger: this.logger,
     });
   }
 
-  override async get(
+  protected override async getVersion(
     identifier: GraphIdentifier,
-    options?: { readonly version?: string },
+    version: string,
   ): Promise<Either<Error, Maybe<Stream>>> {
-    const version = options?.version;
-    if (!version) {
-      return this.delegate.get(identifier);
-    }
-
     return EitherAsync<Error, Maybe<Stream>>(async () => {
       let blob: Uint8Array;
       try {
@@ -55,7 +53,7 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
           await git.readBlob({
             ...this.gitParameters,
             oid: version,
-            filepath: this.fileSystem.gitRelativeFilePath(this.path),
+            filepath: this.gitRelativeFilePath(this.path),
           })
         ).blob;
       } catch (error) {
