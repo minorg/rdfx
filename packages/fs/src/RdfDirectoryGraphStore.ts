@@ -9,13 +9,11 @@ import parsers from "@rdfx/parsers";
 import { NTriplesTerm } from "@rdfx/string";
 import { Either, EitherAsync, Left, Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
+
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfDirectory } from "./RdfDirectory.js";
 import type { RdfFile } from "./RdfFile.js";
-import { uncompressedRdfFormatsByMimeType } from "./uncompressedRdfFormatsByMimeType.js";
-
-const format = uncompressedRdfFormatsByMimeType["application/n-triples"];
 
 /**
  * A GraphStore implementation backed by files in a directory.
@@ -23,7 +21,6 @@ const format = uncompressedRdfFormatsByMimeType["application/n-triples"];
 export class RdfDirectoryGraphStore implements GraphStore {
   private readonly fileSystem: FileSystem;
   private readonly logger: Logger;
-  readonly format = format;
 
   constructor(
     readonly path: string,
@@ -83,6 +80,19 @@ export class RdfDirectoryGraphStore implements GraphStore {
             ),
       );
     });
+  }
+
+  graphFilePath(identifier: GraphIdentifier | string): string {
+    const identifierString =
+      typeof identifier === "object"
+        ? GraphIdentifier.stringify(identifier)
+        : identifier;
+    return path.join(
+      this.path,
+      identifierString.length === 0
+        ? "default.nq"
+        : `${Buffer.from(identifierString).toString("base64url")}.nq`,
+    );
   }
 
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
@@ -191,19 +201,6 @@ export class RdfDirectoryGraphStore implements GraphStore {
     }
   }
 
-  private graphFilePath(identifier: GraphIdentifier | string): string {
-    const identifierString =
-      typeof identifier === "object"
-        ? GraphIdentifier.stringify(identifier)
-        : identifier;
-    return path.join(
-      this.path,
-      identifierString.length === 0
-        ? "default.nq"
-        : `${Buffer.from(identifierString).toString("base64url")}.nq`,
-    );
-  }
-
   private async postOrPut(
     method: "post" | "put",
     quads: Stream,
@@ -272,4 +269,4 @@ export class RdfDirectoryGraphStore implements GraphStore {
   }
 }
 
-const parser = parsers({ dataFactory }).get(format.mimeType)!;
+const parser = parsers({ dataFactory }).get("application/n-triples")!;

@@ -1,6 +1,6 @@
 import { dirname } from "node:path";
 import { Readable } from "node:stream";
-import type { Stream } from "@rdfjs/types";
+import type { Quad, Stream } from "@rdfjs/types";
 import { CompressedRdfStream, RdfFileGraphStore, RdfFormat } from "@rdfx/fs";
 import type { GraphIdentifier } from "@rdfx/graph-store";
 import * as git from "isomorphic-git";
@@ -41,7 +41,7 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
 
   override async get(
     identifier: GraphIdentifier,
-    options?: { readonly version?: string } | undefined,
+    options?: { readonly version?: string },
   ): Promise<Either<Error, Maybe<Stream>>> {
     const version = options?.version;
     if (!version) {
@@ -55,7 +55,7 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
           await git.readBlob({
             ...this.gitParameters,
             oid: version,
-            filepath: this.fileSystem.gitFilePath(this.path),
+            filepath: this.fileSystem.gitRelativeFilePath(this.path),
           })
         ).blob;
       } catch (error) {
@@ -65,39 +65,15 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
           throw error;
         }
       }
+
       return Maybe.of(
-        CompressedRdfStream.parse(
-          this.format,
-          Readable.from(Buffer.from(blob)),
-        ),
+        (
+          CompressedRdfStream.parse(
+            this.format,
+            Readable.from(Buffer.from(blob)),
+          ) as Readable
+        ).filter((quad: Quad) => quad.graph.equals(identifier)),
       );
-    });
-  }
-
-  override async head(
-    identifier: GraphIdentifier,
-    options?: { readonly version?: string } | undefined,
-  ): Promise<Either<Error, boolean>> {
-    const version = options?.version;
-    if (!version) {
-      return this.delegate.head(identifier);
-    }
-
-    return EitherAsync<Error, boolean>(async () => {
-      try {
-        await git.readBlob({
-          ...this.gitParameters,
-          oid: version,
-          filepath: this.fileSystem.gitFilePath(this.path),
-        });
-        return true;
-      } catch (error) {
-        if (error instanceof git.Errors.NotFoundError) {
-          return false;
-        } else {
-          throw error;
-        }
-      }
     });
   }
 }

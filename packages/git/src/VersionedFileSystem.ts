@@ -51,7 +51,7 @@ export class VersionedFileSystem implements FileSystem {
       for (const filePath of filePaths) {
         await git.remove({
           ...this.gitParameters,
-          filepath: this.gitFilePath(filePath),
+          filepath: this.gitRelativeFilePath(filePath),
         });
       }
     });
@@ -65,12 +65,12 @@ export class VersionedFileSystem implements FileSystem {
       await liftEither(await this.delegate.deleteFile(path, options));
       await git.remove({
         ...this.gitParameters,
-        filepath: this.gitFilePath(path),
+        filepath: this.gitRelativeFilePath(path),
       });
     });
   }
 
-  gitFilePath(path: string): string {
+  gitRelativeFilePath(path: string): string {
     return relative(this.gitParameters.dir, path);
   }
 
@@ -101,7 +101,7 @@ export class VersionedFileSystem implements FileSystem {
       await liftEither(await this.delegate.writeFile(path, data));
       await git.add({
         ...this.gitParameters,
-        filepath: this.gitFilePath(path),
+        filepath: this.gitRelativeFilePath(path),
       });
     });
   }
@@ -116,7 +116,7 @@ export class VersionedFileSystem implements FileSystem {
       );
       await git.add({
         ...this.gitParameters,
-        filepath: this.gitFilePath(path),
+        filepath: this.gitRelativeFilePath(path),
       });
       return result;
     });

@@ -1,4 +1,5 @@
-import type { Stream } from "@rdfjs/types";
+import type { Readable } from "node:stream";
+import type { Quad, Stream } from "@rdfjs/types";
 import {
   NodeFileSystem,
   type RdfDirectoryGraphStore,
@@ -6,10 +7,8 @@ import {
 } from "@rdfx/fs";
 import type { GraphIdentifier, VersionedGraphStore } from "@rdfx/graph-store";
 import * as git from "isomorphic-git";
-
 import { type Either, EitherAsync, type Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
-
 import { VersionedFileSystem } from "./VersionedFileSystem.js";
 
 export abstract class AbstractVersionedRdfFileGraphStore
@@ -65,13 +64,29 @@ export abstract class AbstractVersionedRdfFileGraphStore
 
   abstract get(
     identifier: GraphIdentifier,
-    options?: { readonly version?: string | undefined } | undefined,
+    options?: { readonly version?: string },
   ): Promise<Either<Error, Maybe<Stream>>>;
 
-  abstract head(
+  async head(
     identifier: GraphIdentifier,
-    options?: { readonly version?: string | undefined } | undefined,
-  ): Promise<Either<Error, boolean>>;
+    options?: { readonly version?: string },
+  ): Promise<Either<Error, boolean>> {
+    if (!options?.version) {
+      return this.delegate.head(identifier);
+    }
+
+    return EitherAsync(async ({ liftEither }) => {
+      const stream = (
+        await liftEither(await this.get(identifier, options))
+      ).extract();
+      if (!stream) {
+        return false;
+      }
+      return await (stream as Readable).some((quad: Quad) =>
+        quad.graph.equals(identifier),
+      );
+    });
+  }
 
   identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>> {
     return this.delegate.identifiers();
