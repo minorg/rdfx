@@ -8,7 +8,7 @@ import type { GraphStore } from "./GraphStore.js";
  * A GraphStore implementation backed by an RDF/JS Dataset.
  */
 export class RdfjsDatasetGraphStore implements GraphStore {
-  constructor(private readonly dataset: DatasetCore) {}
+  constructor(protected readonly dataset: DatasetCore) {}
 
   async clear(): Promise<Either<Error, object>> {
     return EitherAsync(async () => {
