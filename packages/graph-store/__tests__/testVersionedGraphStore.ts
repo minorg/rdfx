@@ -1,11 +1,9 @@
-import type { BaseQuad, DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
+import type { DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import "@rdfx/testing";
 
-import type { Readable } from "node:stream";
-import { getStreamAsArray } from "get-stream";
-import intoStream from "into-stream";
+import { iterableToStream, streamToArray } from "@rdfx/stream";
 import { describe, it } from "vitest";
 import type { VersionedGraphStore } from "../src/VersionedGraphStore.js";
 // import { testGraphStore } from "./testGraphStore.js";
@@ -39,7 +37,7 @@ export function testVersionedGraphStore<VersionT>(
         it("clear", async ({ expect }) => {
           await withVersionedGraphStore(async (sut) => {
             const { version: versionAfterPut } = (
-              await sut.put(intoStream.object([quad()]))
+              await sut.put(iterableToStream([quad()]))
             ).unsafeCoerce();
 
             const { version: versionAfterClear } = (
@@ -53,7 +51,7 @@ export function testVersionedGraphStore<VersionT>(
         it("delete", async ({ expect }) => {
           await withVersionedGraphStore(async (sut) => {
             const { version: versionAfterPut } = (
-              await sut.put(intoStream.object([quad()]))
+              await sut.put(iterableToStream([quad()]))
             ).unsafeCoerce();
 
             const { version: versionAfterDelete } = (
@@ -76,7 +74,7 @@ export function testVersionedGraphStore<VersionT>(
 
           it("version that didn't come back from write", async ({ expect }) =>
             await withVersionedGraphStore(async (sut) => {
-              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              (await sut.put(iterableToStream([quad()]))).unsafeCoerce();
 
               expect(
                 (await sut.get(graph, { version: nonExtantVersion }))
@@ -87,7 +85,7 @@ export function testVersionedGraphStore<VersionT>(
 
           it("version returned by delete", async ({ expect }) =>
             await withVersionedGraphStore(async (sut) => {
-              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              (await sut.put(iterableToStream([quad()]))).unsafeCoerce();
 
               const { version: versionAfterDelete } = (
                 await sut.delete(graph)
@@ -104,18 +102,22 @@ export function testVersionedGraphStore<VersionT>(
             await withVersionedGraphStore(async (sut) => {
               const expectedQuad = quad();
               const { version: versionAfterPut } = (
-                await sut.put(intoStream.object([expectedQuad]))
+                await sut.put(iterableToStream([expectedQuad]))
               ).unsafeCoerce();
 
               const expectedDataset = datasetFactory.dataset([expectedQuad]);
               const actualDataset = datasetFactory.dataset(
-                (await getStreamAsArray(
-                  (
-                    await sut.get(graph, { version: versionAfterPut })
+                (
+                  await streamToArray(
+                    (
+                      await sut.get(graph, { version: versionAfterPut })
+                    )
+                      .unsafeCoerce()
+                      .unsafeCoerce(),
                   )
-                    .unsafeCoerce()
-                    .unsafeCoerce() as Readable,
-                )) as BaseQuad[],
+                )
+                  .unsafeCoerce()
+                  .concat(),
               );
               expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
             }));
@@ -124,7 +126,7 @@ export function testVersionedGraphStore<VersionT>(
             await withVersionedGraphStore(async (sut) => {
               const expectedQuad = quad();
               const { version: versionAfterPut } = (
-                await sut.put(intoStream.object([expectedQuad]))
+                await sut.put(iterableToStream([expectedQuad]))
               ).unsafeCoerce();
 
               (await sut.delete(graph)).unsafeCoerce();
@@ -132,13 +134,17 @@ export function testVersionedGraphStore<VersionT>(
 
               const expectedDataset = datasetFactory.dataset([expectedQuad]);
               const actualDataset = datasetFactory.dataset(
-                (await getStreamAsArray(
-                  (
-                    await sut.get(graph, { version: versionAfterPut })
+                (
+                  await streamToArray(
+                    (
+                      await sut.get(graph, { version: versionAfterPut })
+                    )
+                      .unsafeCoerce()
+                      .unsafeCoerce(),
                   )
-                    .unsafeCoerce()
-                    .unsafeCoerce() as Readable,
-                )) as BaseQuad[],
+                )
+                  .unsafeCoerce()
+                  .concat(),
               );
               expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
             }));
@@ -158,7 +164,7 @@ export function testVersionedGraphStore<VersionT>(
 
           it("version that didn't come back from write", async ({ expect }) =>
             await withVersionedGraphStore(async (sut) => {
-              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              (await sut.put(iterableToStream([quad()]))).unsafeCoerce();
 
               expect(
                 (
@@ -171,7 +177,7 @@ export function testVersionedGraphStore<VersionT>(
 
           it("version returned by delete", async ({ expect }) =>
             await withVersionedGraphStore(async (sut) => {
-              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              (await sut.put(iterableToStream([quad()]))).unsafeCoerce();
 
               const { version: versionAfterDelete } = (
                 await sut.delete(graph)
@@ -188,7 +194,7 @@ export function testVersionedGraphStore<VersionT>(
             await withVersionedGraphStore(async (sut) => {
               const expectedQuad = quad();
               const { version: versionAfterPut } = (
-                await sut.put(intoStream.object([expectedQuad]))
+                await sut.put(iterableToStream([expectedQuad]))
               ).unsafeCoerce();
               expect(
                 (
@@ -200,7 +206,7 @@ export function testVersionedGraphStore<VersionT>(
           it("version returned by put, after delete", async ({ expect }) =>
             await withVersionedGraphStore(async (sut) => {
               const { version: versionAfterPut } = (
-                await sut.put(intoStream.object([quad()]))
+                await sut.put(iterableToStream([quad()]))
               ).unsafeCoerce();
 
               (await sut.delete(graph)).unsafeCoerce();

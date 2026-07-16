@@ -1,11 +1,9 @@
-import type { BaseQuad, DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
+import type { DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import "@rdfx/testing";
+import { iterableToStream, streamToArray } from "@rdfx/stream";
 
-import { getStreamAsArray } from "get-stream";
-import intoStream from "into-stream";
-import type { Readable } from "readable-stream";
 import { describe, it } from "vitest";
 
 import type { GraphStore } from "../src/GraphStore.js";
@@ -44,7 +42,7 @@ export function testGraphStore(
           it("on populated store", async ({ expect }) =>
             await withGraphStore(async (sut) => {
               expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(true);
-              await sut.put(intoStream.object([quad()]));
+              await sut.put(iterableToStream([quad()]));
               expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(false);
               await sut.clear();
               expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(true);
@@ -59,7 +57,7 @@ export function testGraphStore(
 
           it("on populated store", async ({ expect }) =>
             await withGraphStore(async (sut) => {
-              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              (await sut.put(iterableToStream([quad()]))).unsafeCoerce();
               expect((await sut.head(graph)).unsafeCoerce()).toStrictEqual(
                 true,
               );
@@ -81,16 +79,16 @@ export function testGraphStore(
           it("on populated store", async ({ expect }) =>
             await withGraphStore(async (sut) => {
               const expectedQuad = quad();
-              (await sut.put(intoStream.object([expectedQuad]))).unsafeCoerce();
+              (await sut.put(iterableToStream([expectedQuad]))).unsafeCoerce();
               const expectedDataset = datasetFactory.dataset([expectedQuad]);
               const actualDataset = datasetFactory.dataset(
-                (await getStreamAsArray(
-                  (
-                    await sut.get(graph)
+                (
+                  await streamToArray(
+                    (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
                   )
-                    .unsafeCoerce()
-                    .unsafeCoerce() as Readable,
-                )) as BaseQuad[],
+                )
+                  .unsafeCoerce()
+                  .concat(),
               );
               expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
             }));
@@ -106,7 +104,7 @@ export function testGraphStore(
 
           it("on populated store", async ({ expect }) =>
             await withGraphStore(async (sut) => {
-              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              (await sut.put(iterableToStream([quad()]))).unsafeCoerce();
               expect((await sut.head(graph)).unsafeCoerce()).toStrictEqual(
                 true,
               );
@@ -121,7 +119,7 @@ export function testGraphStore(
 
           it("on populated store", async ({ expect }) =>
             await withGraphStore(async (sut) => {
-              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              (await sut.put(iterableToStream([quad()]))).unsafeCoerce();
               expect(
                 (await sut.identifiers()).unsafeCoerce(),
               ).toEqualRdfTermArray([graph]);
@@ -137,7 +135,7 @@ export function testGraphStore(
           it("on populated store", async ({ expect }) =>
             await withGraphStore(async (sut) => {
               expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(true);
-              (await sut.put(intoStream.object([quad()]))).unsafeCoerce();
+              (await sut.put(iterableToStream([quad()]))).unsafeCoerce();
               expect((await sut.isEmpty()).unsafeCoerce()).toStrictEqual(false);
             }));
         });
@@ -147,28 +145,20 @@ export function testGraphStore(
             const expectedQuad0 = quad(0);
             const expectedQuad1 = quad(1);
 
-            (await sut.post(intoStream.object([expectedQuad0]))).unsafeCoerce();
+            (await sut.post(iterableToStream([expectedQuad0]))).unsafeCoerce();
 
             expect(
-              (await getStreamAsArray(
-                (
-                  await sut.get(graph)
-                )
-                  .unsafeCoerce()
-                  .unsafeCoerce() as Readable,
-              )) as Quad[],
+              await streamToArray(
+                (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
+              ),
             ).toEqualRdfQuadArray([expectedQuad0]);
 
-            (await sut.post(intoStream.object([expectedQuad1]))).unsafeCoerce();
+            (await sut.post(iterableToStream([expectedQuad1]))).unsafeCoerce();
 
             expect(
-              (await getStreamAsArray(
-                (
-                  await sut.get(graph)
-                )
-                  .unsafeCoerce()
-                  .unsafeCoerce() as Readable,
-              )) as Quad[],
+              await streamToArray(
+                (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
+              ),
             ).toBeRdfIsomorphic([expectedQuad0, expectedQuad1]);
           }));
 
@@ -177,28 +167,20 @@ export function testGraphStore(
             const expectedQuad0 = quad(0);
             const expectedQuad1 = quad(1);
 
-            (await sut.put(intoStream.object([expectedQuad0]))).unsafeCoerce();
+            (await sut.put(iterableToStream([expectedQuad0]))).unsafeCoerce();
 
             expect(
-              (await getStreamAsArray(
-                (
-                  await sut.get(graph)
-                )
-                  .unsafeCoerce()
-                  .unsafeCoerce() as Readable,
-              )) as Quad[],
+              await streamToArray(
+                (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
+              ),
             ).toEqualRdfQuadArray([expectedQuad0]);
 
-            (await sut.put(intoStream.object([expectedQuad1]))).unsafeCoerce();
+            (await sut.put(iterableToStream([expectedQuad1]))).unsafeCoerce();
 
             expect(
-              (await getStreamAsArray(
-                (
-                  await sut.get(graph)
-                )
-                  .unsafeCoerce()
-                  .unsafeCoerce() as Readable,
-              )) as Quad[],
+              await streamToArray(
+                (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
+              ),
             ).toEqualRdfQuadArray([expectedQuad1]);
           }));
       },

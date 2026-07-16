@@ -25,9 +25,7 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
-    "dev": "tsc -w --preserveWatchOutput",
-    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/stream/__tests__"
+    "dev": "tsc -w --preserveWatchOutput"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { RdfFile } from "../src/RdfFile.js";
 import { testDataDirPath } from "./paths.js";
 import "@rdfx/testing";
-import intoStream from "into-stream";
+import { iterableToStream } from "@rdfx/stream";
 import { RdfFormat } from "../src/RdfFormat.js";
 import type { UncompressedRdfFormat } from "../src/UncompressedRdfFormat.js";
 import { uncompressedRdfFormats } from "../src/uncompressedRdfFormats.js";
@@ -103,7 +103,7 @@ describe("RdfFile", () => {
         case "text/n3": {
           const expectedDataset = datasetFactory.dataset([expectedQuad]);
           (
-            await tempFile.serialize(intoStream.object(expectedDataset), {
+            await tempFile.serialize(iterableToStream(expectedDataset), {
               prefixes,
             })
           ).unsafeCoerce();
@@ -121,7 +121,7 @@ describe("RdfFile", () => {
             expectedQuad.object,
           );
           (
-            await tempFile.serialize(intoStream.object([expectedTriple]), {
+            await tempFile.serialize(iterableToStream([expectedTriple]), {
               prefixes,
             })
           ).unsafeCoerce();

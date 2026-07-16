@@ -5,6 +5,7 @@
     "@rdfx/graph-store": "0.0.37",
     "@rdfx/parsers": "0.0.37",
     "@rdfx/serializers": "0.0.37",
+    "@rdfx/stream": "0.0.37",
     "@rdfx/string": "0.0.37",
     "@rdfjs/types": "~2.0.1",
     "@types/node": "^24",

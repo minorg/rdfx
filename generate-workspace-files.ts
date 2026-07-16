@@ -199,6 +199,7 @@ const workspaces = {
           "graph-store",
           "parsers",
           "serializers",
+          "stream",
           "string",
         ],
       },
