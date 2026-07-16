@@ -26,7 +26,7 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
-    "depcheck": "depcheck .",
+    "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput"
   },
   "type": "module",

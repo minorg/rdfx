@@ -1,8 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import datasetFactory from "@rdfjs/dataset";
-import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
+import { datasetFactory, PrefixMap } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { describe, expect, it } from "vitest";
 import { RdfFile } from "../src/RdfFile.js";

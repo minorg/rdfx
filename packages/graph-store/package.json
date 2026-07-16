@@ -7,8 +7,9 @@
     "ts-log": "~3.0.2"
   },
   "devDependencies": {
+    "@rdfx/collection": "0.0.36",
     "@rdfx/data-factory": "0.0.36",
-    "@rdfjs/dataset": "~2.0.2",
+    "@rdfx/testing": "0.0.36",
     "get-stream": "~9.0.1",
     "into-stream": "~9.1.0"
   },
@@ -28,7 +29,7 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
-    "depcheck": "depcheck .",
+    "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
     "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/graph-store/__tests__"

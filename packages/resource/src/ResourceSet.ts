@@ -1,4 +1,3 @@
-import TermSet from "@rdfjs/term-set";
 import type {
   DataFactory,
   DatasetCore,
@@ -6,7 +5,7 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-
+import { TermSet } from "@rdfx/collection";
 import type { Identifier } from "./Identifier.js";
 import { Resource } from "./Resource.js";
 import { rdf, rdfs } from "./vocabularies.js";

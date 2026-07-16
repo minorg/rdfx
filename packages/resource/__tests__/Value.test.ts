@@ -1,5 +1,5 @@
-import datasetFactory from "@rdfjs/dataset";
 import type { NamedNode } from "@rdfjs/types";
+import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";

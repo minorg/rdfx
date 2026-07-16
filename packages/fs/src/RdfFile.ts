@@ -1,5 +1,5 @@
-import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, NamedNode, Stream } from "@rdfjs/types";
+import type { PrefixMap } from "@rdfx/collection";
 import type serializers from "@rdfx/serializers";
 import { Either, EitherAsync, Left } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";

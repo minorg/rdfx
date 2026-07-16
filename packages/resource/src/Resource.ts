@@ -1,4 +1,3 @@
-import TermSet from "@rdfjs/term-set";
 import type {
   BlankNode,
   DataFactory,
@@ -8,9 +7,8 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-
+import { TermSet } from "@rdfx/collection";
 import { Either, Left } from "purify-ts";
-
 import { DatasetValues } from "./DatasetValues.js";
 import type { Identifier as _Identifier, Identifier } from "./Identifier.js";
 import { ListStructureError as _ListStructureError } from "./ListStructureError.js";

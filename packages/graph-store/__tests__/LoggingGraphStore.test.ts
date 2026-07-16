@@ -1,4 +1,4 @@
-import datasetFactory from "@rdfjs/dataset";
+import { datasetFactory } from "@rdfx/collection";
 import { dummyLogger } from "ts-log";
 import { describe } from "vitest";
 import { LoggingGraphStore } from "../src/LoggingGraphStore.js";

@@ -1,5 +1,5 @@
-import datasetFactory from "@rdfjs/dataset";
 import type { BaseQuad, DefaultGraph, NamedNode, Quad } from "@rdfjs/types";
+import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import "@rdfx/testing";
 

@@ -146,20 +146,17 @@ const workspaces = {
           "@types/rdfjs__namespace",
           "change-case",
           "purify-ts",
-          "ts-invariant",
         ],
-        internal: ["data-factory", "resource"],
+        internal: ["data-factory", "literal", "resource", "string"],
       },
       devDependencies: {
         external: [
-          "@rdfjs/dataset",
           "@shaclmate/compiler",
           "@shaclmate/validator",
           "@tpluscode/rdf-ns-builders",
-          "@types/rdfjs__dataset",
           "ts-log",
         ],
-        internal: ["fs", "resource"],
+        internal: ["collection", "fs", "testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -183,19 +180,13 @@ const workspaces = {
         external: ["@rdfjs/types"],
         internal: ["string"],
       },
-      devDependencies: {
-        internal: ["testing"],
-      },
       tsconfig: packageTsconfig,
     },
     fs: {
       dependencies: {
         external: [
-          "@rdfjs/dataset",
-          "@rdfjs/prefix-map",
           "@rdfjs/types",
-          "@types/rdfjs__dataset",
-          "@types/rdfjs__prefix-map",
+          "@types/node",
           "@types/unbzip2-stream",
           "into-stream",
           "mime",
@@ -205,12 +196,16 @@ const workspaces = {
           "unbzip2-stream",
         ],
         internal: [
+          "collection",
           "data-factory",
           "graph-store",
           "parsers",
           "serializers",
           "string",
         ],
+      },
+      devDependencies: {
+        internal: ["testing"],
       },
       tsconfig: {
         ...packageTsconfig,
@@ -222,8 +217,14 @@ const workspaces = {
     },
     git: {
       dependencies: {
-        external: ["isomorphic-git", "ts-log", "typescript-memoize"],
-        internal: ["fs", "graph-store"],
+        external: [
+          "@rdfjs/types",
+          "isomorphic-git",
+          "purify-ts",
+          "ts-log",
+          "typescript-memoize",
+        ],
+        internal: ["data-factory", "fs", "graph-store"],
       },
       tsconfig: packageTsconfig,
     },
@@ -238,8 +239,8 @@ const workspaces = {
         ],
       },
       devDependencies: {
-        external: ["@rdfjs/dataset", "get-stream", "into-stream"],
-        internal: ["data-factory"],
+        external: ["get-stream", "into-stream"],
+        internal: ["collection", "data-factory", "testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -249,7 +250,7 @@ const workspaces = {
       },
       devDependencies: {
         external: ["@tpluscode/rdf-ns-builders"],
-        internal: ["data-factory"],
+        internal: ["data-factory", "testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -268,25 +269,12 @@ const workspaces = {
     },
     resource: {
       dependencies: {
-        external: [
-          "@rdfjs/term-set",
-          "@rdfjs/types",
-          "@types/rdfjs__term-set",
-          "decimal.js",
-          "purify-ts",
-        ],
-        internal: ["literal", "string"],
+        external: ["@rdfjs/types", "decimal.js", "purify-ts"],
+        internal: ["collection", "literal", "string"],
       },
       devDependencies: {
-        external: [
-          "@rdfjs/dataset",
-          "@tpluscode/rdf-ns-builders",
-          "@types/rdfjs__dataset",
-          "@types/rdfjs__to-ntriples",
-          "housemd",
-          "ts-invariant",
-        ],
-        internal: ["data-factory"],
+        external: ["@tpluscode/rdf-ns-builders", "housemd", "ts-invariant"],
+        internal: ["data-factory", "testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -320,6 +308,7 @@ const workspaces = {
       },
       devDependencies: {
         external: ["oxigraph"],
+        internal: ["testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -462,7 +451,8 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
                 : ""
             }`,
             clean: "rimraf dist",
-            depcheck: "depcheck .",
+            depcheck:
+              'depcheck --ignores="@tsconfig/*,vitest,vitest-fetch-mock" .',
             dev: "tsc -w --preserveWatchOutput",
             ...(testsDirectoryPath !== null
               ? {
