@@ -1,15 +1,13 @@
 {
   "dependencies": {
-    "@rdfjs/dataset": "~2.0.2",
-    "@rdfjs/prefix-map": "~0.1.2",
-    "@rdfjs/term-map": "~2.0.2",
-    "@rdfjs/term-set": "~2.0.3",
-    "@types/rdfjs__dataset": "~2.0.7",
-    "@types/rdfjs__prefix-map": "~0.1.5",
-    "@types/rdfjs__term-map": "~2.0.10",
-    "@types/rdfjs__term-set": "~2.0.9"
+    "@rdfjs/types": "~2.0.1",
+    "@types/readable-stream": "~4.0.23",
+    "purify-ts": "~2.1.4",
+    "readable-stream": "^4.7.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@rdfx/parsers": "0.0.38"
+  },
   "files": [
     "LICENSE",
     "dist/*.d.ts",
@@ -17,7 +15,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/collection",
+  "name": "@rdfx/stream",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",

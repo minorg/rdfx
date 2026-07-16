@@ -5,11 +5,10 @@ import {
   type GraphStore,
   RdfjsDatasetGraphStore,
 } from "@rdfx/graph-store";
-import intoStream from "into-stream";
+import { iterableToStream } from "@rdfx/stream";
 import { Either, EitherAsync, Left, type Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 import { Memoize } from "typescript-memoize";
-
 import { isErrnoException } from "./ErrnoException.js";
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
@@ -162,7 +161,7 @@ export class RdfFileGraphStore implements GraphStore {
       }
 
       await liftEither(
-        await this.rdfFile.serialize(intoStream.object(unionDataset), {
+        await this.rdfFile.serialize(iterableToStream(unionDataset), {
           prefixes: this.prefixMap,
         }),
       );

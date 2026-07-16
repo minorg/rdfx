@@ -5,7 +5,7 @@
     "n3": "~1.26.0"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.37",
+    "@rdfx/testing": "0.0.38",
     "oxigraph": "0.5.8"
   },
   "files": [
@@ -31,5 +31,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.37"
+  "version": "0.0.38"
 }

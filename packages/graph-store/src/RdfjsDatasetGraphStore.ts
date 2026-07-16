@@ -1,6 +1,6 @@
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
+import { iterableToStream } from "@rdfx/stream";
 import { Either, EitherAsync, Maybe } from "purify-ts";
-import { Readable } from "readable-stream";
 import { GraphIdentifier } from "./GraphIdentifier.js";
 import type { GraphStore } from "./GraphStore.js";
 
@@ -64,7 +64,7 @@ export class RdfjsDatasetGraphStore implements GraphStore {
     for (const _ of this.dataset.match(null, null, null, identifier)) {
       return Either.of(
         Maybe.of(
-          Readable.from(this.dataset.match(null, null, null, identifier)),
+          iterableToStream(this.dataset.match(null, null, null, identifier)),
         ),
       );
     }
