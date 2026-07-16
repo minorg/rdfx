@@ -22,6 +22,7 @@ const externalDependencies = {
   "@rdfjs/serializer-rdfjs": "0.1.3",
   "@rdfjs/serializer-turtle": "~1.1.5",
   "@rdfjs/sink-map": "~2.0.1",
+  "@rdfjs/term-map": "~2.0.2",
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
@@ -42,6 +43,7 @@ const externalDependencies = {
   "@types/rdfjs__serializer-rdfjs": "0.1.6",
   "@types/rdfjs__serializer-turtle": "~1.1.0",
   "@types/rdfjs__sink-map": "~2.0.5",
+  "@types/rdfjs__term-map": "~2.0.10",
   "@types/rdfjs__term-set": "~2.0.9",
   "@types/rdfjs__to-ntriples": "~3.0.0",
   "@types/readable-stream": "~4.0.23",
@@ -76,6 +78,7 @@ const externalDependencies = {
 
 type PackageName =
   | "builder"
+  | "collection"
   | "data-factory"
   | "fs"
   | "git"
@@ -157,6 +160,21 @@ const workspaces = {
           "ts-log",
         ],
         internal: ["fs", "resource"],
+      },
+      tsconfig: packageTsconfig,
+    },
+    collection: {
+      dependencies: {
+        external: [
+          "@rdfjs/dataset",
+          "@rdfjs/prefix-map",
+          "@rdfjs/term-map",
+          "@rdfjs/term-set",
+          "@types/rdfjs__dataset",
+          "@types/rdfjs__prefix-map",
+          "@types/rdfjs__term-map",
+          "@types/rdfjs__term-set",
+        ],
       },
       tsconfig: packageTsconfig,
     },
@@ -546,7 +564,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 22 dev dev:tests",
+        dev: "turbo run --concurrency 23 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

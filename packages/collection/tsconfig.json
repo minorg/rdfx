@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "exactOptionalPropertyTypes": false,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "ES2023"
+    ],
+    "module": "NodeNext",
+    "noUncheckedIndexedAccess": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "sourceMap": true,
+    "target": "ES2023"
+  },
+  "extends": [
+    "@tsconfig/strictest/tsconfig.json"
+  ],
+  "include": [
+    "src/**/*.ts"
+  ]
+}
