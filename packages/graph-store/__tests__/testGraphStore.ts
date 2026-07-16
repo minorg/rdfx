@@ -148,17 +148,21 @@ export function testGraphStore(
             (await sut.post(iterableToStream([expectedQuad0]))).unsafeCoerce();
 
             expect(
-              await streamToArray(
-                (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
-              ),
+              (
+                await streamToArray(
+                  (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
+                )
+              ).unsafeCoerce(),
             ).toEqualRdfQuadArray([expectedQuad0]);
 
             (await sut.post(iterableToStream([expectedQuad1]))).unsafeCoerce();
 
             expect(
-              await streamToArray(
-                (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
-              ),
+              (
+                await streamToArray(
+                  (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
+                )
+              ).unsafeCoerce(),
             ).toBeRdfIsomorphic([expectedQuad0, expectedQuad1]);
           }));
 
@@ -170,17 +174,21 @@ export function testGraphStore(
             (await sut.put(iterableToStream([expectedQuad0]))).unsafeCoerce();
 
             expect(
-              await streamToArray(
-                (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
-              ),
+              (
+                await streamToArray(
+                  (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
+                )
+              ).unsafeCoerce(),
             ).toEqualRdfQuadArray([expectedQuad0]);
 
             (await sut.put(iterableToStream([expectedQuad1]))).unsafeCoerce();
 
             expect(
-              await streamToArray(
-                (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
-              ),
+              (
+                await streamToArray(
+                  (await sut.get(graph)).unsafeCoerce().unsafeCoerce(),
+                )
+              ).unsafeCoerce(),
             ).toEqualRdfQuadArray([expectedQuad1]);
           }));
       },

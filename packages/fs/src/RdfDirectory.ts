@@ -2,6 +2,7 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import type { PrefixMap } from "@rdfx/collection";
+import { iterableToStream } from "@rdfx/stream";
 import { type Either, EitherAsync } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 import type { FileSystem } from "./FileSystem.js";
@@ -82,9 +83,7 @@ export class RdfDirectory {
       }
     }
 
-    return Readable.from(parseFiles(), {
-      objectMode: true,
-    }) as unknown as Stream;
+    return iterableToStream(parseFiles());
   }
 
   async parseInto(

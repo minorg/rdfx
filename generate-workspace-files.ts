@@ -229,16 +229,11 @@ const workspaces = {
     },
     "graph-store": {
       dependencies: {
-        external: [
-          "@rdfjs/types",
-          "@types/readable-stream",
-          "purify-ts",
-          "readable-stream",
-          "ts-log",
-        ],
+        external: ["@rdfjs/types", "purify-ts", "ts-log"],
+        internal: ["stream"],
       },
       devDependencies: {
-        internal: ["collection", "data-factory", "stream", "testing"],
+        internal: ["collection", "data-factory", "testing"],
       },
       tsconfig: packageTsconfig,
     },
