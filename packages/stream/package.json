@@ -1,22 +1,12 @@
 {
   "dependencies": {
-    "@rdfx/collection": "0.0.37",
-    "@rdfx/data-factory": "0.0.37",
-    "@rdfx/graph-store": "0.0.37",
-    "@rdfx/parsers": "0.0.37",
-    "@rdfx/serializers": "0.0.37",
-    "@rdfx/string": "0.0.37",
     "@rdfjs/types": "~2.0.1",
-    "@types/node": "^24",
-    "@types/unbzip2-stream": "~1.4.3",
-    "mime": "~4.1.0",
+    "@types/readable-stream": "~4.0.23",
     "purify-ts": "~2.1.4",
-    "ts-log": "~3.0.2",
-    "typescript-memoize": "~1.1.1",
-    "unbzip2-stream": "~1.4.3"
+    "readable-stream": "^4.7.0"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.37"
+    "@rdfx/parsers": "0.0.37"
   },
   "files": [
     "LICENSE",
@@ -25,7 +15,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/fs",
+  "name": "@rdfx/stream",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -37,7 +27,7 @@
     "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/fs/__tests__"
+    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/stream/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

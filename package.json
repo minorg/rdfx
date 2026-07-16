@@ -26,7 +26,7 @@
     "check:write:unsafe": "biome check --write --unsafe",
     "clean": "turbo run clean",
     "depcheck": "turbo run depcheck",
-    "dev": "turbo run --concurrency 23 dev dev:tests",
+    "dev": "turbo run --concurrency 25 dev dev:tests",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
@@ -42,6 +42,7 @@
     "packages/resource",
     "packages/serializers",
     "packages/sparql-client",
+    "packages/stream",
     "packages/string",
     "packages/testing"
   ]

@@ -9,9 +9,8 @@
   "devDependencies": {
     "@rdfx/collection": "0.0.37",
     "@rdfx/data-factory": "0.0.37",
-    "@rdfx/testing": "0.0.37",
-    "get-stream": "~9.0.1",
-    "into-stream": "~9.1.0"
+    "@rdfx/stream": "0.0.37",
+    "@rdfx/testing": "0.0.37"
   },
   "files": [
     "LICENSE",

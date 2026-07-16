@@ -52,9 +52,7 @@ const externalDependencies = {
   "change-case": "~5.4.4",
   "decimal.js": "~10.6.0",
   depcheck: "~1.4.7",
-  "get-stream": "~9.0.1",
   housemd: "0.1.3",
-  "into-stream": "~9.1.0",
   "isomorphic-git": "~1.38.3",
   mime: "~4.1.0",
   n3: "~1.26.0",
@@ -88,6 +86,7 @@ type PackageName =
   | "resource"
   | "serializers"
   | "sparql-client"
+  | "stream"
   | "string"
   | "testing";
 
@@ -188,7 +187,6 @@ const workspaces = {
           "@rdfjs/types",
           "@types/node",
           "@types/unbzip2-stream",
-          "into-stream",
           "mime",
           "purify-ts",
           "ts-log",
@@ -239,8 +237,7 @@ const workspaces = {
         ],
       },
       devDependencies: {
-        external: ["get-stream", "into-stream"],
-        internal: ["collection", "data-factory", "testing"],
+        internal: ["collection", "data-factory", "stream", "testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -309,6 +306,20 @@ const workspaces = {
       devDependencies: {
         external: ["oxigraph"],
         internal: ["testing"],
+      },
+      tsconfig: packageTsconfig,
+    },
+    stream: {
+      dependencies: {
+        external: [
+          "@rdfjs/types",
+          "@types/readable-stream",
+          "readable-stream",
+          "purify-ts",
+        ],
+      },
+      devDependencies: {
+        internal: ["parsers"],
       },
       tsconfig: packageTsconfig,
     },
@@ -554,7 +565,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 23 dev dev:tests",
+        dev: "turbo run --concurrency 25 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },
