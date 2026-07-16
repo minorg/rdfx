@@ -1,5 +1,4 @@
 import path from "node:path";
-import { Readable } from "node:stream";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import type { PrefixMap } from "@rdfx/collection";
 import { iterableToStream } from "@rdfx/stream";
