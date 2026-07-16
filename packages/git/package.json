@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.36",
-    "@rdfx/fs": "0.0.36",
-    "@rdfx/graph-store": "0.0.36",
+    "@rdfx/data-factory": "0.0.37",
+    "@rdfx/fs": "0.0.37",
+    "@rdfx/graph-store": "0.0.37",
     "@rdfjs/types": "~2.0.1",
     "isomorphic-git": "~1.38.3",
     "purify-ts": "~2.1.4",
@@ -33,5 +33,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.36"
+  "version": "0.0.37"
 }
