@@ -24,10 +24,10 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
-    "depcheck": "depcheck .",
+    "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.36"
+  "version": "0.0.37"
 }

@@ -1,6 +1,5 @@
-import datasetFactory from "@rdfjs/dataset";
-import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Stream } from "@rdfjs/types";
+import { datasetFactory, type PrefixMap } from "@rdfx/collection";
 import {
   type GraphIdentifier,
   type GraphStore,

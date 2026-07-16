@@ -1,4 +1,3 @@
-import TermSet from "@rdfjs/term-set";
 import type {
   BlankNode,
   DataFactory,
@@ -7,7 +6,7 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-
+import { TermSet } from "@rdfx/collection";
 import type { PropertyPath } from "./PropertyPath.js";
 import type { Resource } from "./Resource.js";
 import type { Term } from "./Term.js";

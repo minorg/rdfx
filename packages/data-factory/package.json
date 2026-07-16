@@ -1,11 +1,9 @@
 {
   "dependencies": {
-    "@rdfx/string": "0.0.36",
+    "@rdfx/string": "0.0.37",
     "@rdfjs/types": "~2.0.1"
   },
-  "devDependencies": {
-    "@rdfx/testing": "0.0.36"
-  },
+  "devDependencies": {},
   "files": [
     "LICENSE",
     "README.md",
@@ -23,12 +21,12 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
-    "depcheck": "depcheck .",
+    "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
     "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/data-factory/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.36"
+  "version": "0.0.37"
 }

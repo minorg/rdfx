@@ -1,4 +1,4 @@
-import datasetFactory from "@rdfjs/dataset";
+import { datasetFactory } from "@rdfx/collection";
 import { describe } from "vitest";
 import { RdfjsDatasetGraphStore } from "../src/RdfjsDatasetGraphStore.js";
 import { testGraphStore } from "./testGraphStore.js";

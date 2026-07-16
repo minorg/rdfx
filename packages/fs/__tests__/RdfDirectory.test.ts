@@ -1,5 +1,4 @@
-import datasetFactory from "@rdfjs/dataset";
-import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
+import { datasetFactory, PrefixMap } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { describe, it } from "vitest";
 import { RdfDirectory } from "../src/RdfDirectory.js";

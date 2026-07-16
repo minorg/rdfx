@@ -5,6 +5,7 @@
     "n3": "~1.26.0"
   },
   "devDependencies": {
+    "@rdfx/testing": "0.0.37",
     "oxigraph": "0.5.8"
   },
   "files": [
@@ -23,12 +24,12 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
-    "depcheck": "depcheck .",
+    "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
     "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/sparql-client/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.36"
+  "version": "0.0.37"
 }

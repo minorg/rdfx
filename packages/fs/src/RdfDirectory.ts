@@ -1,7 +1,7 @@
 import path from "node:path";
 import { Readable } from "node:stream";
-import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
+import type { PrefixMap } from "@rdfx/collection";
 import { type Either, EitherAsync } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 import type { FileSystem } from "./FileSystem.js";

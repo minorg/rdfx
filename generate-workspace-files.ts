@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.36";
+const VERSION = "0.0.37";
 
 const shaclmateVersion = "4.0.65";
 const vitestVersion = "~4.1.5";
@@ -22,6 +22,7 @@ const externalDependencies = {
   "@rdfjs/serializer-rdfjs": "0.1.3",
   "@rdfjs/serializer-turtle": "~1.1.5",
   "@rdfjs/sink-map": "~2.0.1",
+  "@rdfjs/term-map": "~2.0.2",
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
@@ -42,6 +43,7 @@ const externalDependencies = {
   "@types/rdfjs__serializer-rdfjs": "0.1.6",
   "@types/rdfjs__serializer-turtle": "~1.1.0",
   "@types/rdfjs__sink-map": "~2.0.5",
+  "@types/rdfjs__term-map": "~2.0.10",
   "@types/rdfjs__term-set": "~2.0.9",
   "@types/rdfjs__to-ntriples": "~3.0.0",
   "@types/readable-stream": "~4.0.23",
@@ -76,6 +78,7 @@ const externalDependencies = {
 
 type PackageName =
   | "builder"
+  | "collection"
   | "data-factory"
   | "fs"
   | "git"
@@ -143,20 +146,32 @@ const workspaces = {
           "@types/rdfjs__namespace",
           "change-case",
           "purify-ts",
-          "ts-invariant",
         ],
-        internal: ["data-factory", "resource"],
+        internal: ["data-factory", "literal", "resource", "string"],
       },
       devDependencies: {
         external: [
-          "@rdfjs/dataset",
           "@shaclmate/compiler",
           "@shaclmate/validator",
           "@tpluscode/rdf-ns-builders",
-          "@types/rdfjs__dataset",
           "ts-log",
         ],
-        internal: ["fs", "resource"],
+        internal: ["collection", "fs", "testing"],
+      },
+      tsconfig: packageTsconfig,
+    },
+    collection: {
+      dependencies: {
+        external: [
+          "@rdfjs/dataset",
+          "@rdfjs/prefix-map",
+          "@rdfjs/term-map",
+          "@rdfjs/term-set",
+          "@types/rdfjs__dataset",
+          "@types/rdfjs__prefix-map",
+          "@types/rdfjs__term-map",
+          "@types/rdfjs__term-set",
+        ],
       },
       tsconfig: packageTsconfig,
     },
@@ -165,19 +180,13 @@ const workspaces = {
         external: ["@rdfjs/types"],
         internal: ["string"],
       },
-      devDependencies: {
-        internal: ["testing"],
-      },
       tsconfig: packageTsconfig,
     },
     fs: {
       dependencies: {
         external: [
-          "@rdfjs/dataset",
-          "@rdfjs/prefix-map",
           "@rdfjs/types",
-          "@types/rdfjs__dataset",
-          "@types/rdfjs__prefix-map",
+          "@types/node",
           "@types/unbzip2-stream",
           "into-stream",
           "mime",
@@ -187,12 +196,16 @@ const workspaces = {
           "unbzip2-stream",
         ],
         internal: [
+          "collection",
           "data-factory",
           "graph-store",
           "parsers",
           "serializers",
           "string",
         ],
+      },
+      devDependencies: {
+        internal: ["testing"],
       },
       tsconfig: {
         ...packageTsconfig,
@@ -204,8 +217,14 @@ const workspaces = {
     },
     git: {
       dependencies: {
-        external: ["isomorphic-git", "ts-log", "typescript-memoize"],
-        internal: ["fs", "graph-store"],
+        external: [
+          "@rdfjs/types",
+          "isomorphic-git",
+          "purify-ts",
+          "ts-log",
+          "typescript-memoize",
+        ],
+        internal: ["data-factory", "fs", "graph-store"],
       },
       tsconfig: packageTsconfig,
     },
@@ -220,8 +239,8 @@ const workspaces = {
         ],
       },
       devDependencies: {
-        external: ["@rdfjs/dataset", "get-stream", "into-stream"],
-        internal: ["data-factory"],
+        external: ["get-stream", "into-stream"],
+        internal: ["collection", "data-factory", "testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -231,7 +250,7 @@ const workspaces = {
       },
       devDependencies: {
         external: ["@tpluscode/rdf-ns-builders"],
-        internal: ["data-factory"],
+        internal: ["data-factory", "testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -250,25 +269,12 @@ const workspaces = {
     },
     resource: {
       dependencies: {
-        external: [
-          "@rdfjs/term-set",
-          "@rdfjs/types",
-          "@types/rdfjs__term-set",
-          "decimal.js",
-          "purify-ts",
-        ],
-        internal: ["literal", "string"],
+        external: ["@rdfjs/types", "decimal.js", "purify-ts"],
+        internal: ["collection", "literal", "string"],
       },
       devDependencies: {
-        external: [
-          "@rdfjs/dataset",
-          "@tpluscode/rdf-ns-builders",
-          "@types/rdfjs__dataset",
-          "@types/rdfjs__to-ntriples",
-          "housemd",
-          "ts-invariant",
-        ],
-        internal: ["data-factory"],
+        external: ["@tpluscode/rdf-ns-builders", "housemd", "ts-invariant"],
+        internal: ["data-factory", "testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -302,6 +308,7 @@ const workspaces = {
       },
       devDependencies: {
         external: ["oxigraph"],
+        internal: ["testing"],
       },
       tsconfig: packageTsconfig,
     },
@@ -444,7 +451,8 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
                 : ""
             }`,
             clean: "rimraf dist",
-            depcheck: "depcheck .",
+            depcheck:
+              'depcheck --ignores="@tsconfig/*,vitest,vitest-fetch-mock" .',
             dev: "tsc -w --preserveWatchOutput",
             ...(testsDirectoryPath !== null
               ? {
@@ -546,7 +554,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 22 dev dev:tests",
+        dev: "turbo run --concurrency 23 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

@@ -1,8 +1,8 @@
 import { Buffer } from "node:buffer";
 import path from "node:path";
 import type { Readable } from "node:stream";
-import datasetFactory from "@rdfjs/dataset";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
+import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { GraphIdentifier, type GraphStore } from "@rdfx/graph-store";
 import parsers from "@rdfx/parsers";
