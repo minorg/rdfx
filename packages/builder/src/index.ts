@@ -1,8 +1,5 @@
 export { builder as default } from "./builder.js";
 
-import type { DatasetCore } from "@rdfjs/types";
-import dataFactory from "@rdfx/data-factory";
-import { ResourceSet } from "@rdfx/resource";
 import {
   $Object,
   type owl_Ontology,
@@ -30,14 +27,6 @@ export namespace skos {
   export type ConceptScheme = skos_ConceptScheme;
 }
 
-export function toRdfDataset(
-  dataset: DatasetCore,
-  ...objects: readonly $Object[]
-): void {
-  const resourceSet = new ResourceSet({ dataFactory, dataset });
-  for (const object of objects) {
-    $Object.toRdfResource(object, { resourceSet });
-  }
-}
-
+export * from "./toRdfDataset.js";
 export const toRdfResource = $Object.toRdfResource;
+export * from "./toRdfString.js";
