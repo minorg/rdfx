@@ -1,10 +1,6 @@
 import type * as RDF from "@rdfjs/types";
 import { Term } from "./Term.js";
 
-/**
- * An instance of DefaultGraph represents the default graph.
- * It's only allowed to assign a DefaultGraph to the .graph property of a Quad.
- */
 export class Quad extends Term implements RDF.Quad {
   public readonly termType = "Quad";
   public readonly value = "";
