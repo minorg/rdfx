@@ -9,6 +9,7 @@ import type { IriLike } from "./IriLike.js";
 import {
   sh_NodeShape,
   sh_PropertyShape,
+  type sh_Shape,
   type skos_ConceptScheme,
 } from "./shapes.js";
 
@@ -107,6 +108,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       | "nodeKind"
       | "path"
       | "resolve"
+      | "xone"
     > & {
       readonly cardinality?: "optional" | "required" | "set";
       readonly class?:
@@ -118,6 +120,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       readonly nodeKind?: NodeKindIri | NodeKindString;
       readonly path?: NamespaceKey | PropertyPath;
       readonly resolve?: NamedNode | NamespaceKey;
+      readonly xone?: readonly (NamedNode | NamespaceKey | sh_Shape)[];
     },
   ): ReturnType<typeof sh_PropertyShape.createUnsafe> {
     // Order of default population matters here.
@@ -130,6 +133,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       node: nodeParameter,
       nodeKind: nodeKindParameter,
       resolve: resolveParameter,
+      xone: xoneParameter,
       ...otherParameters
     } = parameters ?? {};
 
@@ -184,6 +188,11 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         : undefined,
       path,
       resolve: resolveParameter ? toIri(resolveParameter) : undefined,
+      xone: xoneParameter
+        ? xoneParameter.map((xoneMember) =>
+            typeof xoneMember === "string" ? toIri(xoneMember) : xoneMember,
+          )
+        : undefined,
     });
   }
 
@@ -235,7 +244,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
           | NodeShapePropertyArray;
         readonly type?: IriLike<NamespaceT> | readonly IriLike<NamespaceT>[];
         readonly shaclmateName?: string;
-        readonly xone?: readonly (NamedNode | NamespaceKey)[];
+        readonly xone?: readonly (NamedNode | NamespaceKey | sh_Shape)[];
       },
     ): sh_NodeShape => {
       const nodeShapeIdentifier = toIdentifier($identifier);
@@ -336,7 +345,11 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         properties,
         shaclmateName,
         type,
-        xone: xoneParameter ? xoneParameter.map(toIri) : undefined,
+        xone: xoneParameter
+          ? xoneParameter.map((xoneMember) =>
+              typeof xoneMember === "string" ? toIri(xoneMember) : xoneMember,
+            )
+          : undefined,
       });
     },
 
