@@ -19,7 +19,7 @@ export class MultiplexingGraphStore<
   PutReturnT extends object,
 > implements GraphStore
 {
-  private readonly graphStores: readonly GraphStore<
+  protected readonly graphStores: readonly GraphStore<
     ClearOptionsT,
     ClearReturnT,
     DeleteOptionsT,
@@ -33,7 +33,7 @@ export class MultiplexingGraphStore<
   >[];
 
   constructor(
-    private readonly readWriteGraphStore: GraphStore<
+    protected readonly readWriteGraphStore: GraphStore<
       ClearOptionsT,
       ClearReturnT,
       DeleteOptionsT,
