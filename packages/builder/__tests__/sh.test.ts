@@ -12,7 +12,7 @@ import {
 } from "../src/shapes.js";
 import "@rdfx/testing";
 import type { NamespaceBuilder } from "@rdfjs/namespace";
-import { owl, rdfs } from "@tpluscode/rdf-ns-builders";
+import { owl, rdf, rdfs, xsd } from "@tpluscode/rdf-ns-builders";
 import { exCbox, exTbox } from "./namespaces.js";
 
 describe("sh", () => {
@@ -371,6 +371,38 @@ describe("sh", () => {
         ]);
       });
 
+      it("rdf:List", () => {
+        const nodeShape = sh.NodeShape("List", {
+          xone: [
+            sh.NodeShape(undefined, {
+              hasValues: rdf.nil,
+            }),
+            sh.NodeShape(undefined, {
+              properties: {
+                first: {
+                  cardinality: "required",
+                  datatype: xsd.string,
+                  path: rdf.first,
+                },
+                rest: {
+                  cardinality: "required",
+                  node: "List",
+                  path: rdf.rest,
+                },
+              },
+            }),
+          ],
+        });
+        expectValidShapes(nodeShape);
+      });
+
+      it("Shape", () => {
+        const nodeShape = sh.NodeShape("Class", {
+          xone: [sh.NodeShape("XoneMember1"), sh.NodeShape("XoneMember2")],
+        });
+        expectValidShapes(nodeShape);
+      });
+
       it("string", () => {
         const nodeShape = sh.NodeShape("Class", {
           xone: ["XoneMember1", "XoneMember2"],
@@ -593,6 +625,54 @@ describe("sh", () => {
           resolve: exTbox.Class,
         });
         expect(propertyShape.resolve.extract()).toEqualRdfTerm(exTbox.Class);
+      });
+    });
+
+    describe("xone", () => {
+      it("unspecified", () => {
+        const propertyShape = sh.PropertyShape("property", {});
+        expectValidShapes(propertyShape);
+        expect(propertyShape.xone.extract()).toBeUndefined();
+      });
+
+      it("IRI", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          xone: [exTbox.XoneMember1, exTbox.XoneMember2],
+        });
+        expectValidShapes(
+          propertyShape,
+          sh.PropertyShape("XoneMember1"),
+          sh.PropertyShape("XoneMember2"),
+        );
+        expect(propertyShape.xone.extract()).toEqualRdfTermArray([
+          exTbox.XoneMember1,
+          exTbox.XoneMember2,
+        ]);
+      });
+
+      it("Shape", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          xone: [
+            sh.PropertyShape("XoneMember1"),
+            sh.PropertyShape("XoneMember2"),
+          ],
+        });
+        expectValidShapes(propertyShape);
+      });
+
+      it("string", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          xone: ["XoneMember1", "XoneMember2"],
+        });
+        expectValidShapes(
+          propertyShape,
+          sh.PropertyShape("XoneMember1"),
+          sh.PropertyShape("XoneMember2"),
+        );
+        expect(propertyShape.xone.extract()).toEqualRdfTermArray([
+          exTbox.XoneMember1,
+          exTbox.XoneMember2,
+        ]);
       });
     });
   });
