@@ -100,7 +100,9 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         >
       | DefaultNamespaceKey,
     parameters?: Omit<
-      NonNullable<Parameters<typeof sh_PropertyShape.createUnsafe>[0]>,
+      NonNullable<
+        Parameters<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>>[0]
+      >,
       | "$identifier"
       | "classes"
       | "in_"
@@ -124,7 +126,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       readonly resolve?: NamedNode | DefaultNamespaceKey;
       readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
     },
-  ): ReturnType<typeof sh_PropertyShape.createUnsafe> {
+  ): ReturnType<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>> {
     // Order of default population matters here.
 
     const {
@@ -224,13 +226,15 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       $identifier:
         | Exclude<
             NonNullable<
-              Parameters<typeof sh_NodeShape.createUnsafe>[0]
+              Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
             >["$identifier"],
             string | (() => sh_NodeShape.Identifier)
           >
         | DefaultNamespaceKey,
       parameters?: Omit<
-        NonNullable<Parameters<typeof sh_NodeShape.createUnsafe>[0]>,
+        NonNullable<
+          Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
+        >,
         | "$identifier"
         | "in_"
         | "nodeKind"
@@ -342,8 +346,9 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         type = [rdfs.Class];
       }
 
-      return sh_NodeShape.createUnsafe({
+      return sh_NodeShape.createUnsafe<DefaultNamespaceT>({
         ...otherParameters,
+        $defaultNamespace: defaultNamespace,
         $identifier: nodeShapeIdentifier,
         in_: convertIn(inParameter),
         nodeKind: convertNodeKind(nodeKindParameter),
