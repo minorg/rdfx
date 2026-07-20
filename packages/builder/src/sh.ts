@@ -81,22 +81,24 @@ function convertNodeKind(
 }
 
 export function sh<DefaultNamespaceT extends NamespaceBuilder>({
-  defaultNamespace: namespace,
+  defaultNamespace,
   toIdentifier,
   toIri,
   toIriArray,
 }: BuilderBuilderParameters<DefaultNamespaceT>) {
-  type NamespaceKey = keyof DefaultNamespaceT & string;
+  type DefaultNamespaceKey = keyof DefaultNamespaceT & string;
 
   function PropertyShape(
     $identifier:
       | Exclude<
           NonNullable<
-            Parameters<typeof sh_PropertyShape.createUnsafe>[0]
+            Parameters<
+              typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>
+            >[0]
           >["$identifier"],
           string | (() => sh_PropertyShape.Identifier)
         >
-      | NamespaceKey,
+      | DefaultNamespaceKey,
     parameters?: Omit<
       NonNullable<Parameters<typeof sh_PropertyShape.createUnsafe>[0]>,
       | "$identifier"
@@ -113,14 +115,14 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       readonly cardinality?: "optional" | "required" | "set";
       readonly class?:
         | NamedNode
-        | NamespaceKey
-        | readonly (NamedNode | NamespaceKey)[];
+        | DefaultNamespaceKey
+        | readonly (NamedNode | DefaultNamespaceKey)[];
       readonly in_?: skos_ConceptScheme | ConvertibleInArray;
-      readonly node?: NamedNode | NamespaceKey;
+      readonly node?: NamedNode | DefaultNamespaceKey;
       readonly nodeKind?: NodeKindIri | NodeKindString;
-      readonly path?: NamespaceKey | PropertyPath;
-      readonly resolve?: NamedNode | NamespaceKey;
-      readonly xone?: readonly (NamedNode | NamespaceKey | sh_Shape)[];
+      readonly path?: DefaultNamespaceKey | PropertyPath;
+      readonly resolve?: NamedNode | DefaultNamespaceKey;
+      readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
     },
   ): ReturnType<typeof sh_PropertyShape.createUnsafe> {
     // Order of default population matters here.
@@ -175,8 +177,9 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       }
     }
 
-    return sh_PropertyShape.createUnsafe({
+    return sh_PropertyShape.createUnsafe<DefaultNamespaceT>({
       ...otherParameters,
+      $defaultNamespace: defaultNamespace,
       $identifier: $identifierTerm,
       class_: classParameter ? toIriArray(classParameter) : undefined,
       in_: convertIn(inParameter),
@@ -198,7 +201,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
 
   type NodeShapePropertyArray = readonly (
     | NamedNode
-    | NamespaceKey
+    | DefaultNamespaceKey
     | sh_PropertyShape
   )[];
 
@@ -207,7 +210,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
     "$identifier" | "path"
   > & {
     readonly $identifier?: Parameters<typeof PropertyShape>[0];
-    readonly path?: NamespaceKey | PropertyPath;
+    readonly path?: DefaultNamespaceKey | PropertyPath;
   };
   type NodeShapePropertiesRecord = Record<
     string,
@@ -225,7 +228,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
             >["$identifier"],
             string | (() => sh_NodeShape.Identifier)
           >
-        | NamespaceKey,
+        | DefaultNamespaceKey,
       parameters?: Omit<
         NonNullable<Parameters<typeof sh_NodeShape.createUnsafe>[0]>,
         | "$identifier"
@@ -246,7 +249,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
           | IriLike<DefaultNamespaceT>
           | readonly IriLike<DefaultNamespaceT>[];
         readonly shaclmateName?: string;
-        readonly xone?: readonly (NamedNode | NamespaceKey | sh_Shape)[];
+        readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
       },
     ): sh_NodeShape => {
       const nodeShapeIdentifier = toIdentifier($identifier);
@@ -307,7 +310,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
             }
 
             if (!path) {
-              path = (namespace as NamespaceBuilder)(key);
+              path = (defaultNamespace as NamespaceBuilder)(key);
             }
 
             return PropertyShape(identifierTerm, {

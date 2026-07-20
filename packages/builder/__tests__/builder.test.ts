@@ -7,7 +7,7 @@ describe("builder", () => {
   describe("constructor", () => {
     it("with namespace", ({ expect }) => {
       expect(
-        builder({ namespace: skos })
+        builder({ defaultNamespace: skos })
           .sh.PropertyShape("Concept", {
             cardinality: "set",
           })
