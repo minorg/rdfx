@@ -487,30 +487,6 @@ describe("sh", () => {
       });
     });
 
-    describe("class", () => {
-      it("unspecified", () => {
-        const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
-        expect(propertyShape.class_).toHaveLength(0);
-      });
-
-      it("IRI", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          class: [exTbox.Class],
-        });
-        expectValidShapes(propertyShape);
-        expect(propertyShape.class_).toEqualRdfTermArray([exTbox.Class]);
-      });
-
-      it("string", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          class: ["Class"],
-        });
-        expectValidShapes(propertyShape);
-        expect(propertyShape.class_).toEqualRdfTermArray([exTbox.Class]);
-      });
-    });
-
     describe("in", () => {
       it("unspecified", () => {
         const propertyShape = sh.PropertyShape("property");

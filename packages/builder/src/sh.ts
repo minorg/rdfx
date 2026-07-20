@@ -104,7 +104,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         Parameters<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>>[0]
       >,
       | "$identifier"
-      | "classes"
       | "in_"
       | "maxCount"
       | "minCount"
@@ -115,10 +114,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       | "xone"
     > & {
       readonly cardinality?: "optional" | "required" | "set";
-      readonly class?:
-        | NamedNode
-        | DefaultNamespaceKey
-        | readonly (NamedNode | DefaultNamespaceKey)[];
       readonly in_?: skos_ConceptScheme | ConvertibleInArray;
       readonly node?: NamedNode | DefaultNamespaceKey;
       readonly nodeKind?: NodeKindIri | NodeKindString;
@@ -131,7 +126,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
 
     const {
       cardinality: cardinalityParameter,
-      class: classParameter,
       in_: inParameter,
       path: pathParameter,
       node: nodeParameter,
@@ -183,7 +177,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       ...otherParameters,
       $defaultNamespace: defaultNamespace,
       $identifier: $identifierTerm,
-      class_: classParameter ? toIriArray(classParameter) : undefined,
       in_: convertIn(inParameter),
       maxCount,
       minCount,
