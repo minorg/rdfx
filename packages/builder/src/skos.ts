@@ -6,9 +6,11 @@ import { sentenceCase } from "change-case";
 import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
 import { skos_Concept, skos_ConceptScheme } from "./shapes.js";
 
-export interface ConvertibleConceptParameters<ConceptIriString extends string>
-  extends Omit<
-    Parameters<typeof skos_Concept.createUnsafe>[0],
+export interface ConvertibleConceptParameters<
+  ConceptIriString extends string,
+  DefaultNamespaceT extends NamespaceBuilder,
+> extends Omit<
+    Parameters<typeof skos_Concept.createUnsafe<DefaultNamespaceT>>[0],
     "$identifier" | "broader" | "termType"
   > {
   readonly broader?: ConvertibleRelatedConcepts<ConceptIriString>;
@@ -44,14 +46,18 @@ function convertRelatedConcepts<ConceptIriString extends string>(
   });
 }
 
-export function skos<NamespaceT extends NamespaceBuilder>({
+export function skos<DefaultNamespaceT extends NamespaceBuilder>({
+  defaultNamespace,
   toIri,
-}: BuilderBuilderParameters<NamespaceT>) {
-  type NamespaceKey = keyof NamespaceT & string;
+}: BuilderBuilderParameters<DefaultNamespaceT>) {
+  type DefaultNamespaceKey = keyof DefaultNamespaceT & string;
 
   function Concept(
-    $identifier: NamedNode | NamespaceKey,
-    parameters?: ConvertibleConceptParameters<NamespaceKey>,
+    $identifier: NamedNode | DefaultNamespaceKey,
+    parameters?: ConvertibleConceptParameters<
+      DefaultNamespaceKey,
+      DefaultNamespaceT
+    >,
   ): skos_Concept {
     let {
       broader: broaderParameter,
@@ -63,11 +69,13 @@ export function skos<NamespaceT extends NamespaceBuilder>({
       prefLabel = sentenceCase($identifier);
     }
 
-    return skos_Concept.createUnsafe({
+    return skos_Concept.createUnsafe<DefaultNamespaceT>({
       ...otherParameters,
-      $identifier: toIri($identifier),
-      broader: convertRelatedConcepts<NamespaceKey>(broaderParameter, (key) =>
-        toIri(key),
+      $defaultNamespace: defaultNamespace,
+      $identifier,
+      broader: convertRelatedConcepts<DefaultNamespaceKey>(
+        broaderParameter,
+        (key) => toIri(key),
       ),
       prefLabel,
     });
@@ -75,14 +83,17 @@ export function skos<NamespaceT extends NamespaceBuilder>({
 
   type ConceptSchemeConceptsRecordConstraint<T> = {
     [K in keyof T]: Omit<
-      ConvertibleConceptParameters<Extract<keyof T, string>>,
+      ConvertibleConceptParameters<Extract<keyof T, string>, DefaultNamespaceT>,
       "broader" | "notation"
     > & {
-      readonly $identifier?: NamespaceKey | NamedNode;
+      readonly $identifier?: DefaultNamespaceKey | NamedNode;
       readonly broader?: ConvertibleRelatedConcepts<Extract<keyof T, string>>;
       readonly notation?:
         | boolean
-        | ConvertibleConceptParameters<Extract<keyof T, string>>["notation"];
+        | ConvertibleConceptParameters<
+            Extract<keyof T, string>,
+            DefaultNamespaceT
+          >["notation"];
     };
   };
 
@@ -95,9 +106,11 @@ export function skos<NamespaceT extends NamespaceBuilder>({
       ConceptsRecordT extends
         ConceptSchemeConceptsRecordConstraint<ConceptsRecordT>,
     >(
-      $identifier: NamedNode | NamespaceKey,
+      $identifier: NamedNode | DefaultNamespaceKey,
       parameters?: Omit<
-        Parameters<typeof skos_ConceptScheme.createUnsafe>[0],
+        Parameters<
+          typeof skos_ConceptScheme.createUnsafe<DefaultNamespaceT>
+        >[0],
         "$identifier" | "concepts" | "termType" | "topConcepts"
       > & {
         readonly concepts?: ConceptsRecordT;
@@ -110,10 +123,12 @@ export function skos<NamespaceT extends NamespaceBuilder>({
       } = parameters ?? {};
 
       type ConceptsRecordKey = keyof ConceptsRecordT & string;
-      type ConceptsRecordValue =
-        ConvertibleConceptParameters<ConceptsRecordKey> & {
-          $identifier?: NamedNode | NamespaceKey;
-        };
+      type ConceptsRecordValue = ConvertibleConceptParameters<
+        ConceptsRecordKey,
+        DefaultNamespaceT
+      > & {
+        $identifier?: NamedNode | DefaultNamespaceKey;
+      };
 
       const conceptSchemeIdentifier = toIri($identifier);
 
@@ -156,8 +171,9 @@ export function skos<NamespaceT extends NamespaceBuilder>({
         prefLabel = sentenceCase($identifier);
       }
 
-      return skos_ConceptScheme.createUnsafe({
+      return skos_ConceptScheme.createUnsafe<DefaultNamespaceT>({
         ...otherParameters,
+        $defaultNamespace: defaultNamespace,
         $identifier: conceptSchemeIdentifier,
         concepts,
         prefLabel,

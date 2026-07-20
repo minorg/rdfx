@@ -9,51 +9,55 @@ import { sh } from "./sh.js";
 import { skos } from "./skos.js";
 
 export function builder<
-  NamespaceT extends NamespaceBuilder = NamespaceBuilder,
->(options?: { namespace?: NamespaceT }) {
-  const namespace_ = (options?.namespace ?? namespace("")) as NamespaceT;
+  DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+>(options?: { defaultNamespace?: DefaultNamespaceT }) {
+  const defaultNamespace = (options?.defaultNamespace ??
+    namespace("")) as DefaultNamespaceT;
 
-  const toIri = (iri: IriLike<NamespaceT>): NamedNode => {
+  const toIri = (iri: IriLike<DefaultNamespaceT>): NamedNode => {
     switch (typeof iri) {
       case "object":
         return iri;
       case "string":
-        return namespace_(iri) as NamedNode;
+        return defaultNamespace(iri) as NamedNode;
       default:
         throw new RangeError(typeof iri);
     }
   };
 
-  const builderBuilderParameters: BuilderBuilderParameters<NamespaceT> = {
-    namespace: namespace_,
+  const builderBuilderParameters: BuilderBuilderParameters<DefaultNamespaceT> =
+    {
+      defaultNamespace,
 
-    toIdentifier: (
-      identifier: IdentifierLike<NamespaceT>,
-    ): BlankNode | NamedNode => {
-      switch (typeof identifier) {
-        case "object":
-          return identifier;
-        case "string":
-          return toIri(identifier);
-        case "undefined":
-          return dataFactory.blankNode();
-        default:
-          throw new RangeError(typeof identifier);
-      }
-    },
-    toIri,
-    toIriArray: (
-      iriArray: IriLike<NamespaceT> | readonly IriLike<NamespaceT>[],
-    ): readonly NamedNode[] => {
-      if (Array.isArray(iriArray)) {
-        return iriArray.map(toIri);
-      }
-      return [toIri(iriArray as IriLike<NamespaceT>)];
-    },
-  };
+      toIdentifier: (
+        identifier: IdentifierLike<DefaultNamespaceT>,
+      ): BlankNode | NamedNode => {
+        switch (typeof identifier) {
+          case "object":
+            return identifier;
+          case "string":
+            return toIri(identifier);
+          case "undefined":
+            return dataFactory.blankNode();
+          default:
+            throw new RangeError(typeof identifier);
+        }
+      },
+      toIri,
+      toIriArray: (
+        iriArray:
+          | IriLike<DefaultNamespaceT>
+          | readonly IriLike<DefaultNamespaceT>[],
+      ): readonly NamedNode[] => {
+        if (Array.isArray(iriArray)) {
+          return iriArray.map(toIri);
+        }
+        return [toIri(iriArray as IriLike<DefaultNamespaceT>)];
+      },
+    };
 
   return {
-    sh: sh<NamespaceT>(builderBuilderParameters),
-    skos: skos<NamespaceT>(builderBuilderParameters),
+    sh: sh<DefaultNamespaceT>(builderBuilderParameters),
+    skos: skos<DefaultNamespaceT>(builderBuilderParameters),
   };
 }

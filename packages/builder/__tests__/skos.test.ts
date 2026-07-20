@@ -13,7 +13,7 @@ type Mutable<T> = {
 };
 
 describe("skos", () => {
-  const skos = builder({ namespace: exCbox }).skos;
+  const skos = builder({ defaultNamespace: exCbox }).skos;
 
   describe("Concept", () => {
     describe("$identifier", () => {

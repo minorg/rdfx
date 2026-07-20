@@ -16,24 +16,23 @@ import { owl, rdf, rdfs, xsd } from "@tpluscode/rdf-ns-builders";
 import { exCbox, exTbox } from "./namespaces.js";
 
 describe("sh", () => {
-  const { sh } = builder({ namespace: exTbox });
+  const { sh } = builder({ defaultNamespace: exTbox });
   const shapesGraphValidator = new ZazukoValidator({
     shapesGraph: shaclShaclDataset,
   });
 
-  const conceptScheme = builder({ namespace: exCbox }).skos.ConceptScheme(
-    "ConceptScheme",
-    {
-      concepts: {
-        LeafConcept: {
-          $identifier: exCbox.LeafConcept,
-        },
-        TopConcept: {
-          $identifier: exCbox.TopConcept,
-        },
+  const conceptScheme = builder({
+    defaultNamespace: exCbox,
+  }).skos.ConceptScheme("ConceptScheme", {
+    concepts: {
+      LeafConcept: {
+        $identifier: exCbox.LeafConcept,
+      },
+      TopConcept: {
+        $identifier: exCbox.TopConcept,
       },
     },
-  );
+  });
 
   async function expectValidShapes(
     ...shapes: readonly sh_Shape[]
@@ -52,10 +51,9 @@ describe("sh", () => {
     ).unsafeCoerce();
     expect(validationReport.conforms);
 
-    const shapesGraph = ShapesGraph.builder()
-      .parseDataset(shapesGraphResourceSet.dataset)
-      .unsafeCoerce()
-      .build();
+    const shapesGraph = ShapesGraph.fromDataset(
+      shapesGraphResourceSet.dataset,
+    ).unsafeCoerce();
     for (const shape of shapes) {
       const parsedShape = shapesGraph.shape(shape.$identifier()).unsafeCoerce();
       if (sh_NodeShape.issh_NodeShape(shape)) {
@@ -489,30 +487,6 @@ describe("sh", () => {
       });
     });
 
-    describe("class", () => {
-      it("unspecified", () => {
-        const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
-        expect(propertyShape.class_).toHaveLength(0);
-      });
-
-      it("IRI", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          class: [exTbox.Class],
-        });
-        expectValidShapes(propertyShape);
-        expect(propertyShape.class_).toEqualRdfTermArray([exTbox.Class]);
-      });
-
-      it("string", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          class: ["Class"],
-        });
-        expectValidShapes(propertyShape);
-        expect(propertyShape.class_).toEqualRdfTermArray([exTbox.Class]);
-      });
-    });
-
     describe("in", () => {
       it("unspecified", () => {
         const propertyShape = sh.PropertyShape("property");
@@ -599,32 +573,6 @@ describe("sh", () => {
         });
         expectValidShapes(propertyShape);
         expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
-      });
-    });
-
-    describe("resolve", () => {
-      it("unspecified", () => {
-        const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
-        expect(propertyShape.resolve.extract()).toBeUndefined();
-      });
-
-      it("IRI", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          resolve: exTbox.Class,
-        });
-        expect(propertyShape.resolve.extract()).toEqualRdfTerm(exTbox.Class);
-      });
-
-      it.skip("inline resolve shape", () => {
-        throw new Error("implement me");
-      });
-
-      it("string", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          resolve: exTbox.Class,
-        });
-        expect(propertyShape.resolve.extract()).toEqualRdfTerm(exTbox.Class);
       });
     });
 

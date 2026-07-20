@@ -80,59 +80,54 @@ function convertNodeKind(
   return _namespace[nodeKind];
 }
 
-export function sh<NamespaceT extends NamespaceBuilder>({
-  namespace,
+export function sh<DefaultNamespaceT extends NamespaceBuilder>({
+  defaultNamespace,
   toIdentifier,
   toIri,
   toIriArray,
-}: BuilderBuilderParameters<NamespaceT>) {
-  type NamespaceKey = keyof NamespaceT & string;
+}: BuilderBuilderParameters<DefaultNamespaceT>) {
+  type DefaultNamespaceKey = keyof DefaultNamespaceT & string;
 
   function PropertyShape(
     $identifier:
       | Exclude<
           NonNullable<
-            Parameters<typeof sh_PropertyShape.createUnsafe>[0]
+            Parameters<
+              typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>
+            >[0]
           >["$identifier"],
           string | (() => sh_PropertyShape.Identifier)
         >
-      | NamespaceKey,
+      | DefaultNamespaceKey,
     parameters?: Omit<
-      NonNullable<Parameters<typeof sh_PropertyShape.createUnsafe>[0]>,
+      NonNullable<
+        Parameters<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>>[0]
+      >,
       | "$identifier"
-      | "classes"
       | "in_"
       | "maxCount"
       | "minCount"
       | "node"
       | "nodeKind"
       | "path"
-      | "resolve"
       | "xone"
     > & {
       readonly cardinality?: "optional" | "required" | "set";
-      readonly class?:
-        | NamedNode
-        | NamespaceKey
-        | readonly (NamedNode | NamespaceKey)[];
       readonly in_?: skos_ConceptScheme | ConvertibleInArray;
-      readonly node?: NamedNode | NamespaceKey;
+      readonly node?: NamedNode | DefaultNamespaceKey;
       readonly nodeKind?: NodeKindIri | NodeKindString;
-      readonly path?: NamespaceKey | PropertyPath;
-      readonly resolve?: NamedNode | NamespaceKey;
-      readonly xone?: readonly (NamedNode | NamespaceKey | sh_Shape)[];
+      readonly path?: DefaultNamespaceKey | PropertyPath;
+      readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
     },
-  ): ReturnType<typeof sh_PropertyShape.createUnsafe> {
+  ): ReturnType<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>> {
     // Order of default population matters here.
 
     const {
       cardinality: cardinalityParameter,
-      class: classParameter,
       in_: inParameter,
       path: pathParameter,
       node: nodeParameter,
       nodeKind: nodeKindParameter,
-      resolve: resolveParameter,
       xone: xoneParameter,
       ...otherParameters
     } = parameters ?? {};
@@ -175,10 +170,10 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       }
     }
 
-    return sh_PropertyShape.createUnsafe({
+    return sh_PropertyShape.createUnsafe<DefaultNamespaceT>({
       ...otherParameters,
+      $defaultNamespace: defaultNamespace,
       $identifier: $identifierTerm,
-      class_: classParameter ? toIriArray(classParameter) : undefined,
       in_: convertIn(inParameter),
       maxCount,
       minCount,
@@ -187,7 +182,6 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         ? convertNodeKind(nodeKindParameter)
         : undefined,
       path,
-      resolve: resolveParameter ? toIri(resolveParameter) : undefined,
       xone: xoneParameter
         ? xoneParameter.map((xoneMember) =>
             typeof xoneMember === "string" ? toIri(xoneMember) : xoneMember,
@@ -198,7 +192,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
 
   type NodeShapePropertyArray = readonly (
     | NamedNode
-    | NamespaceKey
+    | DefaultNamespaceKey
     | sh_PropertyShape
   )[];
 
@@ -207,7 +201,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
     "$identifier" | "path"
   > & {
     readonly $identifier?: Parameters<typeof PropertyShape>[0];
-    readonly path?: NamespaceKey | PropertyPath;
+    readonly path?: DefaultNamespaceKey | PropertyPath;
   };
   type NodeShapePropertiesRecord = Record<
     string,
@@ -221,13 +215,15 @@ export function sh<NamespaceT extends NamespaceBuilder>({
       $identifier:
         | Exclude<
             NonNullable<
-              Parameters<typeof sh_NodeShape.createUnsafe>[0]
+              Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
             >["$identifier"],
             string | (() => sh_NodeShape.Identifier)
           >
-        | NamespaceKey,
+        | DefaultNamespaceKey,
       parameters?: Omit<
-        NonNullable<Parameters<typeof sh_NodeShape.createUnsafe>[0]>,
+        NonNullable<
+          Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
+        >,
         | "$identifier"
         | "in_"
         | "nodeKind"
@@ -242,9 +238,11 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         readonly properties?:
           | NodeShapePropertiesRecord
           | NodeShapePropertyArray;
-        readonly type?: IriLike<NamespaceT> | readonly IriLike<NamespaceT>[];
+        readonly type?:
+          | IriLike<DefaultNamespaceT>
+          | readonly IriLike<DefaultNamespaceT>[];
         readonly shaclmateName?: string;
-        readonly xone?: readonly (NamedNode | NamespaceKey | sh_Shape)[];
+        readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
       },
     ): sh_NodeShape => {
       const nodeShapeIdentifier = toIdentifier($identifier);
@@ -305,7 +303,7 @@ export function sh<NamespaceT extends NamespaceBuilder>({
             }
 
             if (!path) {
-              path = (namespace as NamespaceBuilder)(key);
+              path = (defaultNamespace as NamespaceBuilder)(key);
             }
 
             return PropertyShape(identifierTerm, {
@@ -337,8 +335,9 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         type = [rdfs.Class];
       }
 
-      return sh_NodeShape.createUnsafe({
+      return sh_NodeShape.createUnsafe<DefaultNamespaceT>({
         ...otherParameters,
+        $defaultNamespace: defaultNamespace,
         $identifier: nodeShapeIdentifier,
         in_: convertIn(inParameter),
         nodeKind: convertNodeKind(nodeKindParameter),

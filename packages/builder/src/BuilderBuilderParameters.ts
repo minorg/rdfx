@@ -3,14 +3,18 @@ import type { BlankNode, NamedNode } from "@rdfjs/types";
 import type { IdentifierLike } from "./IdentifierLike.js";
 import type { IriLike } from "./IriLike.js";
 
-export interface BuilderBuilderParameters<NamespaceT extends NamespaceBuilder> {
-  namespace: NamespaceT;
+export interface BuilderBuilderParameters<
+  DefaultNamespaceT extends NamespaceBuilder,
+> {
+  defaultNamespace: DefaultNamespaceT;
 
   toIdentifier: (
-    identifier: IdentifierLike<NamespaceT>,
+    identifier: IdentifierLike<DefaultNamespaceT>,
   ) => BlankNode | NamedNode;
-  toIri: (iri: IriLike<NamespaceT>) => NamedNode;
+  toIri: (iri: IriLike<DefaultNamespaceT>) => NamedNode;
   toIriArray: (
-    iriArray: IriLike<NamespaceT> | readonly IriLike<NamespaceT>[],
+    iriArray:
+      | IriLike<DefaultNamespaceT>
+      | readonly IriLike<DefaultNamespaceT>[],
   ) => readonly NamedNode[];
 }
