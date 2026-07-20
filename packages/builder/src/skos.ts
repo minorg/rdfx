@@ -50,11 +50,14 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
   defaultNamespace,
   toIri,
 }: BuilderBuilderParameters<DefaultNamespaceT>) {
-  type NamespaceKey = keyof DefaultNamespaceT & string;
+  type DefaultNamespaceKey = keyof DefaultNamespaceT & string;
 
   function Concept(
-    $identifier: NamedNode | NamespaceKey,
-    parameters?: ConvertibleConceptParameters<NamespaceKey, DefaultNamespaceT>,
+    $identifier: NamedNode | DefaultNamespaceKey,
+    parameters?: ConvertibleConceptParameters<
+      DefaultNamespaceKey,
+      DefaultNamespaceT
+    >,
   ): skos_Concept {
     let {
       broader: broaderParameter,
@@ -69,9 +72,10 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
     return skos_Concept.createUnsafe<DefaultNamespaceT>({
       ...otherParameters,
       $defaultNamespace: defaultNamespace,
-      $identifier: toIri($identifier),
-      broader: convertRelatedConcepts<NamespaceKey>(broaderParameter, (key) =>
-        toIri(key),
+      $identifier,
+      broader: convertRelatedConcepts<DefaultNamespaceKey>(
+        broaderParameter,
+        (key) => toIri(key),
       ),
       prefLabel,
     });
@@ -82,7 +86,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
       ConvertibleConceptParameters<Extract<keyof T, string>, DefaultNamespaceT>,
       "broader" | "notation"
     > & {
-      readonly $identifier?: NamespaceKey | NamedNode;
+      readonly $identifier?: DefaultNamespaceKey | NamedNode;
       readonly broader?: ConvertibleRelatedConcepts<Extract<keyof T, string>>;
       readonly notation?:
         | boolean
@@ -102,7 +106,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
       ConceptsRecordT extends
         ConceptSchemeConceptsRecordConstraint<ConceptsRecordT>,
     >(
-      $identifier: NamedNode | NamespaceKey,
+      $identifier: NamedNode | DefaultNamespaceKey,
       parameters?: Omit<
         Parameters<
           typeof skos_ConceptScheme.createUnsafe<DefaultNamespaceT>
@@ -123,7 +127,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
         ConceptsRecordKey,
         DefaultNamespaceT
       > & {
-        $identifier?: NamedNode | NamespaceKey;
+        $identifier?: NamedNode | DefaultNamespaceKey;
       };
 
       const conceptSchemeIdentifier = toIri($identifier);
