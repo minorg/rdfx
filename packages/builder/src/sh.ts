@@ -110,7 +110,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       | "node"
       | "nodeKind"
       | "path"
-      | "resolve"
       | "xone"
     > & {
       readonly cardinality?: "optional" | "required" | "set";
@@ -118,7 +117,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       readonly node?: NamedNode | DefaultNamespaceKey;
       readonly nodeKind?: NodeKindIri | NodeKindString;
       readonly path?: DefaultNamespaceKey | PropertyPath;
-      readonly resolve?: NamedNode | DefaultNamespaceKey;
       readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
     },
   ): ReturnType<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>> {
@@ -130,7 +128,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       path: pathParameter,
       node: nodeParameter,
       nodeKind: nodeKindParameter,
-      resolve: resolveParameter,
       xone: xoneParameter,
       ...otherParameters
     } = parameters ?? {};
@@ -185,7 +182,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         ? convertNodeKind(nodeKindParameter)
         : undefined,
       path,
-      resolve: resolveParameter ? toIri(resolveParameter) : undefined,
       xone: xoneParameter
         ? xoneParameter.map((xoneMember) =>
             typeof xoneMember === "string" ? toIri(xoneMember) : xoneMember,

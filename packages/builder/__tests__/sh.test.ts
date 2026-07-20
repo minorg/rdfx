@@ -576,32 +576,6 @@ describe("sh", () => {
       });
     });
 
-    describe("resolve", () => {
-      it("unspecified", () => {
-        const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
-        expect(propertyShape.resolve.extract()).toBeUndefined();
-      });
-
-      it("IRI", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          resolve: exTbox.Class,
-        });
-        expect(propertyShape.resolve.extract()).toEqualRdfTerm(exTbox.Class);
-      });
-
-      it.skip("inline resolve shape", () => {
-        throw new Error("implement me");
-      });
-
-      it("string", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          resolve: exTbox.Class,
-        });
-        expect(propertyShape.resolve.extract()).toEqualRdfTerm(exTbox.Class);
-      });
-    });
-
     describe("xone", () => {
       it("unspecified", () => {
         const propertyShape = sh.PropertyShape("property", {});
