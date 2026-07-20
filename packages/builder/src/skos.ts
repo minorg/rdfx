@@ -44,10 +44,10 @@ function convertRelatedConcepts<ConceptIriString extends string>(
   });
 }
 
-export function skos<NamespaceT extends NamespaceBuilder>({
+export function skos<DefaultNamespaceT extends NamespaceBuilder>({
   toIri,
-}: BuilderBuilderParameters<NamespaceT>) {
-  type NamespaceKey = keyof NamespaceT & string;
+}: BuilderBuilderParameters<DefaultNamespaceT>) {
+  type NamespaceKey = keyof DefaultNamespaceT & string;
 
   function Concept(
     $identifier: NamedNode | NamespaceKey,

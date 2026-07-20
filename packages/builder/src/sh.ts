@@ -80,13 +80,13 @@ function convertNodeKind(
   return _namespace[nodeKind];
 }
 
-export function sh<NamespaceT extends NamespaceBuilder>({
-  namespace,
+export function sh<DefaultNamespaceT extends NamespaceBuilder>({
+  defaultNamespace: namespace,
   toIdentifier,
   toIri,
   toIriArray,
-}: BuilderBuilderParameters<NamespaceT>) {
-  type NamespaceKey = keyof NamespaceT & string;
+}: BuilderBuilderParameters<DefaultNamespaceT>) {
+  type NamespaceKey = keyof DefaultNamespaceT & string;
 
   function PropertyShape(
     $identifier:
@@ -242,7 +242,9 @@ export function sh<NamespaceT extends NamespaceBuilder>({
         readonly properties?:
           | NodeShapePropertiesRecord
           | NodeShapePropertyArray;
-        readonly type?: IriLike<NamespaceT> | readonly IriLike<NamespaceT>[];
+        readonly type?:
+          | IriLike<DefaultNamespaceT>
+          | readonly IriLike<DefaultNamespaceT>[];
         readonly shaclmateName?: string;
         readonly xone?: readonly (NamedNode | NamespaceKey | sh_Shape)[];
       },
