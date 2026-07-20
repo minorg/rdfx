@@ -73,9 +73,7 @@ async function main() {
     }
   }
 
-  const output = ShapesGraph.builder()
-    .parseDataset(combinedInputDataset, { prefixMap })
-    .map((_) => _.build())
+  const output = ShapesGraph.fromDataset(combinedInputDataset, { prefixMap })
     .chain((shapesGraph) =>
       new Compiler({
         generator: new TsGenerator({
