@@ -52,10 +52,9 @@ describe("sh", () => {
     ).unsafeCoerce();
     expect(validationReport.conforms);
 
-    const shapesGraph = ShapesGraph.builder()
-      .parseDataset(shapesGraphResourceSet.dataset)
-      .unsafeCoerce()
-      .build();
+    const shapesGraph = ShapesGraph.fromDataset(
+      shapesGraphResourceSet.dataset,
+    ).unsafeCoerce();
     for (const shape of shapes) {
       const parsedShape = shapesGraph.shape(shape.$identifier()).unsafeCoerce();
       if (sh_NodeShape.issh_NodeShape(shape)) {
