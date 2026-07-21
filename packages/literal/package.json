@@ -28,7 +28,7 @@
     "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run /Users/minor/projects/rdfx/packages/literal/__tests__"
+    "test": "cd ../.. && vitest run packages/literal/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

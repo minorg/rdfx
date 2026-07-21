@@ -355,20 +355,20 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
   for (const [workspaceName, workspaceAny] of Object.entries(workspaces_)) {
     const workspace = workspaceAny as Workspace;
 
-    const packageDirectoryPath = path.join(
+    const workspaceDirectoryPath = path.join(
       myDirPath,
       workspacesDirectoryName,
       workspaceName,
     );
 
-    fs.mkdirSync(packageDirectoryPath, { recursive: true });
+    fs.mkdirSync(workspaceDirectoryPath, { recursive: true });
 
     const files = new Set<string>();
     files.add("LICENSE");
-    if (fs.existsSync(path.join(packageDirectoryPath, "README.md"))) {
+    if (fs.existsSync(path.join(workspaceDirectoryPath, "README.md"))) {
       files.add("README.md");
     }
-    const srcDirectoryPath = path.join(packageDirectoryPath, "src");
+    const srcDirectoryPath = path.join(workspaceDirectoryPath, "src");
     if (fs.existsSync(srcDirectoryPath)) {
       for (const dirent of fs.readdirSync(srcDirectoryPath, {
         withFileTypes: true,
@@ -390,7 +390,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
     }
 
     let testsDirectoryPath: string | null = path.join(
-      packageDirectoryPath,
+      workspaceDirectoryPath,
       "__tests__",
     );
     if (!fs.existsSync(testsDirectoryPath)) {
@@ -400,7 +400,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
     const packageName = `@rdfx/${workspaceName}`;
 
     fs.writeFileSync(
-      path.join(packageDirectoryPath, "package.json"),
+      path.join(workspaceDirectoryPath, "package.json"),
       `${JSON.stringify(
         {
           bin: workspace.bin,
@@ -466,9 +466,10 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
                   "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
                 }
               : {}),
-            test: fs.existsSync(path.join(packageDirectoryPath, "__tests__"))
-              ? `cd ../.. && vitest run ${packageDirectoryPath}/__tests__`
-              : undefined,
+            test:
+              testsDirectoryPath !== null
+                ? `cd ../.. && vitest run ${workspacesDirectoryName}/${workspaceName}/__tests__`
+                : undefined,
             ...workspace.scripts,
           },
           type: "module",
@@ -481,7 +482,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
     );
 
     for (const fileName of ["LICENSE"]) {
-      const packageFilePath = path.resolve(packageDirectoryPath, fileName);
+      const packageFilePath = path.resolve(workspaceDirectoryPath, fileName);
       if (fs.existsSync(packageFilePath)) {
         continue;
       }
@@ -489,7 +490,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
     }
 
     fs.writeFileSync(
-      path.resolve(packageDirectoryPath, "tsconfig.json"),
+      path.resolve(workspaceDirectoryPath, "tsconfig.json"),
       `${JSON.stringify(workspace.tsconfig, undefined, 2)}\n`,
     );
 
