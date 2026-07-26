@@ -5,7 +5,6 @@ import { LiteralFactory } from "@rdfx/literal";
 import type { PropertyPath } from "@rdfx/resource";
 import { sh as _namespace, owl, rdfs } from "@tpluscode/rdf-ns-builders";
 import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
-import type { IriLike } from "./IriLike.js";
 import {
   sh_NodeShape,
   sh_PropertyShape,
@@ -206,12 +205,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         NonNullable<
           Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
         >,
-        | "$identifier"
-        | "in_"
-        | "nodeKind"
-        | "properties"
-        | "shaclmateName"
-        | "type"
+        "$identifier" | "in_" | "nodeKind" | "properties" | "shaclmateName"
       > & {
         readonly in_?: skos_ConceptScheme | ConvertibleInArray;
         readonly implicitClassTarget?: true;
@@ -219,9 +213,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         readonly properties?:
           | NodeShapePropertiesRecord
           | NodeShapePropertyArray;
-        readonly type?:
-          | IriLike<DefaultNamespaceT>
-          | readonly IriLike<DefaultNamespaceT>[];
         readonly shaclmateName?: string;
       },
     ): sh_NodeShape => {
