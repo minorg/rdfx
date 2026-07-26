@@ -87,7 +87,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
   type DefaultNamespaceKey = keyof DefaultNamespaceT & string;
 
   function PropertyShape(
-    $identifier: BlankNode | DefaultNamespaceKey | NamedNode,
+    $identifier: BlankNode | DefaultNamespaceKey | NamedNode | undefined,
     parameters?: Omit<
       NonNullable<
         Parameters<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>>[0]
@@ -184,7 +184,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
     namespace: _namespace as NamespaceBuilder<keyof typeof _namespace>,
 
     NodeShape: (
-      $identifier: BlankNode | DefaultNamespaceKey | NamedNode,
+      $identifier: BlankNode | DefaultNamespaceKey | NamedNode | undefined,
       parameters?: Omit<
         NonNullable<
           Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
