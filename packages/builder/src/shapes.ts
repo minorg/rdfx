@@ -905,7 +905,10 @@ export namespace sh_NodeShape {
                       if (value["termType"] === "NamedNode") {
                         return [value];
                       }
-                      if (sh_Shape.issh_Shape(value)) {
+                      if (
+                        value["termType"] === "sh_NodeShape" ||
+                        value["termType"] === "sh_PropertyShape"
+                      ) {
                         return sh_Shape.toRdfResourceValues(value, {
                           graph: _options.graph,
                           propertyPath: _options.propertyPath,
@@ -1149,7 +1152,7 @@ export namespace sh_NodeShape {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (owl_Ontology.isowl_Ontology(value)) {
+            if (value["termType"] === "owl_Ontology") {
               return [
                 owl_Ontology.toRdfResource(value, {
                   graph: _options.graph,
@@ -1293,7 +1296,7 @@ export namespace sh_NodeShape {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (sh_NodeShape.issh_NodeShape(value)) {
+            if (value["termType"] === "sh_NodeShape") {
               return [
                 sh_NodeShape.toRdfResource(value, {
                   graph: _options.graph,
@@ -1326,7 +1329,7 @@ export namespace sh_NodeShape {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (sh_NodeShape.issh_NodeShape(value)) {
+            if (value["termType"] === "sh_NodeShape") {
               return [
                 sh_NodeShape.toRdfResource(value, {
                   graph: _options.graph,
@@ -1378,7 +1381,10 @@ export namespace sh_NodeShape {
                       if (value["termType"] === "NamedNode") {
                         return [value];
                       }
-                      if (sh_Shape.issh_Shape(value)) {
+                      if (
+                        value["termType"] === "sh_NodeShape" ||
+                        value["termType"] === "sh_PropertyShape"
+                      ) {
                         return sh_Shape.toRdfResourceValues(value, {
                           graph: _options.graph,
                           propertyPath: _options.propertyPath,
@@ -1439,7 +1445,7 @@ export namespace sh_NodeShape {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (sh_PropertyShape.issh_PropertyShape(value)) {
+            if (value["termType"] === "sh_PropertyShape") {
               return [
                 sh_PropertyShape.toRdfResource(value, {
                   graph: _options.graph,
@@ -1552,7 +1558,10 @@ export namespace sh_NodeShape {
                       if (value["termType"] === "NamedNode") {
                         return [value];
                       }
-                      if (sh_Shape.issh_Shape(value)) {
+                      if (
+                        value["termType"] === "sh_NodeShape" ||
+                        value["termType"] === "sh_PropertyShape"
+                      ) {
                         return sh_Shape.toRdfResourceValues(value, {
                           graph: _options.graph,
                           propertyPath: _options.propertyPath,
@@ -1615,7 +1624,7 @@ export namespace sh_NodeShape {
       | NamedNode
       | (keyof $DefaultNamespaceT & string);
     readonly and?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
     readonly class_?:
       | (keyof $DefaultNamespaceT & string)
@@ -1646,7 +1655,9 @@ export namespace sh_NodeShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | (NamedNode | owl_Ontology)
+      | NamedNode
+      | owl_Ontology
+      | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | owl_Ontology>;
     readonly label?: string | Maybe<string>;
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
@@ -1687,7 +1698,9 @@ export namespace sh_NodeShape {
     readonly minLength?: bigint | Maybe<bigint>;
     readonly mutable?: boolean | Maybe<boolean>;
     readonly node?:
-      | (NamedNode | sh_NodeShape)
+      | NamedNode
+      | sh_NodeShape
+      | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | sh_NodeShape>;
     readonly nodeKind?:
       | (
@@ -1717,15 +1730,27 @@ export namespace sh_NodeShape {
           >
         >;
     readonly not?:
-      | (NamedNode | sh_NodeShape)
-      | readonly (NamedNode | sh_NodeShape)[];
+      | NamedNode
+      | sh_NodeShape
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_NodeShape
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly or?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
     readonly pattern?: string | Maybe<string>;
     readonly properties?:
-      | (NamedNode | sh_PropertyShape)
-      | readonly (NamedNode | sh_PropertyShape)[];
+      | NamedNode
+      | sh_PropertyShape
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_PropertyShape
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly rdfType?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -1761,7 +1786,7 @@ export namespace sh_NodeShape {
       | NamedNode
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly xone?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
   }): Either<Error, sh_NodeShape> =>
     $sequenceRecord({
@@ -1769,10 +1794,24 @@ export namespace sh_NodeShape {
         parameters?.$identifier,
         parameters?.$defaultNamespace,
       ),
-      and: $convertToMaybe($convertToList($identityConversionFunction))(
-        parameters?.and,
-        parameters?.$defaultNamespace,
-      ).chain((value) =>
+      and: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            defaultNamespace?: $DefaultNamespaceT,
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, defaultNamespace);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters?.and, parameters?.$defaultNamespace).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.and.type,
           value,
@@ -1890,10 +1929,22 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      isDefinedBy: $convertToMaybe($identityConversionFunction)(
-        parameters?.isDefinedBy,
-        parameters?.$defaultNamespace,
-      ).chain((value) =>
+      isDefinedBy: $convertToMaybe(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | owl_Ontology | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | owl_Ontology> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters?.isDefinedBy, parameters?.$defaultNamespace).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.isDefinedBy.type,
           value,
@@ -1989,10 +2040,22 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      node: $convertToMaybe($identityConversionFunction)(
-        parameters?.node,
-        parameters?.$defaultNamespace,
-      ).chain((value) =>
+      node: $convertToMaybe(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | sh_NodeShape | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | sh_NodeShape> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters?.node, parameters?.$defaultNamespace).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.node.type,
           value,
@@ -2013,19 +2076,45 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      not: $convertToScalarSet($identityConversionFunction)(
-        parameters?.not,
-        parameters?.$defaultNamespace,
-      ).chain((value) =>
+      not: $convertToScalarSet(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | sh_NodeShape | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | sh_NodeShape> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters?.not, parameters?.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.not.type,
           value,
         ),
       ),
-      or: $convertToMaybe($convertToList($identityConversionFunction))(
-        parameters?.or,
-        parameters?.$defaultNamespace,
-      ).chain((value) =>
+      or: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            defaultNamespace?: $DefaultNamespaceT,
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, defaultNamespace);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters?.or, parameters?.$defaultNamespace).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.or.type,
           value,
@@ -2040,10 +2129,25 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      properties: $convertToScalarSet($identityConversionFunction)(
-        parameters?.properties,
-        parameters?.$defaultNamespace,
-      ).chain((value) =>
+      properties: $convertToScalarSet(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value:
+            | NamedNode
+            | sh_PropertyShape
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | sh_PropertyShape> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters?.properties, parameters?.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.properties.type,
           value,
@@ -2148,10 +2252,24 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      xone: $convertToMaybe($convertToList($identityConversionFunction))(
-        parameters?.xone,
-        parameters?.$defaultNamespace,
-      ).chain((value) =>
+      xone: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            defaultNamespace?: $DefaultNamespaceT,
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, defaultNamespace);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters?.xone, parameters?.$defaultNamespace).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.xone.type,
           value,
@@ -2176,7 +2294,7 @@ export namespace sh_NodeShape {
       | NamedNode
       | (keyof $DefaultNamespaceT & string);
     readonly and?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
     readonly class_?:
       | (keyof $DefaultNamespaceT & string)
@@ -2207,7 +2325,9 @@ export namespace sh_NodeShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | (NamedNode | owl_Ontology)
+      | NamedNode
+      | owl_Ontology
+      | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | owl_Ontology>;
     readonly label?: string | Maybe<string>;
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
@@ -2248,7 +2368,9 @@ export namespace sh_NodeShape {
     readonly minLength?: bigint | Maybe<bigint>;
     readonly mutable?: boolean | Maybe<boolean>;
     readonly node?:
-      | (NamedNode | sh_NodeShape)
+      | NamedNode
+      | sh_NodeShape
+      | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | sh_NodeShape>;
     readonly nodeKind?:
       | (
@@ -2278,15 +2400,27 @@ export namespace sh_NodeShape {
           >
         >;
     readonly not?:
-      | (NamedNode | sh_NodeShape)
-      | readonly (NamedNode | sh_NodeShape)[];
+      | NamedNode
+      | sh_NodeShape
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_NodeShape
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly or?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
     readonly pattern?: string | Maybe<string>;
     readonly properties?:
-      | (NamedNode | sh_PropertyShape)
-      | readonly (NamedNode | sh_PropertyShape)[];
+      | NamedNode
+      | sh_PropertyShape
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_PropertyShape
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly rdfType?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -2322,7 +2456,7 @@ export namespace sh_NodeShape {
       | NamedNode
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly xone?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
   }): sh_NodeShape {
     return create(parameters).unsafeCoerce();
@@ -3200,7 +3334,10 @@ export namespace sh_PropertyShape {
                       if (value["termType"] === "NamedNode") {
                         return [value];
                       }
-                      if (sh_Shape.issh_Shape(value)) {
+                      if (
+                        value["termType"] === "sh_NodeShape" ||
+                        value["termType"] === "sh_PropertyShape"
+                      ) {
                         return sh_Shape.toRdfResourceValues(value, {
                           graph: _options.graph,
                           propertyPath: _options.propertyPath,
@@ -3321,7 +3458,7 @@ export namespace sh_PropertyShape {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (sh_PropertyGroup.issh_PropertyGroup(value)) {
+            if (value["termType"] === "sh_PropertyGroup") {
               return [
                 sh_PropertyGroup.toRdfResource(value, {
                   graph: _options.graph,
@@ -3423,7 +3560,7 @@ export namespace sh_PropertyShape {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (owl_Ontology.isowl_Ontology(value)) {
+            if (value["termType"] === "owl_Ontology") {
               return [
                 owl_Ontology.toRdfResource(value, {
                   graph: _options.graph,
@@ -3602,7 +3739,7 @@ export namespace sh_PropertyShape {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (sh_NodeShape.issh_NodeShape(value)) {
+            if (value["termType"] === "sh_NodeShape") {
               return [
                 sh_NodeShape.toRdfResource(value, {
                   graph: _options.graph,
@@ -3635,7 +3772,7 @@ export namespace sh_PropertyShape {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (sh_NodeShape.issh_NodeShape(value)) {
+            if (value["termType"] === "sh_NodeShape") {
               return [
                 sh_NodeShape.toRdfResource(value, {
                   graph: _options.graph,
@@ -3687,7 +3824,10 @@ export namespace sh_PropertyShape {
                       if (value["termType"] === "NamedNode") {
                         return [value];
                       }
-                      if (sh_Shape.issh_Shape(value)) {
+                      if (
+                        value["termType"] === "sh_NodeShape" ||
+                        value["termType"] === "sh_PropertyShape"
+                      ) {
                         return sh_Shape.toRdfResourceValues(value, {
                           graph: _options.graph,
                           propertyPath: _options.propertyPath,
@@ -3869,7 +4009,10 @@ export namespace sh_PropertyShape {
                       if (value["termType"] === "NamedNode") {
                         return [value];
                       }
-                      if (sh_Shape.issh_Shape(value)) {
+                      if (
+                        value["termType"] === "sh_NodeShape" ||
+                        value["termType"] === "sh_PropertyShape"
+                      ) {
                         return sh_Shape.toRdfResourceValues(value, {
                           graph: _options.graph,
                           propertyPath: _options.propertyPath,
@@ -3932,7 +4075,7 @@ export namespace sh_PropertyShape {
       | NamedNode
       | (keyof $DefaultNamespaceT & string);
     readonly and?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
     readonly class_?:
       | (keyof $DefaultNamespaceT & string)
@@ -3957,8 +4100,14 @@ export namespace sh_PropertyShape {
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly flags?: string | Maybe<string>;
     readonly groups?:
-      | (NamedNode | sh_PropertyGroup)
-      | readonly (NamedNode | sh_PropertyGroup)[];
+      | NamedNode
+      | sh_PropertyGroup
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_PropertyGroup
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly hasValues?:
       | (NamedNode | Literal)
       | readonly (NamedNode | Literal)[];
@@ -3967,7 +4116,9 @@ export namespace sh_PropertyShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | (NamedNode | owl_Ontology)
+      | NamedNode
+      | owl_Ontology
+      | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | owl_Ontology>;
     readonly label?: string | Maybe<string>;
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
@@ -4019,7 +4170,9 @@ export namespace sh_PropertyShape {
     readonly mutable?: boolean | Maybe<boolean>;
     readonly name?: string | Maybe<string>;
     readonly node?:
-      | (NamedNode | sh_NodeShape)
+      | NamedNode
+      | sh_NodeShape
+      | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | sh_NodeShape>;
     readonly nodeKind?:
       | (
@@ -4049,10 +4202,16 @@ export namespace sh_PropertyShape {
           >
         >;
     readonly not?:
-      | (NamedNode | sh_NodeShape)
-      | readonly (NamedNode | sh_NodeShape)[];
+      | NamedNode
+      | sh_NodeShape
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_NodeShape
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly or?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
     readonly order?: number | Maybe<number>;
     readonly path: $PropertyPath;
@@ -4089,7 +4248,7 @@ export namespace sh_PropertyShape {
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly uniqueLang?: boolean | Maybe<boolean>;
     readonly xone?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
   }): Either<Error, sh_PropertyShape> =>
     $sequenceRecord({
@@ -4097,10 +4256,24 @@ export namespace sh_PropertyShape {
         parameters.$identifier,
         parameters.$defaultNamespace,
       ),
-      and: $convertToMaybe($convertToList($identityConversionFunction))(
-        parameters.and,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      and: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            defaultNamespace?: $DefaultNamespaceT,
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, defaultNamespace);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters.and, parameters.$defaultNamespace).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.and.type,
           value,
@@ -4191,10 +4364,25 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
-      groups: $convertToScalarSet($identityConversionFunction)(
-        parameters.groups,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      groups: $convertToScalarSet(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value:
+            | NamedNode
+            | sh_PropertyGroup
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | sh_PropertyGroup> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.groups, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_PropertyShape.schema.properties.groups.type,
           value,
@@ -4222,10 +4410,22 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
-      isDefinedBy: $convertToMaybe($identityConversionFunction)(
-        parameters.isDefinedBy,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      isDefinedBy: $convertToMaybe(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | owl_Ontology | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | owl_Ontology> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.isDefinedBy.type,
           value,
@@ -4366,10 +4566,22 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
-      node: $convertToMaybe($identityConversionFunction)(
-        parameters.node,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      node: $convertToMaybe(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | sh_NodeShape | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | sh_NodeShape> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.node, parameters.$defaultNamespace).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.node.type,
           value,
@@ -4390,19 +4602,45 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
-      not: $convertToScalarSet($identityConversionFunction)(
-        parameters.not,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      not: $convertToScalarSet(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | sh_NodeShape | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | sh_NodeShape> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.not, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.not.type,
           value,
         ),
       ),
-      or: $convertToMaybe($convertToList($identityConversionFunction))(
-        parameters.or,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      or: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            defaultNamespace?: $DefaultNamespaceT,
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, defaultNamespace);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters.or, parameters.$defaultNamespace).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.or.type,
           value,
@@ -4537,10 +4775,24 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
-      xone: $convertToMaybe($convertToList($identityConversionFunction))(
-        parameters.xone,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      xone: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            defaultNamespace?: $DefaultNamespaceT,
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, defaultNamespace);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters.xone, parameters.$defaultNamespace).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.xone.type,
           value,
@@ -4565,7 +4817,7 @@ export namespace sh_PropertyShape {
       | NamedNode
       | (keyof $DefaultNamespaceT & string);
     readonly and?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
     readonly class_?:
       | (keyof $DefaultNamespaceT & string)
@@ -4590,8 +4842,14 @@ export namespace sh_PropertyShape {
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly flags?: string | Maybe<string>;
     readonly groups?:
-      | (NamedNode | sh_PropertyGroup)
-      | readonly (NamedNode | sh_PropertyGroup)[];
+      | NamedNode
+      | sh_PropertyGroup
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_PropertyGroup
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly hasValues?:
       | (NamedNode | Literal)
       | readonly (NamedNode | Literal)[];
@@ -4600,7 +4858,9 @@ export namespace sh_PropertyShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | (NamedNode | owl_Ontology)
+      | NamedNode
+      | owl_Ontology
+      | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | owl_Ontology>;
     readonly label?: string | Maybe<string>;
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
@@ -4652,7 +4912,9 @@ export namespace sh_PropertyShape {
     readonly mutable?: boolean | Maybe<boolean>;
     readonly name?: string | Maybe<string>;
     readonly node?:
-      | (NamedNode | sh_NodeShape)
+      | NamedNode
+      | sh_NodeShape
+      | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | sh_NodeShape>;
     readonly nodeKind?:
       | (
@@ -4682,10 +4944,16 @@ export namespace sh_PropertyShape {
           >
         >;
     readonly not?:
-      | (NamedNode | sh_NodeShape)
-      | readonly (NamedNode | sh_NodeShape)[];
+      | NamedNode
+      | sh_NodeShape
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_NodeShape
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly or?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
     readonly order?: number | Maybe<number>;
     readonly path: $PropertyPath;
@@ -4722,7 +4990,7 @@ export namespace sh_PropertyShape {
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly uniqueLang?: boolean | Maybe<boolean>;
     readonly xone?:
-      | readonly (NamedNode | sh_Shape)[]
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
       | Maybe<readonly (NamedNode | sh_Shape)[]>;
   }): sh_PropertyShape {
     return create(parameters).unsafeCoerce();
@@ -5427,7 +5695,7 @@ export namespace skos_Concept {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (skos_Concept.isskos_Concept(value)) {
+            if (value["termType"] === "skos_Concept") {
               return [
                 skos_Concept.toRdfResource(value, {
                   graph: _options.graph,
@@ -5543,8 +5811,14 @@ export namespace skos_Concept {
       | NamedNode;
     readonly altLabel?: string | Literal | readonly (string | Literal)[];
     readonly broader?:
-      | (NamedNode | skos_Concept)
-      | readonly (NamedNode | skos_Concept)[];
+      | NamedNode
+      | skos_Concept
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | skos_Concept
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly definition?: string | Literal | readonly (string | Literal)[];
     readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
     readonly notation?:
@@ -5575,10 +5849,22 @@ export namespace skos_Concept {
           value,
         ),
       ),
-      broader: $convertToScalarSet($identityConversionFunction)(
-        parameters.broader,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      broader: $convertToScalarSet(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | skos_Concept | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | skos_Concept> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.broader, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.broader.type,
           value,
@@ -5648,8 +5934,14 @@ export namespace skos_Concept {
       | NamedNode;
     readonly altLabel?: string | Literal | readonly (string | Literal)[];
     readonly broader?:
-      | (NamedNode | skos_Concept)
-      | readonly (NamedNode | skos_Concept)[];
+      | NamedNode
+      | skos_Concept
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | skos_Concept
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly definition?: string | Literal | readonly (string | Literal)[];
     readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
     readonly notation?:
@@ -5891,7 +6183,7 @@ export namespace skos_ConceptScheme {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (skos_Concept.isskos_Concept(value)) {
+            if (value["termType"] === "skos_Concept") {
               return [
                 skos_Concept.toRdfResource(value, {
                   graph: _options.graph,
@@ -5993,7 +6285,7 @@ export namespace skos_ConceptScheme {
             if (value["termType"] === "NamedNode") {
               return [value];
             }
-            if (skos_Concept.isskos_Concept(value)) {
+            if (value["termType"] === "skos_Concept") {
               return [
                 skos_Concept.toRdfResource(value, {
                   graph: _options.graph,
@@ -6036,8 +6328,14 @@ export namespace skos_ConceptScheme {
       | NamedNode;
     readonly altLabel?: string | Literal | readonly (string | Literal)[];
     readonly concepts?:
-      | (NamedNode | skos_Concept)
-      | readonly (NamedNode | skos_Concept)[];
+      | NamedNode
+      | skos_Concept
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | skos_Concept
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly definition?: string | Literal | readonly (string | Literal)[];
     readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
     readonly notation?:
@@ -6050,8 +6348,14 @@ export namespace skos_ConceptScheme {
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly prefLabel?: string | Literal | readonly (string | Literal)[];
     readonly topConcepts?:
-      | (NamedNode | skos_Concept)
-      | readonly (NamedNode | skos_Concept)[];
+      | NamedNode
+      | skos_Concept
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | skos_Concept
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -6071,10 +6375,22 @@ export namespace skos_ConceptScheme {
           value,
         ),
       ),
-      concepts: $convertToScalarSet($identityConversionFunction)(
-        parameters.concepts,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      concepts: $convertToScalarSet(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | skos_Concept | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | skos_Concept> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.concepts, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.concepts.type,
           value,
@@ -6116,10 +6432,22 @@ export namespace skos_ConceptScheme {
           value,
         ),
       ),
-      topConcepts: $convertToScalarSet($identityConversionFunction)(
-        parameters.topConcepts,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      topConcepts: $convertToScalarSet(
+        <$DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder>(
+          value: NamedNode | skos_Concept | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | skos_Concept> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.topConcepts, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.topConcepts.type,
           value,
@@ -6153,8 +6481,14 @@ export namespace skos_ConceptScheme {
       | NamedNode;
     readonly altLabel?: string | Literal | readonly (string | Literal)[];
     readonly concepts?:
-      | (NamedNode | skos_Concept)
-      | readonly (NamedNode | skos_Concept)[];
+      | NamedNode
+      | skos_Concept
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | skos_Concept
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly definition?: string | Literal | readonly (string | Literal)[];
     readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
     readonly notation?:
@@ -6167,8 +6501,14 @@ export namespace skos_ConceptScheme {
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly prefLabel?: string | Literal | readonly (string | Literal)[];
     readonly topConcepts?:
-      | (NamedNode | skos_Concept)
-      | readonly (NamedNode | skos_Concept)[];
+      | NamedNode
+      | skos_Concept
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | skos_Concept
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -6375,10 +6715,10 @@ export type sh_Shape = sh_NodeShape | sh_PropertyShape;
 
 export namespace sh_Shape {
   export const $toString = (value: sh_Shape): string => {
-    if (sh_NodeShape.issh_NodeShape(value)) {
+    if (value["termType"] === "sh_NodeShape") {
       return sh_NodeShape.$toString(value);
     }
-    if (sh_PropertyShape.issh_PropertyShape(value)) {
+    if (value["termType"] === "sh_PropertyShape") {
       return sh_PropertyShape.$toString(value);
     }
 
@@ -6837,7 +7177,7 @@ export namespace sh_Shape {
     value,
     _options,
   ): (BlankNode | NamedNode)[] => {
-    if (sh_NodeShape.issh_NodeShape(value)) {
+    if (value["termType"] === "sh_NodeShape") {
       return [
         sh_NodeShape.toRdfResource(value, {
           graph: _options.graph,
@@ -6845,7 +7185,7 @@ export namespace sh_Shape {
         }).identifier,
       ];
     }
-    if (sh_PropertyShape.issh_PropertyShape(value)) {
+    if (value["termType"] === "sh_PropertyShape") {
       return [
         sh_PropertyShape.toRdfResource(value, {
           graph: _options.graph,

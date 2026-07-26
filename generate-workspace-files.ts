@@ -5,9 +5,9 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.43";
+const VERSION = "0.0.44";
 
-const shaclmateVersion = "4.0.77";
+const shaclmateVersion = "4.0.80";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {

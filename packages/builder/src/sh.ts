@@ -5,11 +5,9 @@ import { LiteralFactory } from "@rdfx/literal";
 import type { PropertyPath } from "@rdfx/resource";
 import { sh as _namespace, owl, rdfs } from "@tpluscode/rdf-ns-builders";
 import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
-import type { IriLike } from "./IriLike.js";
 import {
   sh_NodeShape,
   sh_PropertyShape,
-  type sh_Shape,
   type skos_ConceptScheme,
 } from "./shapes.js";
 
@@ -89,35 +87,17 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
   type DefaultNamespaceKey = keyof DefaultNamespaceT & string;
 
   function PropertyShape(
-    $identifier:
-      | Exclude<
-          NonNullable<
-            Parameters<
-              typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>
-            >[0]
-          >["$identifier"],
-          string | (() => sh_PropertyShape.Identifier)
-        >
-      | DefaultNamespaceKey,
+    $identifier: BlankNode | DefaultNamespaceKey | NamedNode,
     parameters?: Omit<
       NonNullable<
         Parameters<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>>[0]
       >,
-      | "$identifier"
-      | "in_"
-      | "maxCount"
-      | "minCount"
-      | "node"
-      | "nodeKind"
-      | "path"
-      | "xone"
+      "$identifier" | "in_" | "maxCount" | "minCount" | "nodeKind" | "path"
     > & {
       readonly cardinality?: "optional" | "required" | "set";
       readonly in_?: skos_ConceptScheme | ConvertibleInArray;
-      readonly node?: NamedNode | DefaultNamespaceKey;
       readonly nodeKind?: NodeKindIri | NodeKindString;
       readonly path?: DefaultNamespaceKey | PropertyPath;
-      readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
     },
   ): ReturnType<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>> {
     // Order of default population matters here.
@@ -126,9 +106,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       cardinality: cardinalityParameter,
       in_: inParameter,
       path: pathParameter,
-      node: nodeParameter,
       nodeKind: nodeKindParameter,
-      xone: xoneParameter,
       ...otherParameters
     } = parameters ?? {};
 
@@ -177,16 +155,10 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       in_: convertIn(inParameter),
       maxCount,
       minCount,
-      node: nodeParameter ? toIri(nodeParameter) : undefined,
       nodeKind: nodeKindParameter
         ? convertNodeKind(nodeKindParameter)
         : undefined,
       path,
-      xone: xoneParameter
-        ? xoneParameter.map((xoneMember) =>
-            typeof xoneMember === "string" ? toIri(xoneMember) : xoneMember,
-          )
-        : undefined,
     });
   }
 
@@ -212,25 +184,12 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
     namespace: _namespace as NamespaceBuilder<keyof typeof _namespace>,
 
     NodeShape: (
-      $identifier:
-        | Exclude<
-            NonNullable<
-              Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
-            >["$identifier"],
-            string | (() => sh_NodeShape.Identifier)
-          >
-        | DefaultNamespaceKey,
+      $identifier: BlankNode | DefaultNamespaceKey | NamedNode,
       parameters?: Omit<
         NonNullable<
           Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
         >,
-        | "$identifier"
-        | "in_"
-        | "nodeKind"
-        | "properties"
-        | "shaclmateName"
-        | "type"
-        | "xone"
+        "$identifier" | "in_" | "nodeKind" | "properties" | "shaclmateName"
       > & {
         readonly in_?: skos_ConceptScheme | ConvertibleInArray;
         readonly implicitClassTarget?: true;
@@ -238,11 +197,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         readonly properties?:
           | NodeShapePropertiesRecord
           | NodeShapePropertyArray;
-        readonly type?:
-          | IriLike<DefaultNamespaceT>
-          | readonly IriLike<DefaultNamespaceT>[];
         readonly shaclmateName?: string;
-        readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
       },
     ): sh_NodeShape => {
       const nodeShapeIdentifier = toIdentifier($identifier);
@@ -254,7 +209,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         properties: propertiesParameter,
         shaclmateName,
         type: typeParameter,
-        xone: xoneParameter,
         ...otherParameters
       } = parameters ?? {};
 
@@ -344,11 +298,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         properties,
         shaclmateName,
         type,
-        xone: xoneParameter
-          ? xoneParameter.map((xoneMember) =>
-              typeof xoneMember === "string" ? toIri(xoneMember) : xoneMember,
-            )
-          : undefined,
       });
     },
 

@@ -53,7 +53,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
   type DefaultNamespaceKey = keyof DefaultNamespaceT & string;
 
   function Concept(
-    $identifier: NamedNode | DefaultNamespaceKey,
+    $identifier: DefaultNamespaceKey | NamedNode,
     parameters?: ConvertibleConceptParameters<
       DefaultNamespaceKey,
       DefaultNamespaceT
@@ -106,7 +106,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
       ConceptsRecordT extends
         ConceptSchemeConceptsRecordConstraint<ConceptsRecordT>,
     >(
-      $identifier: NamedNode | DefaultNamespaceKey,
+      $identifier: DefaultNamespaceKey | NamedNode,
       parameters?: Omit<
         Parameters<
           typeof skos_ConceptScheme.createUnsafe<DefaultNamespaceT>
