@@ -6,7 +6,7 @@
     "readable-stream": "^4.7.0"
   },
   "devDependencies": {
-    "@rdfx/parsers": "0.0.43"
+    "@rdfx/parsers": "0.0.44"
   },
   "files": [
     "LICENSE",
@@ -29,5 +29,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.43"
+  "version": "0.0.44"
 }
