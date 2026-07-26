@@ -456,32 +456,6 @@ describe("sh", () => {
       });
     });
 
-    describe("node", () => {
-      it("unspecified", () => {
-        const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
-        expect(propertyShape.node.extract()).toBeUndefined();
-      });
-
-      it("IRI", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          node: exTbox.Class,
-        });
-        expect(propertyShape.node.extract()).toEqualRdfTerm(exTbox.Class);
-      });
-
-      it.skip("inline node shape", () => {
-        throw new Error("implement me");
-      });
-
-      it("string", () => {
-        const propertyShape = sh.PropertyShape("property", {
-          node: exTbox.Class,
-        });
-        expect(propertyShape.node.extract()).toEqualRdfTerm(exTbox.Class);
-      });
-    });
-
     describe("path", () => {
       it("unspecified", () => {
         const propertyShape = sh.PropertyShape("property");

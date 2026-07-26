@@ -102,17 +102,10 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       NonNullable<
         Parameters<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>>[0]
       >,
-      | "$identifier"
-      | "in_"
-      | "maxCount"
-      | "minCount"
-      | "node"
-      | "nodeKind"
-      | "path"
+      "$identifier" | "in_" | "maxCount" | "minCount" | "nodeKind" | "path"
     > & {
       readonly cardinality?: "optional" | "required" | "set";
       readonly in_?: skos_ConceptScheme | ConvertibleInArray;
-      readonly node?: NamedNode | DefaultNamespaceKey;
       readonly nodeKind?: NodeKindIri | NodeKindString;
       readonly path?: DefaultNamespaceKey | PropertyPath;
     },
@@ -123,7 +116,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       cardinality: cardinalityParameter,
       in_: inParameter,
       path: pathParameter,
-      node: nodeParameter,
       nodeKind: nodeKindParameter,
       ...otherParameters
     } = parameters ?? {};
@@ -173,7 +165,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       in_: convertIn(inParameter),
       maxCount,
       minCount,
-      node: nodeParameter ? toIri(nodeParameter) : undefined,
       nodeKind: nodeKindParameter
         ? convertNodeKind(nodeKindParameter)
         : undefined,
