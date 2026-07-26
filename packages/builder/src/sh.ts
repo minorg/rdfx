@@ -9,7 +9,6 @@ import type { IriLike } from "./IriLike.js";
 import {
   sh_NodeShape,
   sh_PropertyShape,
-  type sh_Shape,
   type skos_ConceptScheme,
 } from "./shapes.js";
 
@@ -110,14 +109,12 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       | "node"
       | "nodeKind"
       | "path"
-      | "xone"
     > & {
       readonly cardinality?: "optional" | "required" | "set";
       readonly in_?: skos_ConceptScheme | ConvertibleInArray;
       readonly node?: NamedNode | DefaultNamespaceKey;
       readonly nodeKind?: NodeKindIri | NodeKindString;
       readonly path?: DefaultNamespaceKey | PropertyPath;
-      readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
     },
   ): ReturnType<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>> {
     // Order of default population matters here.
@@ -128,7 +125,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       path: pathParameter,
       node: nodeParameter,
       nodeKind: nodeKindParameter,
-      xone: xoneParameter,
       ...otherParameters
     } = parameters ?? {};
 
@@ -182,11 +178,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         ? convertNodeKind(nodeKindParameter)
         : undefined,
       path,
-      xone: xoneParameter
-        ? xoneParameter.map((xoneMember) =>
-            typeof xoneMember === "string" ? toIri(xoneMember) : xoneMember,
-          )
-        : undefined,
     });
   }
 
@@ -230,7 +221,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         | "properties"
         | "shaclmateName"
         | "type"
-        | "xone"
       > & {
         readonly in_?: skos_ConceptScheme | ConvertibleInArray;
         readonly implicitClassTarget?: true;
@@ -242,7 +232,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
           | IriLike<DefaultNamespaceT>
           | readonly IriLike<DefaultNamespaceT>[];
         readonly shaclmateName?: string;
-        readonly xone?: readonly (NamedNode | DefaultNamespaceKey | sh_Shape)[];
       },
     ): sh_NodeShape => {
       const nodeShapeIdentifier = toIdentifier($identifier);
@@ -254,7 +243,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         properties: propertiesParameter,
         shaclmateName,
         type: typeParameter,
-        xone: xoneParameter,
         ...otherParameters
       } = parameters ?? {};
 
@@ -344,11 +332,6 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         properties,
         shaclmateName,
         type,
-        xone: xoneParameter
-          ? xoneParameter.map((xoneMember) =>
-              typeof xoneMember === "string" ? toIri(xoneMember) : xoneMember,
-            )
-          : undefined,
       });
     },
 
