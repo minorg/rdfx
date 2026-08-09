@@ -1,6 +1,6 @@
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { iterableToStream } from "@rdfx/stream";
-import { Either, EitherAsync, Maybe } from "purify-ts";
+import { Either, EitherAsync, Left, Maybe } from "purify-ts";
 import { GraphIdentifier } from "./GraphIdentifier.js";
 import type { GraphStore } from "./GraphStore.js";
 
@@ -73,15 +73,16 @@ export class RdfjsDatasetGraphStore implements GraphStore {
 
   async post(quads: Stream): Promise<Either<Error, object>> {
     return new Promise((resolve) => {
-      quads.on("data", (quad: Quad) => {
-        this.dataset.add(quad);
-      });
-
-      quads.on("end", () => {
-        resolve(Either.of({}));
-      });
-
-      quads.on("error", (error) => resolve(Either.of(error)));
+      quads
+        .on("data", (quad: Quad) => {
+          this.dataset.add(quad);
+        })
+        .on("end", () => {
+          resolve(Either.of({}));
+        })
+        .on("error", (error) => {
+          resolve(Left(error));
+        });
     });
   }
 
@@ -112,7 +113,7 @@ export class RdfjsDatasetGraphStore implements GraphStore {
         resolve(Either.of({}));
       });
 
-      quads.on("error", (error) => resolve(Either.of(error)));
+      quads.on("error", (error) => resolve(Left(error)));
     });
   }
 }
