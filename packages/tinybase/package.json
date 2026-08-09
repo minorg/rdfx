@@ -1,6 +1,12 @@
 {
   "dependencies": {
+    "@rdfx/graph-store": "0.0.45",
+    "@rdfx/stream": "0.0.45",
+    "@rdfx/string": "0.0.45",
     "@rdfjs/types": "~2.0.1",
+    "@types/n3": "~1.26.0",
+    "n3": "~1.26.0",
+    "purify-ts": "~2.1.4",
     "tinybase": "~9.4.0",
     "ts-log": "~3.0.2"
   },

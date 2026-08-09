@@ -354,7 +354,7 @@ const workspaces = {
           "tinybase",
           "ts-log",
         ],
-        internal: ["collection", "graph-store", "stream", "string"],
+        internal: ["graph-store", "stream", "string"],
       },
       tsconfig: packageTsconfig,
     },
