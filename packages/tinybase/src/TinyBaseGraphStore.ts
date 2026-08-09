@@ -19,9 +19,13 @@ import {
 import type { Logger } from "ts-log";
 
 export class TinyBaseGraphStore implements GraphStore {
-  private readonly dataFactory: DataFactory;
-  private readonly datasetFactory: DatasetCoreFactory;
-  private readonly logger: Logger;
+  protected readonly dataFactory: DataFactory;
+  protected readonly datasetFactory: DatasetCoreFactory;
+  protected readonly logger: Logger;
+  protected readonly parseGraph: (
+    identifier: GraphIdentifier,
+    ntriples: string,
+  ) => Either<Error, readonly Quad[]>;
 
   readonly tinyBaseStore: TinyBaseGraphStore.TinyBaseStore;
 
@@ -35,10 +39,18 @@ export class TinyBaseGraphStore implements GraphStore {
     dataFactory: DataFactory;
     datasetFactory: DatasetCoreFactory;
     logger: Logger;
+    /**
+     * Function to parse the given N-Triples string (in the default graph) into Quads
+     * with every Quad's graph set to the given graph identifier.
+     *
+     * @param identifier graph identifier
+     * @param ntriples \n-joined N-Triples string
+     * @returns array of Quads
+     */
     parseGraph?: (
       identifier: GraphIdentifier,
       ntriples: string,
-    ) => Either<Error, Quad[]>;
+    ) => Either<Error, readonly Quad[]>;
     tinyBaseStore?: TinyBaseGraphStore.TinyBaseStore;
   }) {
     this.dataFactory = dataFactory;
@@ -60,6 +72,13 @@ export class TinyBaseGraphStore implements GraphStore {
 
   async clear(): Promise<Either<Error, object>> {
     return this.clearSync();
+  }
+
+  clearSync(): Either<Error, object> {
+    return Either.encase(() => {
+      this.tinyBaseStore.delTable("graph");
+      return {};
+    });
   }
 
   async delete(identifier: GraphIdentifier): Promise<Either<Error, object>> {
@@ -102,7 +121,7 @@ export class TinyBaseGraphStore implements GraphStore {
           return Maybe.empty();
         }
 
-        return Maybe.of(parsedQuadsEither.extract() as Quad[]);
+        return Maybe.of(parsedQuadsEither.extract() as readonly Quad[]);
       } else {
         const startTimestampMs = performance.now();
 
@@ -266,18 +285,6 @@ export class TinyBaseGraphStore implements GraphStore {
         });
     });
   }
-
-  private clearSync(): Either<Error, object> {
-    return Either.encase(() => {
-      this.tinyBaseStore.delTable("graph");
-      return {};
-    });
-  }
-
-  private readonly parseGraph: (
-    identifier: GraphIdentifier,
-    ntriples: string,
-  ) => Either<Error, Quad[]>;
 }
 
 export namespace TinyBaseGraphStore {
