@@ -1,14 +1,14 @@
 {
   "dependencies": {
-    "@rdfx/stream": "0.0.47",
+    "@rdfx/stream": "0.0.48",
     "@rdfjs/types": "~2.0.1",
     "purify-ts": "~2.1.4",
     "ts-log": "~3.0.2"
   },
   "devDependencies": {
-    "@rdfx/collection": "0.0.47",
-    "@rdfx/data-factory": "0.0.47",
-    "@rdfx/testing": "0.0.47"
+    "@rdfx/collection": "0.0.48",
+    "@rdfx/data-factory": "0.0.48",
+    "@rdfx/testing": "0.0.48"
   },
   "files": [
     "LICENSE",
@@ -33,5 +33,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.47"
+  "version": "0.0.48"
 }
