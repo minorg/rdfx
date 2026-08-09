@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.45";
+const VERSION = "0.0.46";
 
 const shaclmateVersion = "4.0.80";
 const vitestVersion = "~4.1.5";
@@ -63,6 +63,7 @@ const externalDependencies = {
   "rdf-terms": "~2.0.0", // For @rdfx/testing code adapted from jest-rdf
   "readable-stream": "^4.7.0",
   rimraf: "~6.0.1",
+  tinybase: "~9.4.0",
   "ts-invariant": "~0.10.3",
   "ts-log": "~3.0.2",
   tsx: "~4.16.2",
@@ -88,7 +89,8 @@ type PackageName =
   | "sparql-client"
   | "stream"
   | "string"
-  | "testing";
+  | "testing"
+  | "tinybase";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -342,6 +344,23 @@ const workspaces = {
       },
       tsconfig: packageTsconfig,
     },
+    tinybase: {
+      dependencies: {
+        external: [
+          "@rdfjs/types",
+          "@types/n3",
+          "n3",
+          "purify-ts",
+          "tinybase",
+          "ts-log",
+        ],
+        internal: ["graph-store", "stream", "string"],
+      },
+      devDependencies: {
+        internal: ["collection", "data-factory"],
+      },
+      tsconfig: packageTsconfig,
+    },
   } satisfies Record<PackageName, Workspace>,
 } as const;
 
@@ -562,7 +581,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 25 dev dev:tests",
+        dev: "turbo run --concurrency 26 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@rdfx/string": "0.0.45",
+    "@rdfx/string": "0.0.46",
     "@rdfjs/types": "~2.0.1"
   },
   "devDependencies": {},
@@ -28,5 +28,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.45"
+  "version": "0.0.46"
 }

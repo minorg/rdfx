@@ -1,12 +1,18 @@
 {
   "dependencies": {
+    "@rdfx/graph-store": "0.0.46",
+    "@rdfx/stream": "0.0.46",
+    "@rdfx/string": "0.0.46",
     "@rdfjs/types": "~2.0.1",
     "@types/n3": "~1.26.0",
-    "n3": "~1.26.0"
+    "n3": "~1.26.0",
+    "purify-ts": "~2.1.4",
+    "tinybase": "~9.4.0",
+    "ts-log": "~3.0.2"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.46",
-    "oxigraph": "0.5.8"
+    "@rdfx/collection": "0.0.46",
+    "@rdfx/data-factory": "0.0.46"
   },
   "files": [
     "LICENSE",
@@ -15,7 +21,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/sparql-client",
+  "name": "@rdfx/tinybase",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -27,7 +33,7 @@
     "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run packages/sparql-client/__tests__"
+    "test": "cd ../.. && vitest run packages/tinybase/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
