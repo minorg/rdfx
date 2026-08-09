@@ -68,7 +68,7 @@ export class TinyBaseGraphStore implements GraphStore {
 
   deleteSync(identifier: GraphIdentifier): Either<Error, object> {
     return Either.encase(() => {
-      this.tinyBaseStore.delRow("graph", graphIdentifierString(identifier));
+      this.tinyBaseStore.delRow("graph", GraphIdentifier.stringify(identifier));
       return {};
     });
   }
@@ -86,7 +86,7 @@ export class TinyBaseGraphStore implements GraphStore {
       if (identifier) {
         const row = this.tinyBaseStore.getRow(
           "graph",
-          graphIdentifierString(identifier),
+          GraphIdentifier.stringify(identifier),
         );
         if (Object.values(row).length === 0) {
           return Maybe.empty();
@@ -96,7 +96,7 @@ export class TinyBaseGraphStore implements GraphStore {
         if (parsedQuadsEither.isLeft()) {
           this.logger.warn(
             "error parsing row %s: %s",
-            graphIdentifierString(identifier),
+            GraphIdentifier.stringify(identifier),
             parsedQuadsEither.extract().message,
           );
           return Maybe.empty();
@@ -111,7 +111,7 @@ export class TinyBaseGraphStore implements GraphStore {
         // this.logger.debug("parsing %d rows", rows.length);
         for (const [rowId, row] of rows) {
           // this.logger.debug("parsing row %s", rowId);
-          const identifier = this.dataFactory.namedNode(rowId);
+          const identifier = GraphIdentifier.parse(this.dataFactory, rowId);
           this.parseGraph(identifier, row.ntriples!)
             .ifLeft((error) => {
               this.logger.warn(
@@ -150,7 +150,7 @@ export class TinyBaseGraphStore implements GraphStore {
 
   headSync(identifier: GraphIdentifier): Either<Error, boolean> {
     return Either.encase(() =>
-      this.tinyBaseStore.hasRow("graph", graphIdentifierString(identifier)),
+      this.tinyBaseStore.hasRow("graph", GraphIdentifier.stringify(identifier)),
     );
   }
 
@@ -160,7 +160,9 @@ export class TinyBaseGraphStore implements GraphStore {
 
   identifiersSync(): Either<Error, readonly GraphIdentifier[]> {
     return Either.encase(() =>
-      this.tinyBaseStore.getRowIds("graph").map(this.dataFactory.namedNode),
+      this.tinyBaseStore
+        .getRowIds("graph")
+        .map((rowId) => GraphIdentifier.parse(this.dataFactory, rowId)),
     );
   }
 
@@ -181,7 +183,7 @@ export class TinyBaseGraphStore implements GraphStore {
           const identifier = GraphIdentifier.fromQuadGraph(
             quad.graph,
           ).unsafeCoerce();
-          const graphIdentifierString_ = graphIdentifierString(identifier);
+          const graphIdentifierString_ = GraphIdentifier.stringify(identifier);
 
           let dataset = datasetsByGraphIdentifier.get(graphIdentifierString_);
           if (!dataset) {
@@ -191,7 +193,13 @@ export class TinyBaseGraphStore implements GraphStore {
               .unsafeCoerce()
               .ifJust((existingDataset) => {
                 for (const quad of existingDataset) {
-                  dataset!.add(quad);
+                  dataset!.add(
+                    this.dataFactory.quad(
+                      quad.subject,
+                      quad.predicate,
+                      quad.object,
+                    ),
+                  );
                 }
               });
           }
@@ -227,7 +235,7 @@ export class TinyBaseGraphStore implements GraphStore {
 
       quads
         .on("data", (quad: Quad) => {
-          const graphIdentifierString_ = graphIdentifierString(
+          const graphIdentifierString_ = GraphIdentifier.stringify(
             GraphIdentifier.fromQuadGraph(quad.graph).unsafeCoerce(),
           );
           let ntriples = ntriplesByGraphIdentifier.get(graphIdentifierString_);
@@ -270,15 +278,6 @@ export class TinyBaseGraphStore implements GraphStore {
     identifier: GraphIdentifier,
     ntriples: string,
   ) => Either<Error, Quad[]>;
-}
-
-function graphIdentifierString(identifier: GraphIdentifier): string {
-  switch (identifier.termType) {
-    case "DefaultGraph":
-      return "default";
-    case "NamedNode":
-      return identifier.value;
-  }
 }
 
 export namespace TinyBaseGraphStore {
