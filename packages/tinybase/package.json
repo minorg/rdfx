@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "tinybase": "~9.4.0"
+    "@rdfjs/types": "~2.0.1",
+    "tinybase": "~9.4.0",
+    "ts-log": "~3.0.2"
   },
   "devDependencies": {},
   "files": [

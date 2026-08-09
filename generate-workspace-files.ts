@@ -346,7 +346,15 @@ const workspaces = {
     },
     tinybase: {
       dependencies: {
-        external: ["tinybase"],
+        external: [
+          "@rdfjs/types",
+          "@types/n3",
+          "n3",
+          "purify-ts",
+          "tinybase",
+          "ts-log",
+        ],
+        internal: ["collection", "graph-store", "stream", "string"],
       },
       tsconfig: packageTsconfig,
     },
