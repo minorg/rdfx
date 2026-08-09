@@ -63,14 +63,6 @@ export class TinyBaseGraphStore implements GraphStore {
     );
   }
 
-  getUnionObjectSets(): readonly $ObjectSet[] {
-    return [
-      new $RdfjsDatasetObjectSet(() =>
-        this.getUnionDatasetSync().unsafeCoerce(),
-      ),
-    ];
-  }
-
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
     return this.headSync(identifier);
   }
