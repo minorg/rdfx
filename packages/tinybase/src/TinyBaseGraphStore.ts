@@ -36,7 +36,7 @@ export class TinyBaseGraphStore implements GraphStore {
     datasetFactory: DatasetCoreFactory;
     logger: Logger;
     parseGraph?: (
-      graphIdentifier: GraphIdentifier,
+      identifier: GraphIdentifier,
       ntriples: string,
     ) => Either<Error, Quad[]>;
     tinyBaseStore?: TinyBaseGraphStore.TinyBaseStore;
@@ -46,11 +46,11 @@ export class TinyBaseGraphStore implements GraphStore {
     this.logger = logger;
     this.parseGraph =
       parseGraph ??
-      ((graphIdentifier: GraphIdentifier, ntriples: string) =>
+      ((identifier: GraphIdentifier, ntriples: string) =>
         Either.encase(() => {
           const parser = new Parser({ format: "application/n-triples" });
           // Hack to put the quads in this named graph rather than rewriting them all after parsing.
-          (parser as any).DEFAULTGRAPH = graphIdentifier;
+          (parser as any).DEFAULTGRAPH = identifier;
           return parser.parse(ntriples);
         }));
     this.tinyBaseStore =
@@ -74,79 +74,74 @@ export class TinyBaseGraphStore implements GraphStore {
   }
 
   async get(
-    graphIdentifier: GraphIdentifier,
-  ): Promise<Either<Error, Maybe<Stream>>> {
-    return this.getStreamSync(graphIdentifier);
-  }
-
-  getDatasetSync(
     identifier: GraphIdentifier,
-  ): Either<Error, Maybe<DatasetCore>> {
-    return Either.encase(() => {
-      const row = this.tinyBaseStore.getRow(
-        "graph",
-        graphIdentifierString(identifier),
-      );
-      if (Object.values(row).length === 0) {
-        return Maybe.empty();
-      }
+  ): Promise<Either<Error, Maybe<Stream>>> {
+    return this.getStreamSync(identifier);
+  }
 
-      const parsedQuadsEither = this.parseGraph(identifier, row.ntriples!);
-      if (parsedQuadsEither.isLeft()) {
-        this.logger.warn(
-          "error parsing row %s: %s",
+  getQuadsSync(
+    identifier?: GraphIdentifier,
+  ): Either<Error, Maybe<readonly Quad[]>> {
+    return Either.encase(() => {
+      if (identifier) {
+        const row = this.tinyBaseStore.getRow(
+          "graph",
           graphIdentifierString(identifier),
-          parsedQuadsEither.extract().message,
         );
-        return Maybe.empty();
-      }
+        if (Object.values(row).length === 0) {
+          return Maybe.empty();
+        }
 
-      return Maybe.of(
-        this.datasetFactory.dataset(parsedQuadsEither.extract() as Quad[]),
-      );
+        const parsedQuadsEither = this.parseGraph(identifier, row.ntriples!);
+        if (parsedQuadsEither.isLeft()) {
+          this.logger.warn(
+            "error parsing row %s: %s",
+            graphIdentifierString(identifier),
+            parsedQuadsEither.extract().message,
+          );
+          return Maybe.empty();
+        }
+
+        return Maybe.of(parsedQuadsEither.extract() as Quad[]);
+      } else {
+        const startTimestampMs = performance.now();
+
+        let quads: Quad[] = [];
+        const rows = Object.entries(this.tinyBaseStore.getTable("graph"));
+        // this.logger.debug("parsing %d rows", rows.length);
+        for (const [rowId, row] of rows) {
+          // this.logger.debug("parsing row %s", rowId);
+          const identifier = this.dataFactory.namedNode(rowId);
+          this.parseGraph(identifier, row.ntriples!)
+            .ifLeft((error) => {
+              this.logger.warn(
+                "error parsing row %s: %s",
+                rowId,
+                error.message,
+              );
+            })
+            .ifRight((newQuads) => {
+              quads = quads.concat(newQuads);
+            });
+        }
+
+        const elapsedTimeMs = performance.now() - startTimestampMs;
+        this.logger.debug(
+          "parsed %d quads from %d rows in %.2fms",
+          quads,
+          rows.length,
+          elapsedTimeMs,
+        );
+
+        return Maybe.of(quads);
+      }
     });
   }
 
-  getStreamSync(
-    graphIdentifier: GraphIdentifier,
-  ): Either<Error, Maybe<Stream>> {
-    return this.getDatasetSync(graphIdentifier).map((datasetMaybe) =>
-      datasetMaybe.map((dataset) => iterableToStream(dataset)),
+  getStreamSync(identifier?: GraphIdentifier): Either<Error, Maybe<Stream>> {
+    return this.getQuadsSync(identifier).map((quadsMaybe) =>
+      quadsMaybe.map((quads) => iterableToStream(quads)),
     );
-  }
-
-  getUnionDatasetSync(): Either<Error, DatasetCore> {
-    return Either.encase(() => {
-      const startTimestampMs = performance.now();
-
-      const dataset = this.datasetFactory.dataset();
-
-      const rows = Object.entries(this.tinyBaseStore.getTable("graph"));
-      // this.logger.debug("parsing %d rows", rows.length);
-      for (const [rowId, row] of rows) {
-        // this.logger.debug("parsing row %s", rowId);
-        const graphIdentifier = this.dataFactory.namedNode(rowId);
-        this.parseGraph(graphIdentifier, row.ntriples!)
-          .ifLeft((error) => {
-            this.logger.warn("error parsing row %s: %s", rowId, error.message);
-          })
-          .ifRight((quads) => {
-            for (const quad of quads) {
-              dataset.add(quad);
-            }
-          });
-      }
-
-      const elapsedTimeMs = performance.now() - startTimestampMs;
-      this.logger.debug(
-        "parsed %d quads from %d rows in %.2fms",
-        dataset.size,
-        rows.length,
-        elapsedTimeMs,
-      );
-
-      return dataset;
-    });
   }
 
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
@@ -183,16 +178,16 @@ export class TinyBaseGraphStore implements GraphStore {
 
       quads
         .on("data", (quad: Quad) => {
-          const graphIdentifier = GraphIdentifier.fromQuadGraph(
+          const identifier = GraphIdentifier.fromQuadGraph(
             quad.graph,
           ).unsafeCoerce();
-          const graphIdentifierString_ = graphIdentifierString(graphIdentifier);
+          const graphIdentifierString_ = graphIdentifierString(identifier);
 
           let dataset = datasetsByGraphIdentifier.get(graphIdentifierString_);
           if (!dataset) {
             dataset = this.datasetFactory.dataset();
             datasetsByGraphIdentifier.set(graphIdentifierString_, dataset);
-            this.getDatasetSync(graphIdentifier)
+            this.getQuadsSync(identifier)
               .unsafeCoerce()
               .ifJust((existingDataset) => {
                 for (const quad of existingDataset) {
@@ -206,14 +201,14 @@ export class TinyBaseGraphStore implements GraphStore {
         })
         .on("end", () => {
           for (const [
-            graphIdentifier,
+            identifier,
             dataset,
           ] of datasetsByGraphIdentifier.entries()) {
             const ntriples: string[] = [];
             for (const quad of dataset) {
               ntriples.push(NTriplesTerm.stringify(quad));
             }
-            this.tinyBaseStore.setRow("graph", graphIdentifier, {
+            this.tinyBaseStore.setRow("graph", identifier, {
               ntriples: ntriples.join("\n"),
             });
           }
@@ -248,10 +243,10 @@ export class TinyBaseGraphStore implements GraphStore {
         })
         .on("end", () => {
           for (const [
-            graphIdentifier,
+            identifier,
             ntriples,
           ] of ntriplesByGraphIdentifier.entries()) {
-            this.tinyBaseStore.setRow("graph", graphIdentifier, {
+            this.tinyBaseStore.setRow("graph", identifier, {
               ntriples: ntriples.join("\n"),
             });
           }
@@ -272,17 +267,17 @@ export class TinyBaseGraphStore implements GraphStore {
   }
 
   private readonly parseGraph: (
-    graphIdentifier: GraphIdentifier,
+    identifier: GraphIdentifier,
     ntriples: string,
   ) => Either<Error, Quad[]>;
 }
 
-function graphIdentifierString(graphIdentifier: GraphIdentifier): string {
-  switch (graphIdentifier.termType) {
+function graphIdentifierString(identifier: GraphIdentifier): string {
+  switch (identifier.termType) {
     case "DefaultGraph":
       return "default";
     case "NamedNode":
-      return graphIdentifier.value;
+      return identifier.value;
   }
 }
 
