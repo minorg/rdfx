@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "tinybase": "~9.4.0"
+  },
+  "devDependencies": {},
+  "files": [
+    "LICENSE",
+    "dist/*.d.ts",
+    "dist/*.js"
+  ],
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "name": "@rdfx/tinybase",
+  "packageManager": "npm@11.11.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minorg/rdfx.git"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist",
+    "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
+    "dev": "tsc -w --preserveWatchOutput",
+    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run packages/tinybase/__tests__"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "0.0.45"
+}

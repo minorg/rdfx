@@ -63,6 +63,7 @@ const externalDependencies = {
   "rdf-terms": "~2.0.0", // For @rdfx/testing code adapted from jest-rdf
   "readable-stream": "^4.7.0",
   rimraf: "~6.0.1",
+  tinybase: "~9.4.0",
   "ts-invariant": "~0.10.3",
   "ts-log": "~3.0.2",
   tsx: "~4.16.2",
@@ -88,7 +89,8 @@ type PackageName =
   | "sparql-client"
   | "stream"
   | "string"
-  | "testing";
+  | "testing"
+  | "tinybase";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -339,6 +341,12 @@ const workspaces = {
           "rdf-terms",
           "vitest",
         ],
+      },
+      tsconfig: packageTsconfig,
+    },
+    tinybase: {
+      dependencies: {
+        external: ["tinybase"],
       },
       tsconfig: packageTsconfig,
     },

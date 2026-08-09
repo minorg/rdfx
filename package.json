@@ -44,6 +44,7 @@
     "packages/sparql-client",
     "packages/stream",
     "packages/string",
-    "packages/testing"
+    "packages/testing",
+    "packages/tinybase"
   ]
 }
