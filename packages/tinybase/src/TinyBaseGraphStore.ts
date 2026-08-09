@@ -8,6 +8,8 @@ import type {
 import { GraphIdentifier, type GraphStore } from "@rdfx/graph-store";
 import { iterableToStream } from "@rdfx/stream";
 import { NTriplesTerm } from "@rdfx/string";
+
+import { Parser } from "n3";
 import { Either, Left, Maybe } from "purify-ts";
 import {
   createMergeableStore,
@@ -20,22 +22,37 @@ export class TinyBaseGraphStore implements GraphStore {
   private readonly dataFactory: DataFactory;
   private readonly datasetFactory: DatasetCoreFactory;
   private readonly logger: Logger;
+
   readonly tinyBaseStore: TinyBaseGraphStore.TinyBaseStore;
 
   constructor({
     dataFactory,
     datasetFactory,
     logger,
+    parseGraph,
     tinyBaseStore,
   }: {
     dataFactory: DataFactory;
     datasetFactory: DatasetCoreFactory;
     logger: Logger;
+    parseGraph?: (
+      graphIdentifier: GraphIdentifier,
+      ntriples: string,
+    ) => Either<Error, Quad[]>;
     tinyBaseStore?: TinyBaseGraphStore.TinyBaseStore;
   }) {
     this.dataFactory = dataFactory;
     this.datasetFactory = datasetFactory;
     this.logger = logger;
+    this.parseGraph =
+      parseGraph ??
+      ((graphIdentifier: GraphIdentifier, ntriples: string) =>
+        Either.encase(() => {
+          const parser = new Parser({ format: "application/n-triples" });
+          // Hack to put the quads in this named graph rather than rewriting them all after parsing.
+          (parser as any).DEFAULTGRAPH = graphIdentifier;
+          return parser.parse(ntriples);
+        }));
     this.tinyBaseStore =
       tinyBaseStore ??
       createMergeableStore().setTablesSchema(TinyBaseGraphStore.tablesSchema);
@@ -49,10 +66,49 @@ export class TinyBaseGraphStore implements GraphStore {
     return this.deleteSync(identifier);
   }
 
+  deleteSync(identifier: GraphIdentifier): Either<Error, object> {
+    return Either.encase(() => {
+      this.tinyBaseStore.delRow("graph", graphIdentifierString(identifier));
+      return {};
+    });
+  }
+
+  get(graphIdentifier: GraphIdentifier): Promise<Either<Error, Maybe<Stream>>> {
+    return this.getStream(graphIdentifier);
+  }
+
   async getDataset(
     graphIdentifier: GraphIdentifier,
   ): Promise<Either<Error, Maybe<DatasetCore>>> {
     return this.getDatasetSync(graphIdentifier);
+  }
+
+  getDatasetSync(
+    identifier: GraphIdentifier,
+  ): Either<Error, Maybe<DatasetCore>> {
+    return Either.encase(() => {
+      const row = this.tinyBaseStore.getRow(
+        "graph",
+        graphIdentifierString(identifier),
+      );
+      if (Object.values(row).length === 0) {
+        return Maybe.empty();
+      }
+
+      const parsedQuadsEither = this.parseGraph(identifier, row.ntriples!);
+      if (parsedQuadsEither.isLeft()) {
+        this.logger.warn(
+          "error parsing row %s: %s",
+          graphIdentifierString(identifier),
+          parsedQuadsEither.extract().message,
+        );
+        return Maybe.empty();
+      }
+
+      return Maybe.of(
+        this.datasetFactory.dataset(parsedQuadsEither.extract() as Quad[]),
+      );
+    });
   }
 
   async getStream(
@@ -67,12 +123,28 @@ export class TinyBaseGraphStore implements GraphStore {
     return this.headSync(identifier);
   }
 
+  headSync(identifier: GraphIdentifier): Either<Error, boolean> {
+    return Either.encase(() =>
+      this.tinyBaseStore.hasRow("graph", graphIdentifierString(identifier)),
+    );
+  }
+
   async identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>> {
     return this.identifiersSync();
   }
 
+  identifiersSync(): Either<Error, readonly GraphIdentifier[]> {
+    return Either.encase(() =>
+      this.tinyBaseStore.getRowIds("graph").map(this.dataFactory.namedNode),
+    );
+  }
+
   async isEmpty(): Promise<Either<Error, boolean>> {
     return this.isEmptySync();
+  }
+
+  isEmptySync(): Either<Error, boolean> {
+    return Either.encase(() => this.tinyBaseStore.getRowCount("graph") === 0);
   }
 
   async post(quads: Stream): Promise<Either<Error, object>> {
@@ -169,100 +241,26 @@ export class TinyBaseGraphStore implements GraphStore {
     });
   }
 
-  private deleteSync(identifier: GraphIdentifier): Either<Error, object> {
-    return Either.encase(() => {
-      this.tinyBaseStore.delRow("graph", graphIdentifierString(identifier));
-      return {};
-    });
-  }
-
-  private getDatasetSync(
-    identifier: GraphIdentifier,
-  ): Either<Error, Maybe<DatasetCore>> {
-    return Either.encase(() => {
-      const row = this.tinyBaseStore.getRow(
-        "graph",
-        graphIdentifierString(identifier),
-      );
-      if (Object.values(row).length === 0) {
-        return Maybe.empty();
-      }
-
-      const parseCacheKey = row.ntriples!;
-
-      {
-        const cachedDataset = this.parseCache
-          .getSync(parseCacheKey)
-          .unsafeCoerce()
-          .extract();
-        if (cachedDataset) {
-          return Maybe.of(cachedDataset);
-        }
-      }
-
-      const parser = new Parser({ format: "application/n-triples" });
-      // Hack to put the quads in this named graph rather than rewriting them all after parsing.
-      (parser as any).DEFAULTGRAPH = identifier;
-      let parsedQuads: Quad[];
-      try {
-        parsedQuads = parser.parse(row.ntriples!);
-        // this.logger.debug("parsed %d quads from row %s", quadCount, rowId);
-      } catch (e) {
-        const error = e as Error;
-        this.logger.warn(
-          "error parsing row %s: %s",
-          graphIdentifierString(identifier),
-          error.message,
-        );
-        return Maybe.empty();
-      }
-
-      const parsedDataset = this.datasetFactory.dataset(parsedQuads);
-      this.parseCache.setSync(parseCacheKey, parsedDataset);
-      return Maybe.of(parsedDataset);
-    });
-  }
-
   private getUnionDatasetSync(): Either<Error, DatasetCore> {
     return Either.encase(() => {
       const startTimestampMs = performance.now();
 
       const dataset = this.datasetFactory.dataset();
 
-      const parser = new N3Parser({ format: "application/n-triples" });
       const rows = Object.entries(this.tinyBaseStore.getTable("graph"));
       // this.logger.debug("parsing %d rows", rows.length);
       for (const [rowId, row] of rows) {
         // this.logger.debug("parsing row %s", rowId);
-        const graphName = this.dataFactory.namedNode(rowId);
-        try {
-          const parseCacheKey = row.ntriples!;
-          let rowDataset = this.parseCache
-            .getSync(parseCacheKey)
-            .unsafeCoerce()
-            .extract();
-          if (!rowDataset) {
-            rowDataset = this.datasetFactory.dataset(
-              parser.parse(row.ntriples!),
-            );
-            this.parseCache.setSync(parseCacheKey, rowDataset);
-          }
-
-          for (const quad of rowDataset) {
-            dataset.add(
-              this.dataFactory.quad(
-                quad.subject,
-                quad.predicate,
-                quad.object,
-                graphName,
-              ),
-            );
-          }
-          // this.logger.debug("parsed %d quads from row %s", quadCount, rowId);
-        } catch (e) {
-          const error = e as Error;
-          this.logger.warn("error parsing row %s: %s", rowId, error.message);
-        }
+        const graphIdentifier = this.dataFactory.namedNode(rowId);
+        this.parseGraph(graphIdentifier, row.ntriples!)
+          .ifLeft((error) => {
+            this.logger.warn("error parsing row %s: %s", rowId, error.message);
+          })
+          .ifRight((quads) => {
+            for (const quad of quads) {
+              dataset.add(quad);
+            }
+          });
       }
 
       const elapsedTimeMs = performance.now() - startTimestampMs;
@@ -277,21 +275,10 @@ export class TinyBaseGraphStore implements GraphStore {
     });
   }
 
-  private headSync(identifier: GraphIdentifier): Either<Error, boolean> {
-    return Either.encase(() =>
-      this.tinyBaseStore.hasRow("graph", graphIdentifierString(identifier)),
-    );
-  }
-
-  private identifiersSync(): Either<Error, readonly GraphIdentifier[]> {
-    return Either.encase(() =>
-      this.tinyBaseStore.getRowIds("graph").map(this.dataFactory.namedNode),
-    );
-  }
-
-  private isEmptySync(): Either<Error, boolean> {
-    return Either.encase(() => this.tinyBaseStore.getRowCount("graph") === 0);
-  }
+  private readonly parseGraph: (
+    graphIdentifier: GraphIdentifier,
+    ntriples: string,
+  ) => Either<Error, Quad[]>;
 }
 
 function graphIdentifierString(graphIdentifier: GraphIdentifier): string {
