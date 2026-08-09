@@ -73,14 +73,10 @@ export class TinyBaseGraphStore implements GraphStore {
     });
   }
 
-  get(graphIdentifier: GraphIdentifier): Promise<Either<Error, Maybe<Stream>>> {
-    return this.getStream(graphIdentifier);
-  }
-
-  async getDataset(
+  async get(
     graphIdentifier: GraphIdentifier,
-  ): Promise<Either<Error, Maybe<DatasetCore>>> {
-    return this.getDatasetSync(graphIdentifier);
+  ): Promise<Either<Error, Maybe<Stream>>> {
+    return this.getStreamSync(graphIdentifier);
   }
 
   getDatasetSync(
@@ -111,12 +107,46 @@ export class TinyBaseGraphStore implements GraphStore {
     });
   }
 
-  async getStream(
+  getStreamSync(
     graphIdentifier: GraphIdentifier,
-  ): Promise<Either<Error, Maybe<Stream>>> {
+  ): Either<Error, Maybe<Stream>> {
     return this.getDatasetSync(graphIdentifier).map((datasetMaybe) =>
       datasetMaybe.map((dataset) => iterableToStream(dataset)),
     );
+  }
+
+  getUnionDatasetSync(): Either<Error, DatasetCore> {
+    return Either.encase(() => {
+      const startTimestampMs = performance.now();
+
+      const dataset = this.datasetFactory.dataset();
+
+      const rows = Object.entries(this.tinyBaseStore.getTable("graph"));
+      // this.logger.debug("parsing %d rows", rows.length);
+      for (const [rowId, row] of rows) {
+        // this.logger.debug("parsing row %s", rowId);
+        const graphIdentifier = this.dataFactory.namedNode(rowId);
+        this.parseGraph(graphIdentifier, row.ntriples!)
+          .ifLeft((error) => {
+            this.logger.warn("error parsing row %s: %s", rowId, error.message);
+          })
+          .ifRight((quads) => {
+            for (const quad of quads) {
+              dataset.add(quad);
+            }
+          });
+      }
+
+      const elapsedTimeMs = performance.now() - startTimestampMs;
+      this.logger.debug(
+        "parsed %d quads from %d rows in %.2fms",
+        dataset.size,
+        rows.length,
+        elapsedTimeMs,
+      );
+
+      return dataset;
+    });
   }
 
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
@@ -238,40 +268,6 @@ export class TinyBaseGraphStore implements GraphStore {
     return Either.encase(() => {
       this.tinyBaseStore.delTable("graph");
       return {};
-    });
-  }
-
-  private getUnionDatasetSync(): Either<Error, DatasetCore> {
-    return Either.encase(() => {
-      const startTimestampMs = performance.now();
-
-      const dataset = this.datasetFactory.dataset();
-
-      const rows = Object.entries(this.tinyBaseStore.getTable("graph"));
-      // this.logger.debug("parsing %d rows", rows.length);
-      for (const [rowId, row] of rows) {
-        // this.logger.debug("parsing row %s", rowId);
-        const graphIdentifier = this.dataFactory.namedNode(rowId);
-        this.parseGraph(graphIdentifier, row.ntriples!)
-          .ifLeft((error) => {
-            this.logger.warn("error parsing row %s: %s", rowId, error.message);
-          })
-          .ifRight((quads) => {
-            for (const quad of quads) {
-              dataset.add(quad);
-            }
-          });
-      }
-
-      const elapsedTimeMs = performance.now() - startTimestampMs;
-      this.logger.debug(
-        "parsed %d quads from %d rows in %.2fms",
-        dataset.size,
-        rows.length,
-        elapsedTimeMs,
-      );
-
-      return dataset;
     });
   }
 

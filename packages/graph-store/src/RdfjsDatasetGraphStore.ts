@@ -1,6 +1,8 @@
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { iterableToStream } from "@rdfx/stream";
-import { Either, EitherAsync, Left, Maybe } from "purify-ts";
+
+import { Either, Left, Maybe } from "purify-ts";
+
 import { GraphIdentifier } from "./GraphIdentifier.js";
 import type { GraphStore } from "./GraphStore.js";
 
@@ -8,10 +10,14 @@ import type { GraphStore } from "./GraphStore.js";
  * A GraphStore implementation backed by an RDF/JS Dataset.
  */
 export class RdfjsDatasetGraphStore implements GraphStore {
-  constructor(protected readonly dataset: DatasetCore) {}
+  constructor(readonly dataset: DatasetCore) {}
 
   async clear(): Promise<Either<Error, object>> {
-    return EitherAsync(async () => {
+    return this.clearSync();
+  }
+
+  clearSync(): Either<Error, object> {
+    return Either.encase(() => {
       for (const quad of this.dataset) {
         this.dataset.delete(quad);
       }
@@ -20,7 +26,11 @@ export class RdfjsDatasetGraphStore implements GraphStore {
   }
 
   async delete(identifier: GraphIdentifier): Promise<Either<Error, object>> {
-    return EitherAsync(async () => {
+    return this.deleteSync(identifier);
+  }
+
+  deleteSync(identifier: GraphIdentifier): Either<Error, object> {
+    return Either.encase(() => {
       for (const quad of this.dataset.match(null, null, null, identifier)) {
         this.dataset.delete(quad);
       }
@@ -28,8 +38,35 @@ export class RdfjsDatasetGraphStore implements GraphStore {
     });
   }
 
+  async get(
+    identifier: GraphIdentifier,
+  ): Promise<Either<Error, Maybe<Stream>>> {
+    return this.getStreamSync(identifier);
+  }
+
+  getDatasetSync(
+    identifier: GraphIdentifier,
+  ): Either<Error, Maybe<DatasetCore>> {
+    return Either.encase(() => {
+      for (const _ of this.dataset.match(null, null, null, identifier)) {
+        return Maybe.of(this.dataset.match(null, null, null, identifier));
+      }
+      return Maybe.empty();
+    });
+  }
+
+  getStreamSync(identifier: GraphIdentifier): Either<Error, Maybe<Stream>> {
+    return this.getDatasetSync(identifier).map((datasetMaybe) =>
+      datasetMaybe.map(iterableToStream),
+    );
+  }
+
   async head(identifier: GraphIdentifier): Promise<Either<Error, boolean>> {
-    return EitherAsync(async () => {
+    return this.headSync(identifier);
+  }
+
+  headSync(identifier: GraphIdentifier): Either<Error, boolean> {
+    return Either.encase(() => {
       for (const _ of this.dataset.match(null, null, null, identifier)) {
         return true;
       }
@@ -38,7 +75,11 @@ export class RdfjsDatasetGraphStore implements GraphStore {
   }
 
   async identifiers(): Promise<Either<Error, readonly GraphIdentifier[]>> {
-    return EitherAsync(async () => {
+    return this.identifiersSync();
+  }
+
+  identifiersSync(): Either<Error, readonly GraphIdentifier[]> {
+    return Either.encase(() => {
       const identifiers = new Map<string, GraphIdentifier>();
       for (const quad of this.dataset.match()) {
         switch (quad.graph.termType) {
@@ -55,20 +96,11 @@ export class RdfjsDatasetGraphStore implements GraphStore {
   }
 
   async isEmpty(): Promise<Either<Error, boolean>> {
-    return Either.of(this.dataset.size === 0);
+    return this.isEmptySync();
   }
 
-  async get(
-    identifier: GraphIdentifier,
-  ): Promise<Either<Error, Maybe<Stream>>> {
-    for (const _ of this.dataset.match(null, null, null, identifier)) {
-      return Either.of(
-        Maybe.of(
-          iterableToStream(this.dataset.match(null, null, null, identifier)),
-        ),
-      );
-    }
-    return Either.of(Maybe.empty());
+  isEmptySync(): Either<Error, boolean> {
+    return Either.of(this.dataset.size === 0);
   }
 
   async post(quads: Stream): Promise<Either<Error, object>> {
