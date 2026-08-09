@@ -356,6 +356,9 @@ const workspaces = {
         ],
         internal: ["graph-store", "stream", "string"],
       },
+      devDependencies: {
+        internal: ["collection", "data-factory"],
+      },
       tsconfig: packageTsconfig,
     },
   } satisfies Record<PackageName, Workspace>,

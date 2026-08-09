@@ -10,7 +10,10 @@
     "tinybase": "~9.4.0",
     "ts-log": "~3.0.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@rdfx/collection": "0.0.45",
+    "@rdfx/data-factory": "0.0.45"
+  },
   "files": [
     "LICENSE",
     "dist/*.d.ts",
