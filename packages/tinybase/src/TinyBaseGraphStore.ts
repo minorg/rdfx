@@ -22,10 +22,6 @@ export class TinyBaseGraphStore implements GraphStore {
   protected readonly dataFactory: DataFactory;
   protected readonly datasetFactory: DatasetCoreFactory;
   protected readonly logger: Logger;
-  protected readonly parseGraph: (
-    identifier: GraphIdentifier,
-    ntriples: string,
-  ) => Either<Error, readonly Quad[]>;
 
   readonly tinyBaseStore: TinyBaseGraphStore.TinyBaseStore;
 
@@ -33,38 +29,16 @@ export class TinyBaseGraphStore implements GraphStore {
     dataFactory,
     datasetFactory,
     logger,
-    parseGraph,
     tinyBaseStore,
   }: {
     dataFactory: DataFactory;
     datasetFactory: DatasetCoreFactory;
     logger: Logger;
-    /**
-     * Function to parse the given N-Triples string (in the default graph) into Quads
-     * with every Quad's graph set to the given graph identifier.
-     *
-     * @param identifier graph identifier
-     * @param ntriples \n-joined N-Triples string
-     * @returns array of Quads
-     */
-    parseGraph?: (
-      identifier: GraphIdentifier,
-      ntriples: string,
-    ) => Either<Error, readonly Quad[]>;
     tinyBaseStore?: TinyBaseGraphStore.TinyBaseStore;
   }) {
     this.dataFactory = dataFactory;
     this.datasetFactory = datasetFactory;
     this.logger = logger;
-    this.parseGraph =
-      parseGraph ??
-      ((identifier: GraphIdentifier, ntriples: string) =>
-        Either.encase(() => {
-          const parser = new Parser({ format: "application/n-triples" });
-          // Hack to put the quads in this named graph rather than rewriting them all after parsing.
-          (parser as any).DEFAULTGRAPH = identifier;
-          return parser.parse(ntriples);
-        }));
     this.tinyBaseStore =
       tinyBaseStore ??
       createMergeableStore().setTablesSchema(TinyBaseGraphStore.tablesSchema);
@@ -111,7 +85,7 @@ export class TinyBaseGraphStore implements GraphStore {
           return Maybe.empty();
         }
 
-        const parsedQuadsEither = this.parseGraph(identifier, row.ntriples!);
+        const parsedQuadsEither = this.parseRow(identifier, row.ntriples!);
         if (parsedQuadsEither.isLeft()) {
           this.logger.warn(
             "error parsing row %s: %s",
@@ -131,7 +105,7 @@ export class TinyBaseGraphStore implements GraphStore {
         for (const [rowId, row] of rows) {
           // this.logger.debug("parsing row %s", rowId);
           const identifier = GraphIdentifier.parse(this.dataFactory, rowId);
-          this.parseGraph(identifier, row.ntriples!)
+          this.parseRow(identifier, row.ntriples!)
             .ifLeft((error) => {
               this.logger.warn(
                 "error parsing row %s: %s",
@@ -283,6 +257,26 @@ export class TinyBaseGraphStore implements GraphStore {
         .on("error", (error) => {
           resolve(Left(error));
         });
+    });
+  }
+
+  /**
+   * Parse the given N-Triples string (which has no graphs specified) into Quads
+   * with every Quad's graph set to the given graph identifier.
+   *
+   * @param identifier graph identifier
+   * @param ntriples \n-joined N-Triples string
+   * @returns array of Quads
+   */
+  protected parseRow(
+    identifier: GraphIdentifier,
+    ntriples: string,
+  ): Either<Error, readonly Quad[]> {
+    return Either.encase(() => {
+      const parser = new Parser({ format: "application/n-triples" });
+      // Hack to put the quads in this named graph rather than rewriting them all after parsing.
+      (parser as any).DEFAULTGRAPH = identifier;
+      return parser.parse(ntriples);
     });
   }
 }
