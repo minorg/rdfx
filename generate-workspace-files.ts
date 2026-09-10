@@ -265,7 +265,11 @@ const workspaces = {
           "@rdfjs/types",
           "@types/rdfjs__parser-jsonld",
           "@types/rdfjs__parser-n3",
+          "purify-ts",
         ],
+      },
+      devDependencies: {
+        internal: ["format", "stream"],
       },
       tsconfig: packageTsconfig,
     },

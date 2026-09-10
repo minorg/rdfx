@@ -5,9 +5,13 @@
     "@rdfjs/sink-map": "~2.0.1",
     "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__parser-jsonld": "~2.1.7",
-    "@types/rdfjs__parser-n3": "~2.0.6"
+    "@types/rdfjs__parser-n3": "~2.0.6",
+    "purify-ts": "~2.1.4"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@rdfx/format": "0.0.50",
+    "@rdfx/stream": "0.0.50"
+  },
   "files": [
     "LICENSE",
     "README.md",
