@@ -83,9 +83,9 @@ type PackageName =
   | "git"
   | "graph-store"
   | "literal"
-  | "parsers"
+  | "parser"
   | "resource"
-  | "serializers"
+  | "serializer"
   | "sparql-client"
   | "stream"
   | "string"
@@ -199,8 +199,8 @@ const workspaces = {
           "collection",
           "data-factory",
           "graph-store",
-          "parsers",
-          "serializers",
+          "parser",
+          "serializer",
           "stream",
           "string",
         ],
@@ -249,7 +249,7 @@ const workspaces = {
       },
       tsconfig: packageTsconfig,
     },
-    parsers: {
+    parser: {
       dependencies: {
         external: [
           "@rdfjs/parser-jsonld",
@@ -273,7 +273,7 @@ const workspaces = {
       },
       tsconfig: packageTsconfig,
     },
-    serializers: {
+    serializer: {
       dependencies: {
         external: [
           "@rdfjs/prefix-map",
@@ -315,9 +315,6 @@ const workspaces = {
           "readable-stream",
           "purify-ts",
         ],
-      },
-      devDependencies: {
-        internal: ["parsers"],
       },
       tsconfig: packageTsconfig,
     },

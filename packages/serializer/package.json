@@ -27,7 +27,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/serializers",
+  "name": "@rdfx/serializer",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",

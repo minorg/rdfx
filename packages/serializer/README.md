@@ -1,5 +1,5 @@
-# @rdfx/serializers
+# @rdfx/serializer
 
-Bundles serializers for common RDF formats. Instances of [SinkMap](https://github.com/rdfjs-base/sink-map) are used to handle different media types.
+Bundles serializers for common RDF formats alongside convenience functions.
 
 Adapted from [@rdfjs/formats](https://github.com/rdfjs-base/formats) (MIT license).

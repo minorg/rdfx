@@ -5,9 +5,7 @@
     "purify-ts": "~2.1.4",
     "readable-stream": "^4.7.0"
   },
-  "devDependencies": {
-    "@rdfx/parsers": "0.0.50"
-  },
+  "devDependencies": {},
   "files": [
     "LICENSE",
     "dist/*.d.ts",

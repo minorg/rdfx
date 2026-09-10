@@ -5,7 +5,7 @@ import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { GraphIdentifier, type GraphStore } from "@rdfx/graph-store";
-import parsers from "@rdfx/parsers";
+import parsers from "@rdfx/parser";
 import { NTriplesTerm } from "@rdfx/string";
 import { Either, EitherAsync, Left, Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";

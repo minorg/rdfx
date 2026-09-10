@@ -16,7 +16,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/parsers",
+  "name": "@rdfx/parser",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
