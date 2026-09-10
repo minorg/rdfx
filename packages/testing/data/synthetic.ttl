@@ -1,0 +1,21 @@
+@prefix : <http://example.com/synthetic/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#>.
+@prefix skos-xl: <http://www.w3.org/2008/05/skos-xl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:concept
+    a skos:Concept ;
+    skos-xl:prefLabel [ skos-xl:literalForm "Concept" ] ;
+    skos:topConceptOf :conceptScheme ;
+    skos:inScheme :conceptScheme ;
+    skos:related :danglingConcept ;
+.
+
+:conceptScheme
+    a skos:ConceptScheme ;
+    skos:prefLabel "Concept scheme" ;
+    skos:hasTopConcept :concept ;
+.
