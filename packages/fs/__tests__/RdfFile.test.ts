@@ -8,7 +8,7 @@ import { RdfFile } from "../src/RdfFile.js";
 import { testDataDirPath } from "./paths.js";
 import "@rdfx/testing";
 import {
-  RdfFormat,
+  type RdfFormat,
   type UncompressedRdfFormat,
   uncompressedRdfFormats,
 } from "@rdfx/format";
@@ -93,50 +93,37 @@ describe("RdfFile", () => {
       const tempFilePath = path.join(tempDir.path, "file.tmp");
       const tempFile = new RdfFile(tempFilePath, { format });
 
-      switch (
-        RdfFormat.isCompressed(format)
-          ? format.uncompressedMimeType
-          : format.mimeType
-      ) {
-        case "application/ld+json":
-        case "application/n-quads":
-        case "application/trig":
-        case "application/rdf+xml":
-        case "text/n3": {
-          const expectedDataset = datasetFactory.dataset([expectedQuad]);
-          (
-            await tempFile.serialize(iterableToStream(expectedDataset), {
-              prefixes,
-            })
-          ).unsafeCoerce();
-          const actualDataset = (
-            await tempFile.parseInto(datasetFactory.dataset())
-          ).unsafeCoerce();
-          expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
-          break;
-        }
-        case "application/n-triples":
-        case "text/turtle": {
-          const expectedTriple = dataFactory.quad(
-            expectedQuad.subject,
-            expectedQuad.predicate,
-            expectedQuad.object,
-          );
-          (
-            await tempFile.serialize(iterableToStream([expectedTriple]), {
-              prefixes,
-            })
-          ).unsafeCoerce();
-          // const actualSerializedText = (
-          //   await fs.readFile(tempFile.path)
-          // ).toString();
-          const actualDataset = (
-            await tempFile.parseInto(datasetFactory.dataset())
-          ).unsafeCoerce();
-          expect(actualDataset).toBeRdfDatasetOfSize(1);
-          const actualTriple = [...actualDataset][0];
-          expect(actualTriple).toEqualRdfQuad(expectedTriple);
-        }
+      if (format.supportsQuads) {
+        const expectedDataset = datasetFactory.dataset([expectedQuad]);
+        (
+          await tempFile.serialize(iterableToStream(expectedDataset), {
+            prefixes,
+          })
+        ).unsafeCoerce();
+        const actualDataset = (
+          await tempFile.parseInto(datasetFactory.dataset())
+        ).unsafeCoerce();
+        expect(actualDataset).toBeRdfIsomorphic(expectedDataset);
+      } else {
+        const expectedTriple = dataFactory.quad(
+          expectedQuad.subject,
+          expectedQuad.predicate,
+          expectedQuad.object,
+        );
+        (
+          await tempFile.serialize(iterableToStream([expectedTriple]), {
+            prefixes,
+          })
+        ).unsafeCoerce();
+        // const actualSerializedText = (
+        //   await fs.readFile(tempFile.path)
+        // ).toString();
+        const actualDataset = (
+          await tempFile.parseInto(datasetFactory.dataset())
+        ).unsafeCoerce();
+        expect(actualDataset).toBeRdfDatasetOfSize(1);
+        const actualTriple = [...actualDataset][0];
+        expect(actualTriple).toEqualRdfQuad(expectedTriple);
       }
     }
 
