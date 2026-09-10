@@ -1,12 +1,10 @@
 import JsonLdParser, {
   type ParserOptions as JsonLdParserOptions,
 } from "@rdfjs/parser-jsonld";
-export { JsonLdParser };
 
 import N3Parser, {
   type ParserOptions as N3ParserOptions,
 } from "@rdfjs/parser-n3";
-export { N3Parser, type N3Parser as N3ParserOptions };
 
 import SinkMap from "@rdfjs/sink-map";
 
