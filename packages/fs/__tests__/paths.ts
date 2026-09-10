@@ -3,5 +3,8 @@ import { fileURLToPath } from "node:url";
 
 export const testDataDirPath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "data",
+  "..",
+  "..",
+  "..",
+  "test-data",
 );
