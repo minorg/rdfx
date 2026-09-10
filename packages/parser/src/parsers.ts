@@ -1,0 +1,34 @@
+import JsonLdParser, {
+  type ParserOptions as JsonLdParserOptions,
+} from "@rdfjs/parser-jsonld";
+export { JsonLdParser };
+
+import N3Parser, {
+  type ParserOptions as N3ParserOptions,
+} from "@rdfjs/parser-n3";
+export { N3Parser, type N3Parser as N3ParserOptions };
+
+import SinkMap from "@rdfjs/sink-map";
+
+import type { DataFactory } from "@rdfjs/types";
+
+export function parsers({
+  dataFactory,
+  ...otherOptions
+}: { dataFactory: DataFactory } & Omit<
+  JsonLdParserOptions & N3ParserOptions,
+  "factory"
+>) {
+  const options = { ...otherOptions, factory: dataFactory };
+
+  const n3Parser = new N3Parser(options);
+
+  return new SinkMap([
+    ["application/ld+json", new JsonLdParser(options)],
+    ["application/trig", n3Parser],
+    ["application/n-quads", n3Parser],
+    ["application/n-triples", n3Parser],
+    ["text/n3", n3Parser],
+    ["text/turtle", n3Parser],
+  ]);
+}
