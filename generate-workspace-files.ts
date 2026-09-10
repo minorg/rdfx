@@ -79,6 +79,7 @@ type PackageName =
   | "builder"
   | "collection"
   | "data-factory"
+  | "format"
   | "fs"
   | "git"
   | "graph-store"
@@ -183,13 +184,18 @@ const workspaces = {
       },
       tsconfig: packageTsconfig,
     },
+    format: {
+      dependencies: {
+        external: ["mime"],
+      },
+      tsconfig: packageTsconfig,
+    },
     fs: {
       dependencies: {
         external: [
           "@rdfjs/types",
           "@types/node",
           "@types/unbzip2-stream",
-          "mime",
           "purify-ts",
           "ts-log",
           "typescript-memoize",
@@ -198,6 +204,7 @@ const workspaces = {
         internal: [
           "collection",
           "data-factory",
+          "format",
           "graph-store",
           "parser",
           "serializer",
@@ -578,7 +585,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 26 dev dev:tests",
+        dev: "turbo run --concurrency 27 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

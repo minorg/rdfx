@@ -1,4 +1,3 @@
-import path from "node:path";
 import { Mime } from "mime";
 import otherMimeTypes from "mime/types/other.js";
 import standardMimeTypes from "mime/types/standard.js";
@@ -18,17 +17,30 @@ const mime = new Mime(standardMimeTypes, otherMimeTypes, {
 export type RdfFormat = CompressedRdfFormat | UncompressedRdfFormat;
 
 export namespace RdfFormat {
-  export function fromPath(filePath: string): Either<Error, RdfFormat> {
-    const mimeType = mime.getType(filePath);
+  function basename(filePath: string): string {
+    const lastSlashIndex = Math.max(
+      filePath.lastIndexOf("/"),
+      filePath.lastIndexOf("\\"),
+    );
+    return lastSlashIndex === -1
+      ? filePath
+      : filePath.slice(lastSlashIndex + 1);
+  }
+
+  function removeExtension(fileName: string): string {
+    const lastDotIndex = fileName.lastIndexOf(".");
+    // lastDotIndex <= 0 covers "no extension" and dotfiles like ".gitignore"
+    return lastDotIndex <= 0 ? fileName : fileName.slice(0, lastDotIndex);
+  }
+
+  export function fromFileName(fileName: string): Either<Error, RdfFormat> {
+    const mimeType = mime.getType(fileName);
     if (mimeType === null) {
-      return Left(new Error(`unable to infer MIME type of ${filePath}`));
+      return Left(new Error(`unable to infer MIME type of ${fileName}`));
     }
 
     if (compressionMethodsSet.has(mimeType)) {
-      const uncompressedFileName = path.basename(
-        path.basename(filePath),
-        path.extname(filePath),
-      );
+      const uncompressedFileName = removeExtension(basename(fileName));
 
       const uncompressedMimeType = mime.getType(uncompressedFileName);
       if (uncompressedMimeType === null) {
@@ -46,7 +58,7 @@ export namespace RdfFormat {
       if (uncompressedRdfFormat === undefined) {
         return Left(
           new Error(
-            `${filePath} has a non-RDF MIME type: ${uncompressedMimeType}`,
+            `${fileName} has a non-RDF MIME type: ${uncompressedMimeType}`,
           ),
         );
       }
@@ -64,7 +76,7 @@ export namespace RdfFormat {
     )[mimeType];
     if (uncompressedRdfFormat === undefined) {
       return Left(
-        new Error(`${filePath} has a non-RDF MIME type: ${mimeType}`),
+        new Error(`${fileName} has a non-RDF MIME type: ${mimeType}`),
       );
     }
 

@@ -1,13 +1,12 @@
 import type { DatasetCore, NamedNode, Stream } from "@rdfjs/types";
 import type { PrefixMap } from "@rdfx/collection";
-import type serializers from "@rdfx/serializers";
+import { RdfFormat, uncompressedRdfFormatsByMimeType } from "@rdfx/format";
+import type serializers from "@rdfx/serializer";
 import { Either, EitherAsync, Left } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
 import { CompressedRdfStream } from "./CompressedRdfStream.js";
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
-import { RdfFormat } from "./RdfFormat.js";
-import { uncompressedRdfFormatsByMimeType } from "./uncompressedRdfFormatsByMimeType.js";
 
 export class RdfFile {
   readonly format: RdfFormat;
@@ -33,7 +32,7 @@ export class RdfFile {
     filePath: string,
     options?: { fileSystem?: FileSystem; logger?: Logger },
   ): Either<Error, RdfFile> {
-    return RdfFormat.fromPath(filePath).map(
+    return RdfFormat.fromFileName(filePath).map(
       (format) =>
         new RdfFile(filePath, {
           fileSystem: options?.fileSystem,

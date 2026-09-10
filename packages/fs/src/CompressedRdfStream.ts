@@ -3,12 +3,11 @@ import { pipeline } from "node:stream/promises";
 import zlib from "node:zlib";
 import type { Stream } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
+import { RdfFormat, type UncompressedRdfFormat } from "@rdfx/format";
 import parsersFactory from "@rdfx/parser";
 import serializers from "@rdfx/serializer";
 import { type Either, EitherAsync } from "purify-ts";
 import bz2 from "unbzip2-stream";
-import { RdfFormat } from "./RdfFormat.js";
-import type { UncompressedRdfFormat } from "./UncompressedRdfFormat.js";
 
 const parsers = parsersFactory({ dataFactory });
 

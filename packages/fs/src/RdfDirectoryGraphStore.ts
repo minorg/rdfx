@@ -4,18 +4,16 @@ import type { Readable } from "node:stream";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
+import { RdfFormat, uncompressedRdfFormatsByMimeType } from "@rdfx/format";
 import { GraphIdentifier, type GraphStore } from "@rdfx/graph-store";
 import parsers from "@rdfx/parser";
 import { NTriplesTerm } from "@rdfx/string";
 import { Either, EitherAsync, Left, Maybe } from "purify-ts";
 import { dummyLogger, type Logger } from "ts-log";
-
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfDirectory } from "./RdfDirectory.js";
 import type { RdfFile } from "./RdfFile.js";
-import { RdfFormat } from "./RdfFormat.js";
-import { uncompressedRdfFormatsByMimeType } from "./uncompressedRdfFormatsByMimeType.js";
 
 /**
  * A GraphStore implementation backed by files in a directory.
@@ -47,7 +45,7 @@ export class RdfDirectoryGraphStore implements GraphStore {
           continue;
         }
         const direntPath = path.join(dirent.parentPath, dirent.name);
-        const formatEither = RdfFormat.fromPath(direntPath);
+        const formatEither = RdfFormat.fromFileName(direntPath);
         if (formatEither.isLeft()) {
           this.logger.debug("%s is not an RDF file, ignoring", direntPath);
           continue;
