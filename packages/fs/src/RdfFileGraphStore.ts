@@ -1,5 +1,6 @@
 import type { DatasetCore, Stream } from "@rdfjs/types";
 import { datasetFactory, type PrefixMap } from "@rdfx/collection";
+import { RdfFormat } from "@rdfx/format";
 import {
   type GraphIdentifier,
   type GraphStore,
@@ -13,7 +14,6 @@ import { isErrnoException } from "./ErrnoException.js";
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfFile } from "./RdfFile.js";
-import { RdfFormat } from "./RdfFormat.js";
 
 /**
  * A GraphStore implementation backed by a single RdfFile.
@@ -35,7 +35,8 @@ export class RdfFileGraphStore implements GraphStore {
     },
   ) {
     this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
-    this.format = options?.format ?? RdfFormat.fromPath(path).unsafeCoerce();
+    this.format =
+      options?.format ?? RdfFormat.fromFileName(path).unsafeCoerce();
     this.logger = options?.logger ?? dummyLogger;
     this.prefixMap = options?.prefixMap;
   }

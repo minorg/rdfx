@@ -1,30 +1,20 @@
+import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import JsonLdSerializer, {
   type SerializerOptions as JsonLdSerializerOptions,
 } from "@rdfjs/serializer-jsonld-ext";
-export { JsonLdSerializer, type JsonLdSerializerOptions };
-
-import N3Serializer, {
-  type SerializerOptions as N3SerializerOptions,
-} from "./N3Serializer.js";
-export { N3Serializer, type N3SerializerOptions };
-
 import NTriplesSerializer from "@rdfjs/serializer-ntriples";
-export { NTriplesSerializer };
-
 import RdfjsSerializer, {
   type SerializerOptions as RdfjsSerializerOptions,
 } from "@rdfjs/serializer-rdfjs";
-export { RdfjsSerializer, type RdfjsSerializerOptions };
-
 import TurtleSerializer, {
   type SerializerOptions as TurtleSerializerOptions,
 } from "@rdfjs/serializer-turtle";
-export { TurtleSerializer, type TurtleSerializerOptions };
-
-import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import SinkMap from "@rdfjs/sink-map";
+import N3Serializer, {
+  type SerializerOptions as N3SerializerOptions,
+} from "./N3Serializer.js";
 
-export default function serializers(options?: {
+export function serializers(options?: {
   // Common options
   baseIRI?: string;
   prefixes?: PrefixMap;

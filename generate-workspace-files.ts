@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.50";
+const VERSION = "0.0.52";
 
 const shaclmateVersion = "4.0.80";
 const vitestVersion = "~4.1.5";
@@ -79,13 +79,14 @@ type PackageName =
   | "builder"
   | "collection"
   | "data-factory"
+  | "format"
   | "fs"
   | "git"
   | "graph-store"
   | "literal"
-  | "parsers"
+  | "parser"
   | "resource"
-  | "serializers"
+  | "serializer"
   | "sparql-client"
   | "stream"
   | "string"
@@ -183,13 +184,18 @@ const workspaces = {
       },
       tsconfig: packageTsconfig,
     },
+    format: {
+      dependencies: {
+        external: ["mime"],
+      },
+      tsconfig: packageTsconfig,
+    },
     fs: {
       dependencies: {
         external: [
           "@rdfjs/types",
           "@types/node",
           "@types/unbzip2-stream",
-          "mime",
           "purify-ts",
           "ts-log",
           "typescript-memoize",
@@ -198,9 +204,10 @@ const workspaces = {
         internal: [
           "collection",
           "data-factory",
+          "format",
           "graph-store",
-          "parsers",
-          "serializers",
+          "parser",
+          "serializer",
           "stream",
           "string",
         ],
@@ -249,7 +256,7 @@ const workspaces = {
       },
       tsconfig: packageTsconfig,
     },
-    parsers: {
+    parser: {
       dependencies: {
         external: [
           "@rdfjs/parser-jsonld",
@@ -258,7 +265,9 @@ const workspaces = {
           "@rdfjs/types",
           "@types/rdfjs__parser-jsonld",
           "@types/rdfjs__parser-n3",
+          "purify-ts",
         ],
+        internal: ["format", "stream"],
       },
       tsconfig: packageTsconfig,
     },
@@ -273,7 +282,7 @@ const workspaces = {
       },
       tsconfig: packageTsconfig,
     },
-    serializers: {
+    serializer: {
       dependencies: {
         external: [
           "@rdfjs/prefix-map",
@@ -292,8 +301,10 @@ const workspaces = {
           "@types/rdfjs__serializer-turtle",
           "@types/rdfjs__sink-map",
           "n3",
+          "purify-ts",
           "readable-stream",
         ],
+        internal: ["format", "stream"],
       },
       tsconfig: packageTsconfig,
     },
@@ -315,9 +326,6 @@ const workspaces = {
           "readable-stream",
           "purify-ts",
         ],
-      },
-      devDependencies: {
-        internal: ["parsers"],
       },
       tsconfig: packageTsconfig,
     },
@@ -581,7 +589,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 26 dev dev:tests",
+        dev: "turbo run --concurrency 30 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

@@ -1,17 +1,16 @@
 import { dirname } from "node:path";
 import { Readable } from "node:stream";
 import type { Quad, Stream } from "@rdfjs/types";
+import { RdfFormat } from "@rdfx/format";
 import {
   CompressedRdfStream,
   type FileSystem,
   RdfFileGraphStore,
-  RdfFormat,
 } from "@rdfx/fs";
 import type { GraphIdentifier } from "@rdfx/graph-store";
 import * as git from "isomorphic-git";
 import { type Either, EitherAsync, Maybe } from "purify-ts";
 import { Memoize } from "typescript-memoize";
-
 import { AbstractVersionedRdfFileGraphStore } from "./AbstractVersionedRdfFileGraphStore.js";
 
 export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphStore {
@@ -29,7 +28,8 @@ export class VersionedRdfFileGraphStore extends AbstractVersionedRdfFileGraphSto
       },
       logger: options?.logger,
     });
-    this.format = options?.format ?? RdfFormat.fromPath(path).unsafeCoerce();
+    this.format =
+      options?.format ?? RdfFormat.fromFileName(path).unsafeCoerce();
   }
 
   @Memoize()

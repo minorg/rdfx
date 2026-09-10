@@ -1,17 +1,22 @@
-import JsonLdParser, { type ParserOptions } from "@rdfjs/parser-jsonld";
-export { JsonLdParser };
+import JsonLdParser, {
+  type ParserOptions as JsonLdParserOptions,
+} from "@rdfjs/parser-jsonld";
 
-import N3Parser from "@rdfjs/parser-n3";
-export { N3Parser };
+import N3Parser, {
+  type ParserOptions as N3ParserOptions,
+} from "@rdfjs/parser-n3";
 
 import SinkMap from "@rdfjs/sink-map";
 
 import type { DataFactory } from "@rdfjs/types";
 
-export default function parsers({
+export function parsers({
   dataFactory,
   ...otherOptions
-}: { dataFactory: DataFactory } & Omit<ParserOptions, "factory">) {
+}: { dataFactory: DataFactory } & Omit<
+  JsonLdParserOptions & N3ParserOptions,
+  "factory"
+>) {
   const options = { ...otherOptions, factory: dataFactory };
 
   const n3Parser = new N3Parser(options);

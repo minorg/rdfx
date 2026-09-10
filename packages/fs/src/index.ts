@@ -1,7 +1,4 @@
-export * from "./CompressedRdfFormat.js";
 export * from "./CompressedRdfStream.js";
-export * from "./CompressionMethod.js";
-export * from "./compressionMethods.js";
 export * from "./Dirent.js";
 export * from "./ErrnoException.js";
 export * from "./FileSystem.js";
@@ -11,8 +8,4 @@ export * from "./RdfDirectoryGraphStore.js";
 export * from "./RdfFile.js";
 export * from "./RdfFileGraphStore.js";
 export * from "./RdfFileSystemEntry.js";
-export * from "./RdfFormat.js";
 export * from "./Stat.js";
-export * from "./UncompressedRdfFormat.js";
-export * from "./uncompressedRdfFormats.js";
-export * from "./uncompressedRdfFormatsByMimeType.js";
