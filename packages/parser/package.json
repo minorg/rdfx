@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@rdfx/format": "0.0.50",
+    "@rdfx/stream": "0.0.50",
     "@rdfjs/parser-jsonld": "~2.1.3",
     "@rdfjs/parser-n3": "~2.1.0",
     "@rdfjs/sink-map": "~2.0.1",
@@ -8,10 +10,7 @@
     "@types/rdfjs__parser-n3": "~2.0.6",
     "purify-ts": "~2.1.4"
   },
-  "devDependencies": {
-    "@rdfx/format": "0.0.50",
-    "@rdfx/stream": "0.0.50"
-  },
+  "devDependencies": {},
   "files": [
     "LICENSE",
     "README.md",
