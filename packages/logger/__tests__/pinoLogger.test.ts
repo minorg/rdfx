@@ -26,16 +26,30 @@ describe("pinoLogger", () => {
     expect(pinoLogger.child({ test: 1 })).toBeDefined();
   });
 
-  it("debug", ({ expect }) => {
-    pinoLogger.debug({}, "test");
-    expect(logs).toHaveLength(0);
-  });
-
-  it("info", ({ expect }) => {
+  it("context", ({ expect }) => {
     pinoLogger.info({ value: 1 }, "test");
     expect(logs).toHaveLength(1);
     expect(logs[0]).toHaveProperty("value");
     expect((logs[0] as any)["value"]).toStrictEqual(1);
+  });
+
+  it("interpolation", ({ expect }) => {
+    pinoLogger.info({ value: 1 }, "test %s", "interpolated");
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toHaveProperty("value");
+    expect((logs[0] as any)["value"]).toStrictEqual(1);
+    expect((logs[0] as any)["msg"]).toStrictEqual("test interpolated");
+  });
+
+  it("level checks", ({ expect }) => {
+    pinoLogger.trace("test");
+    expect(logs).toHaveLength(0);
+
+    pinoLogger.debug("test");
+    expect(logs).toHaveLength(0);
+
+    pinoLogger.info("test");
+    expect(logs).toHaveLength(1);
   });
 
   it("isLevelEnabled", ({ expect }) => {
@@ -44,10 +58,5 @@ describe("pinoLogger", () => {
     expect(pinoLogger.isLevelEnabled("info")).toStrictEqual(true);
     expect(pinoLogger.isLevelEnabled("trace")).toStrictEqual(false);
     expect(pinoLogger.isLevelEnabled("warn")).toStrictEqual(true);
-  });
-
-  it("trace", ({ expect }) => {
-    pinoLogger.trace({}, "test");
-    expect(logs).toHaveLength(0);
   });
 });

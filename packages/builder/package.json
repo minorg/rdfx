@@ -2,6 +2,7 @@
   "dependencies": {
     "@rdfx/data-factory": "0.0.52",
     "@rdfx/literal": "0.0.52",
+    "@rdfx/logger": "0.0.52",
     "@rdfx/resource": "0.0.52",
     "@rdfx/string": "0.0.52",
     "@rdfjs/namespace": "~2.0.1",

@@ -150,7 +150,7 @@ const workspaces = {
           "change-case",
           "purify-ts",
         ],
-        internal: ["data-factory", "literal", "resource", "string"],
+        internal: ["data-factory", "literal", "logger", "resource", "string"],
       },
       devDependencies: {
         external: [

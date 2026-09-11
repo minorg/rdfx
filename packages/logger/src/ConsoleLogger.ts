@@ -1,6 +1,17 @@
 import type { Context } from "./Context.js";
 import type { Level } from "./Level.js";
+import type { LogFunction } from "./LogFunction.js";
 import type { Logger } from "./Logger.js";
+
+export const boundConsoleMethods: {
+  [level in Level]: (...data: unknown[]) => void;
+} = {
+  debug: console.debug.bind(console),
+  error: console.error.bind(console),
+  info: console.info.bind(console),
+  trace: console.trace.bind(console),
+  warn: console.warn.bind(console),
+};
 
 export const levelNumbers: { [level in Level]: number } = {
   trace: 0,
@@ -10,7 +21,9 @@ export const levelNumbers: { [level in Level]: number } = {
   error: 4,
 };
 
-export class ConsoleLogger implements Logger {
+export class ConsoleLogger<ContextT extends Context = Context>
+  implements Logger<ContextT>
+{
   constructor(
     readonly level: Level = "warn",
     readonly context: Context = {},
@@ -20,70 +33,105 @@ export class ConsoleLogger implements Logger {
     return new ConsoleLogger(this.level, { ...this.context, context });
   }
 
-  debug(context: Context, message: string): void {
-    if (this.isLevelEnabled("debug")) {
-      const mergedContext = this.mergeContext(context);
-      if (mergedContext) {
-        console.debug(message, mergedContext);
-      } else {
-        console.debug(message);
-      }
-    }
-  }
+  debug: LogFunction<ContextT> = (
+    contextOrMessage: ContextT | string,
+    messageOrArg?: string | unknown,
+    ...args: unknown[]
+  ) => {
+    return this.log(
+      boundConsoleMethods.debug,
+      "debug",
+      contextOrMessage,
+      messageOrArg,
+      ...args,
+    );
+  };
 
-  error(context: Context, message: string): void {
-    if (this.isLevelEnabled("error")) {
-      const mergedContext = this.mergeContext(context);
-      if (mergedContext) {
-        console.error(message, mergedContext);
-      } else {
-        console.error(message);
-      }
-    }
-  }
+  error: LogFunction<ContextT> = (
+    contextOrMessage: ContextT | string,
+    messageOrArg?: string | unknown,
+    ...args: unknown[]
+  ) => {
+    return this.log(
+      boundConsoleMethods.error,
+      "error",
+      contextOrMessage,
+      messageOrArg,
+      ...args,
+    );
+  };
 
-  info(context: Context, message: string): void {
-    if (this.isLevelEnabled("info")) {
-      const mergedContext = this.mergeContext(context);
-      if (mergedContext) {
-        console.info(message, mergedContext);
-      } else {
-        console.info(message);
-      }
-    }
-  }
+  info: LogFunction<ContextT> = (
+    contextOrMessage: ContextT | string,
+    messageOrArg?: string | unknown,
+    ...args: unknown[]
+  ) => {
+    return this.log(
+      boundConsoleMethods.info,
+      "info",
+      contextOrMessage,
+      messageOrArg,
+      ...args,
+    );
+  };
 
   isLevelEnabled(level: Level): boolean {
     return levelNumbers[this.level] <= levelNumbers[level];
   }
 
-  trace(context: Context, message: string): void {
-    if (this.isLevelEnabled("trace")) {
-      const mergedContext = this.mergeContext(context);
-      if (mergedContext) {
-        console.trace(message, mergedContext);
-      } else {
-        console.trace(message);
-      }
-    }
-  }
+  trace: LogFunction<ContextT> = (
+    contextOrMessage: ContextT | string,
+    messageOrArg?: string | unknown,
+    ...args: unknown[]
+  ) => {
+    return this.log(
+      boundConsoleMethods.trace,
+      "trace",
+      contextOrMessage,
+      messageOrArg,
+      ...args,
+    );
+  };
 
-  warn(context: Context, message: string): void {
-    if (this.isLevelEnabled("warn")) {
-      const mergedContext = this.mergeContext(context);
-      if (mergedContext) {
-        console.warn(message, mergedContext);
-      } else {
-        console.warn(message);
-      }
-    }
-  }
+  warn: LogFunction<ContextT> = (
+    contextOrMessage: ContextT | string,
+    messageOrArg?: string | unknown,
+    ...args: unknown[]
+  ) => {
+    return this.log(
+      boundConsoleMethods.warn,
+      "warn",
+      contextOrMessage,
+      messageOrArg,
+      ...args,
+    );
+  };
 
-  private mergeContext(context: Context): Context | undefined {
-    const mergedContext = { ...this.context, ...context };
-    if (Object.keys(mergedContext).length === 0) {
-      return undefined;
+  private log(
+    consoleMethod: (...data: unknown[]) => void,
+    level: Level,
+    contextOrMessage: ContextT | string,
+    messageOrArg?: string | unknown,
+    ...args: unknown[]
+  ): void {
+    if (!this.isLevelEnabled(level)) {
+      return;
     }
-    return mergedContext;
+
+    const hasSecondArg = messageOrArg !== undefined || args.length > 0;
+    const tailArgs = hasSecondArg ? [messageOrArg, ...args] : [];
+
+    if (typeof contextOrMessage === "object" && contextOrMessage !== null) {
+      const context: ContextT = contextOrMessage;
+      const mergedContext = { ...this.context, ...context };
+      if (Object.keys(mergedContext).length > 0) {
+        consoleMethod(mergedContext, ...tailArgs);
+      } else if (hasSecondArg) {
+        consoleMethod(...tailArgs);
+      }
+    } else {
+      const message: string = contextOrMessage;
+      consoleMethod(message, ...tailArgs);
+    }
   }
 }
