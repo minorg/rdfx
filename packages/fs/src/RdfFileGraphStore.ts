@@ -130,7 +130,7 @@ export class RdfFileGraphStore implements GraphStore {
         const dataset = await liftEither(
           await this.rdfFile.parseInto(datasetFactory.dataset()),
         );
-        this.logger.debug("parsed %d quads from %d", dataset.size, this.path);
+        this.logger.debug("parsed %d quads from %s", dataset.size, this.path);
         return dataset;
       })
     ).chainLeft((error) => {
