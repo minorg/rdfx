@@ -12,15 +12,15 @@ export const levelNumbers: { [level in Level]: number } = {
 
 export class ConsoleLogger implements Logger {
   constructor(
-    private readonly level: Level = "warn",
-    private readonly context?: Context,
+    readonly level: Level = "warn",
+    readonly context: Context = {},
   ) {}
 
   child(context: Context): Logger {
-    return new ConsoleLogger(this.level, this.mergeContext(context));
+    return new ConsoleLogger(this.level, { ...this.context, context });
   }
 
-  debug(message: string, context?: Context | undefined): void {
+  debug(context: Context, message: string): void {
     if (this.isLevelEnabled("debug")) {
       const mergedContext = this.mergeContext(context);
       if (mergedContext) {
@@ -31,7 +31,7 @@ export class ConsoleLogger implements Logger {
     }
   }
 
-  error(message: string, context?: Context | undefined): void {
+  error(context: Context, message: string): void {
     if (this.isLevelEnabled("error")) {
       const mergedContext = this.mergeContext(context);
       if (mergedContext) {
@@ -42,7 +42,7 @@ export class ConsoleLogger implements Logger {
     }
   }
 
-  info(message: string, context?: Context | undefined): void {
+  info(context: Context, message: string): void {
     if (this.isLevelEnabled("info")) {
       const mergedContext = this.mergeContext(context);
       if (mergedContext) {
@@ -57,7 +57,7 @@ export class ConsoleLogger implements Logger {
     return levelNumbers[this.level] <= levelNumbers[level];
   }
 
-  trace(message: string, context?: Context | undefined): void {
+  trace(context: Context, message: string): void {
     if (this.isLevelEnabled("trace")) {
       const mergedContext = this.mergeContext(context);
       if (mergedContext) {
@@ -68,7 +68,7 @@ export class ConsoleLogger implements Logger {
     }
   }
 
-  warn(message: string, context?: Context | undefined): void {
+  warn(context: Context, message: string): void {
     if (this.isLevelEnabled("warn")) {
       const mergedContext = this.mergeContext(context);
       if (mergedContext) {
@@ -79,10 +79,11 @@ export class ConsoleLogger implements Logger {
     }
   }
 
-  private mergeContext(context: Context | undefined): Context | undefined {
-    if (this.context === undefined && context === undefined) {
+  private mergeContext(context: Context): Context | undefined {
+    const mergedContext = { ...this.context, ...context };
+    if (Object.keys(mergedContext).length === 0) {
       return undefined;
     }
-    return { ...this.context, ...context };
+    return mergedContext;
   }
 }

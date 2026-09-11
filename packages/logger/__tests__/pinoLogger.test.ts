@@ -27,13 +27,15 @@ describe("pinoLogger", () => {
   });
 
   it("debug", ({ expect }) => {
-    pinoLogger.debug("test");
+    pinoLogger.debug({}, "test");
     expect(logs).toHaveLength(0);
   });
 
   it("info", ({ expect }) => {
-    pinoLogger.info("test", { context: "whatever" });
+    pinoLogger.info({ value: 1 }, "test");
     expect(logs).toHaveLength(1);
+    expect(logs[0]).toHaveProperty("value");
+    expect((logs[0] as any)["value"]).toStrictEqual(1);
   });
 
   it("isLevelEnabled", ({ expect }) => {
@@ -45,7 +47,7 @@ describe("pinoLogger", () => {
   });
 
   it("trace", ({ expect }) => {
-    pinoLogger.trace("test");
+    pinoLogger.trace({}, "test");
     expect(logs).toHaveLength(0);
   });
 });
