@@ -1,6 +1,8 @@
 {
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "pino": "~10.3.1"
+  },
   "files": [
     "LICENSE",
     "dist/*.d.ts",

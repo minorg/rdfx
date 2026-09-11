@@ -12,12 +12,11 @@ type ContextArg<ContextT extends Context> =
     : [context: ContextT];
 
 export interface Logger<ContextT extends Context = Context> {
-  child(context: ContextT): Logger;
+  child(context: ContextT): Logger<ContextT>;
   debug(message: string, ...context: ContextArg<ContextT>): void;
   error(message: string, ...context: ContextArg<ContextT>): void;
   info(message: string, ...context: ContextArg<ContextT>): void;
   isLevelEnabled(level: Level): boolean;
-  log(level: Level, message: string, ...context: ContextArg<ContextT>): void;
   trace(message: string, ...context: ContextArg<ContextT>): void;
   warn(message: string, ...context: ContextArg<ContextT>): void;
 }

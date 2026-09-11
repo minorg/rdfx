@@ -10,7 +10,6 @@ export const nopLogger: Logger = {
   isLevelEnabled: (): boolean => {
     return false;
   },
-  log: (): void => {},
   trace: (): void => {},
   warn: (): void => {},
 };

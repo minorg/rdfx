@@ -57,6 +57,7 @@ const externalDependencies = {
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
+  pino: "~10.3.1",
   "purify-ts": "~2.1.4",
   "rdf-isomorphic": "~2.0.1", // For @rdfx/testing code adapted from jest-rdf
   "rdf-string": "~2.0.1", // For @rdfx/testing code adapted from jest-rdf
@@ -220,7 +221,11 @@ const workspaces = {
         },
       },
     },
-    logger: {},
+    logger: {
+      devDependencies: {
+        external: ["pino"],
+      },
+    },
     git: {
       dependencies: {
         external: [

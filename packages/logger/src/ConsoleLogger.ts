@@ -1,6 +1,14 @@
 import type { Context } from "./Context.js";
-import { Level } from "./Level.js";
+import type { Level } from "./Level.js";
 import type { Logger } from "./Logger.js";
+
+export const levelNumbers: { [level in Level]: number } = {
+  trace: 0,
+  debug: 1,
+  info: 2,
+  warn: 3,
+  error: 4,
+};
 
 export class ConsoleLogger implements Logger {
   constructor(
@@ -46,27 +54,7 @@ export class ConsoleLogger implements Logger {
   }
 
   isLevelEnabled(level: Level): boolean {
-    return Level.number[this.level] <= Level.number[level];
-  }
-
-  log(level: Level, message: string, context?: Context | undefined): void {
-    switch (level) {
-      case "debug":
-        this.debug(message, context);
-        break;
-      case "error":
-        this.error(message, context);
-        break;
-      case "info":
-        this.info(message, context);
-        break;
-      case "trace":
-        this.trace(message, context);
-        break;
-      case "warn":
-        this.warn(message, context);
-        break;
-    }
+    return levelNumbers[this.level] <= levelNumbers[level];
   }
 
   trace(message: string, context?: Context | undefined): void {
