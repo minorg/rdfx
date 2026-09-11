@@ -13,11 +13,11 @@
   "devDependencies": {
     "@rdfx/collection": "0.0.52",
     "@rdfx/fs": "0.0.52",
+    "@rdfx/logger": "0.0.52",
     "@rdfx/testing": "0.0.52",
     "@shaclmate/compiler": "4.0.80",
     "@shaclmate/validator": "4.0.80",
-    "@tpluscode/rdf-ns-builders": "~4.3.0",
-    "ts-log": "~3.0.2"
+    "@tpluscode/rdf-ns-builders": "~4.3.0"
   },
   "files": [
     "LICENSE",

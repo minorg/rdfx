@@ -66,7 +66,6 @@ const externalDependencies = {
   rimraf: "~6.0.1",
   tinybase: "~9.4.0",
   "ts-invariant": "~0.10.3",
-  "ts-log": "~3.0.2",
   tsx: "~4.16.2",
   turbo: "~2.5.5",
   typescript: "6.0.3",
@@ -158,9 +157,8 @@ const workspaces = {
           "@shaclmate/compiler",
           "@shaclmate/validator",
           "@tpluscode/rdf-ns-builders",
-          "ts-log",
         ],
-        internal: ["collection", "fs", "testing"],
+        internal: ["collection", "fs", "logger", "testing"],
       },
     },
     collection: {
@@ -195,7 +193,6 @@ const workspaces = {
           "@types/node",
           "@types/unbzip2-stream",
           "purify-ts",
-          "ts-log",
           "typescript-memoize",
           "unbzip2-stream",
         ],
@@ -204,6 +201,7 @@ const workspaces = {
           "data-factory",
           "format",
           "graph-store",
+          "logger",
           "parser",
           "serializer",
           "stream",
@@ -232,16 +230,15 @@ const workspaces = {
           "@rdfjs/types",
           "isomorphic-git",
           "purify-ts",
-          "ts-log",
           "typescript-memoize",
         ],
-        internal: ["data-factory", "fs", "graph-store"],
+        internal: ["data-factory", "fs", "graph-store", "logger"],
       },
     },
     "graph-store": {
       dependencies: {
-        external: ["@rdfjs/types", "purify-ts", "ts-log"],
-        internal: ["stream"],
+        external: ["@rdfjs/types", "purify-ts"],
+        internal: ["logger", "stream"],
       },
       devDependencies: {
         internal: ["collection", "data-factory", "testing"],
@@ -347,15 +344,8 @@ const workspaces = {
     },
     tinybase: {
       dependencies: {
-        external: [
-          "@rdfjs/types",
-          "@types/n3",
-          "n3",
-          "purify-ts",
-          "tinybase",
-          "ts-log",
-        ],
-        internal: ["graph-store", "stream", "string"],
+        external: ["@rdfjs/types", "@types/n3", "n3", "purify-ts", "tinybase"],
+        internal: ["graph-store", "logger", "stream", "string"],
       },
       devDependencies: {
         internal: ["collection", "data-factory"],

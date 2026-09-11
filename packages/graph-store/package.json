@@ -1,9 +1,9 @@
 {
   "dependencies": {
+    "@rdfx/logger": "0.0.52",
     "@rdfx/stream": "0.0.52",
     "@rdfjs/types": "~2.0.1",
-    "purify-ts": "~2.1.4",
-    "ts-log": "~3.0.2"
+    "purify-ts": "~2.1.4"
   },
   "devDependencies": {
     "@rdfx/collection": "0.0.52",
