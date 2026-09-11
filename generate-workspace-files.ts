@@ -84,6 +84,7 @@ type PackageName =
   | "git"
   | "graph-store"
   | "literal"
+  | "logger"
   | "parser"
   | "resource"
   | "serializer"
@@ -116,10 +117,10 @@ interface Workspace {
   keywords?: readonly string[];
   homepage?: string;
   scripts?: Record<string, string>;
-  tsconfig: Tsconfig;
+  tsconfig?: Tsconfig;
 }
 
-const packageTsconfig: Tsconfig = {
+const tsconfigDefault: Tsconfig = {
   compilerOptions: {
     declaration: true,
     declarationMap: true,
@@ -160,7 +161,6 @@ const workspaces = {
         ],
         internal: ["collection", "fs", "testing"],
       },
-      tsconfig: packageTsconfig,
     },
     collection: {
       dependencies: {
@@ -175,20 +175,17 @@ const workspaces = {
           "@types/rdfjs__term-set",
         ],
       },
-      tsconfig: packageTsconfig,
     },
     "data-factory": {
       dependencies: {
         external: ["@rdfjs/types"],
         internal: ["string"],
       },
-      tsconfig: packageTsconfig,
     },
     format: {
       dependencies: {
         external: ["mime"],
       },
-      tsconfig: packageTsconfig,
     },
     fs: {
       dependencies: {
@@ -216,13 +213,14 @@ const workspaces = {
         internal: ["testing"],
       },
       tsconfig: {
-        ...packageTsconfig,
+        ...tsconfigDefault,
         compilerOptions: {
-          ...packageTsconfig.compilerOptions,
+          ...tsconfigDefault.compilerOptions,
           types: ["node"],
         },
       },
     },
+    logger: {},
     git: {
       dependencies: {
         external: [
@@ -234,7 +232,6 @@ const workspaces = {
         ],
         internal: ["data-factory", "fs", "graph-store"],
       },
-      tsconfig: packageTsconfig,
     },
     "graph-store": {
       dependencies: {
@@ -244,7 +241,6 @@ const workspaces = {
       devDependencies: {
         internal: ["collection", "data-factory", "testing"],
       },
-      tsconfig: packageTsconfig,
     },
     literal: {
       dependencies: {
@@ -254,7 +250,6 @@ const workspaces = {
         external: ["@tpluscode/rdf-ns-builders"],
         internal: ["data-factory", "testing"],
       },
-      tsconfig: packageTsconfig,
     },
     parser: {
       dependencies: {
@@ -269,7 +264,6 @@ const workspaces = {
         ],
         internal: ["format", "stream"],
       },
-      tsconfig: packageTsconfig,
     },
     resource: {
       dependencies: {
@@ -280,7 +274,6 @@ const workspaces = {
         external: ["@tpluscode/rdf-ns-builders", "housemd", "ts-invariant"],
         internal: ["data-factory", "testing"],
       },
-      tsconfig: packageTsconfig,
     },
     serializer: {
       dependencies: {
@@ -306,7 +299,6 @@ const workspaces = {
         ],
         internal: ["format", "stream"],
       },
-      tsconfig: packageTsconfig,
     },
     "sparql-client": {
       dependencies: {
@@ -316,7 +308,6 @@ const workspaces = {
         external: ["oxigraph"],
         internal: ["testing"],
       },
-      tsconfig: packageTsconfig,
     },
     stream: {
       dependencies: {
@@ -327,7 +318,6 @@ const workspaces = {
           "purify-ts",
         ],
       },
-      tsconfig: packageTsconfig,
     },
     string: {
       dependencies: {
@@ -337,7 +327,6 @@ const workspaces = {
         external: ["@types/rdfjs__to-ntriples"],
         // internal: ["data-factory"], // Don't declare a circular dependency
       },
-      tsconfig: packageTsconfig,
     },
     testing: {
       dependencies: {
@@ -350,7 +339,6 @@ const workspaces = {
           "vitest",
         ],
       },
-      tsconfig: packageTsconfig,
     },
     tinybase: {
       dependencies: {
@@ -367,7 +355,6 @@ const workspaces = {
       devDependencies: {
         internal: ["collection", "data-factory"],
       },
-      tsconfig: packageTsconfig,
     },
   } satisfies Record<PackageName, Workspace>,
 } as const;
@@ -518,7 +505,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
 
     fs.writeFileSync(
       path.resolve(workspaceDirectoryPath, "tsconfig.json"),
-      `${JSON.stringify(workspace.tsconfig, undefined, 2)}\n`,
+      `${JSON.stringify(workspace.tsconfig ?? tsconfigDefault, undefined, 2)}\n`,
     );
 
     if (testsDirectoryPath !== null) {

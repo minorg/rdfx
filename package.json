@@ -36,6 +36,7 @@
     "packages/data-factory",
     "packages/format",
     "packages/fs",
+    "packages/logger",
     "packages/git",
     "packages/graph-store",
     "packages/literal",
