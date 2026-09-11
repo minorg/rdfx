@@ -3,7 +3,7 @@ import type { SerializerOptions as RdfjsSerializerOptions } from "@rdfjs/seriali
 import type { SerializerOptions as TurtleSerializerOptions } from "@rdfjs/serializer-turtle";
 import type { Quad } from "@rdfjs/types";
 import { iterableToStream, streamToString } from "@rdfx/stream";
-import { EitherAsync } from "purify-ts";
+import { type Either, EitherAsync } from "purify-ts";
 import type { SerializerOptions as N3SerializerOptions } from "./N3Serializer.js";
 import { serializers as serializersFactory } from "./serializers.js";
 
@@ -34,7 +34,7 @@ type SerializeOptions =
 export async function serialize(
   input: Iterable<Quad>,
   options: SerializeOptions,
-) {
+): Promise<Either<Error, string>> {
   return EitherAsync(async ({ liftEither }) => {
     const serializersOptions: Parameters<typeof serializersFactory>[0] = {};
     switch (options.format) {
