@@ -28,6 +28,7 @@ describe("serialize", async () => {
       switch (rdfFormat.mimeType) {
         case "application/n-quads":
         case "application/n-triples":
+        case "text/turtle":
           break;
         default:
           return;
