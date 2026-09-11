@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "@rdfx/format": "0.0.53",
-    "@rdfx/stream": "0.0.53",
+    "@rdfx/format": "0.0.54",
+    "@rdfx/stream": "0.0.54",
     "@rdfjs/prefix-map": "~0.1.2",
     "@rdfjs/serializer-jsonld-ext": "~4.0.2",
     "@rdfjs/serializer-ntriples": "~2.0.1",
@@ -46,5 +46,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.53"
+  "version": "0.0.54"
 }
