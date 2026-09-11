@@ -26,7 +26,7 @@
     "check:write:unsafe": "biome check --write --unsafe",
     "clean": "turbo run clean",
     "depcheck": "turbo run depcheck",
-    "dev": "turbo run --concurrency 30 dev dev:tests",
+    "dev": "turbo run --concurrency 32 dev dev:tests",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
@@ -36,6 +36,7 @@
     "packages/data-factory",
     "packages/format",
     "packages/fs",
+    "packages/logger",
     "packages/git",
     "packages/graph-store",
     "packages/literal",

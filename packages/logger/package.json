@@ -1,18 +1,16 @@
 {
-  "dependencies": {
-    "@rdfx/string": "0.0.53",
-    "@rdfjs/types": "~2.0.1"
+  "dependencies": {},
+  "devDependencies": {
+    "pino": "~10.3.1"
   },
-  "devDependencies": {},
   "files": [
     "LICENSE",
-    "README.md",
     "dist/*.d.ts",
     "dist/*.js"
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/data-factory",
+  "name": "@rdfx/logger",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -24,7 +22,7 @@
     "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run packages/data-factory/__tests__"
+    "test": "cd ../.. && vitest run packages/logger/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

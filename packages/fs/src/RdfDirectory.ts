@@ -1,9 +1,9 @@
 import path from "node:path";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
 import type { PrefixMap } from "@rdfx/collection";
+import { type Logger, nopLogger } from "@rdfx/logger";
 import { iterableToStream } from "@rdfx/stream";
 import { type Either, EitherAsync } from "purify-ts";
-import { dummyLogger, type Logger } from "ts-log";
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfFile } from "./RdfFile.js";
@@ -20,7 +20,7 @@ export class RdfDirectory {
     options?: { fileSystem?: FileSystem; logger?: Logger },
   ) {
     this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
-    this.logger = options?.logger ?? dummyLogger;
+    this.logger = options?.logger ?? nopLogger;
   }
 
   async *files(options?: { recursive?: boolean }): AsyncGenerator<RdfFile> {

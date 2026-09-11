@@ -1,9 +1,9 @@
 import type { DatasetCore, NamedNode, Stream } from "@rdfjs/types";
 import type { PrefixMap } from "@rdfx/collection";
 import { RdfFormat, uncompressedRdfFormatsByMimeType } from "@rdfx/format";
+import { type Logger, nopLogger } from "@rdfx/logger";
 import type serializers from "@rdfx/serializer";
 import { Either, EitherAsync, Left } from "purify-ts";
-import { dummyLogger, type Logger } from "ts-log";
 import { CompressedRdfStream } from "./CompressedRdfStream.js";
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
@@ -25,7 +25,7 @@ export class RdfFile {
     this.format =
       options?.format ??
       uncompressedRdfFormatsByMimeType["application/n-quads"];
-    this.logger = options?.logger ?? dummyLogger;
+    this.logger = options?.logger ?? nopLogger;
   }
 
   static fromPath(
@@ -70,6 +70,7 @@ export class RdfFile {
             if (!prefixNode.equals(existingPrefixNode)) {
               this.logger.warn(
                 "conflicting prefix %s: %s vs. %s",
+                prefix,
                 prefixNode.value,
                 existingPrefixNode.value,
               );

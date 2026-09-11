@@ -1,9 +1,10 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.52",
-    "@rdfx/literal": "0.0.52",
-    "@rdfx/resource": "0.0.52",
-    "@rdfx/string": "0.0.52",
+    "@rdfx/data-factory": "0.0.53",
+    "@rdfx/literal": "0.0.53",
+    "@rdfx/logger": "0.0.53",
+    "@rdfx/resource": "0.0.53",
+    "@rdfx/string": "0.0.53",
     "@rdfjs/namespace": "~2.0.1",
     "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__namespace": "~2.0.10",
@@ -11,13 +12,13 @@
     "purify-ts": "~2.1.4"
   },
   "devDependencies": {
-    "@rdfx/collection": "0.0.52",
-    "@rdfx/fs": "0.0.52",
-    "@rdfx/testing": "0.0.52",
+    "@rdfx/collection": "0.0.53",
+    "@rdfx/fs": "0.0.53",
+    "@rdfx/logger": "0.0.53",
+    "@rdfx/testing": "0.0.53",
     "@shaclmate/compiler": "4.0.80",
     "@shaclmate/validator": "4.0.80",
-    "@tpluscode/rdf-ns-builders": "~4.3.0",
-    "ts-log": "~3.0.2"
+    "@tpluscode/rdf-ns-builders": "~4.3.0"
   },
   "files": [
     "LICENSE",
@@ -42,5 +43,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.52"
+  "version": "0.0.53"
 }

@@ -8,12 +8,12 @@ import { promisify } from "node:util";
 import { datasetFactory, PrefixMap } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { RdfDirectory, RdfFile } from "@rdfx/fs";
+import { ConsoleLogger, type Logger } from "@rdfx/logger";
 import { Compiler, ShapesGraph, TsGenerator } from "@shaclmate/compiler";
-import type { Logger } from "ts-log";
 
 const exec = promisify(execCallback);
 
-const logger: Logger = console;
+const logger: Logger = new ConsoleLogger();
 
 const thisDirectoryPath = path.dirname(url.fileURLToPath(import.meta.url));
 

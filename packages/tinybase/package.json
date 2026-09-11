@@ -1,18 +1,18 @@
 {
   "dependencies": {
-    "@rdfx/graph-store": "0.0.52",
-    "@rdfx/stream": "0.0.52",
-    "@rdfx/string": "0.0.52",
+    "@rdfx/graph-store": "0.0.53",
+    "@rdfx/logger": "0.0.53",
+    "@rdfx/stream": "0.0.53",
+    "@rdfx/string": "0.0.53",
     "@rdfjs/types": "~2.0.1",
     "@types/n3": "~1.26.0",
     "n3": "~1.26.0",
     "purify-ts": "~2.1.4",
-    "tinybase": "~9.4.0",
-    "ts-log": "~3.0.2"
+    "tinybase": "~9.4.0"
   },
   "devDependencies": {
-    "@rdfx/collection": "0.0.52",
-    "@rdfx/data-factory": "0.0.52"
+    "@rdfx/collection": "0.0.53",
+    "@rdfx/data-factory": "0.0.53"
   },
   "files": [
     "LICENSE",
@@ -37,5 +37,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.52"
+  "version": "0.0.53"
 }

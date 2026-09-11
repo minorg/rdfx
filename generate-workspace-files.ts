@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.52";
+const VERSION = "0.0.53";
 
 const shaclmateVersion = "4.0.80";
 const vitestVersion = "~4.1.5";
@@ -57,6 +57,7 @@ const externalDependencies = {
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
+  pino: "~10.3.1",
   "purify-ts": "~2.1.4",
   "rdf-isomorphic": "~2.0.1", // For @rdfx/testing code adapted from jest-rdf
   "rdf-string": "~2.0.1", // For @rdfx/testing code adapted from jest-rdf
@@ -65,7 +66,6 @@ const externalDependencies = {
   rimraf: "~6.0.1",
   tinybase: "~9.4.0",
   "ts-invariant": "~0.10.3",
-  "ts-log": "~3.0.2",
   tsx: "~4.16.2",
   turbo: "~2.5.5",
   typescript: "6.0.3",
@@ -84,6 +84,7 @@ type PackageName =
   | "git"
   | "graph-store"
   | "literal"
+  | "logger"
   | "parser"
   | "resource"
   | "serializer"
@@ -116,10 +117,10 @@ interface Workspace {
   keywords?: readonly string[];
   homepage?: string;
   scripts?: Record<string, string>;
-  tsconfig: Tsconfig;
+  tsconfig?: Tsconfig;
 }
 
-const packageTsconfig: Tsconfig = {
+const tsconfigDefault: Tsconfig = {
   compilerOptions: {
     declaration: true,
     declarationMap: true,
@@ -149,18 +150,16 @@ const workspaces = {
           "change-case",
           "purify-ts",
         ],
-        internal: ["data-factory", "literal", "resource", "string"],
+        internal: ["data-factory", "literal", "logger", "resource", "string"],
       },
       devDependencies: {
         external: [
           "@shaclmate/compiler",
           "@shaclmate/validator",
           "@tpluscode/rdf-ns-builders",
-          "ts-log",
         ],
-        internal: ["collection", "fs", "testing"],
+        internal: ["collection", "fs", "logger", "testing"],
       },
-      tsconfig: packageTsconfig,
     },
     collection: {
       dependencies: {
@@ -175,20 +174,17 @@ const workspaces = {
           "@types/rdfjs__term-set",
         ],
       },
-      tsconfig: packageTsconfig,
     },
     "data-factory": {
       dependencies: {
         external: ["@rdfjs/types"],
         internal: ["string"],
       },
-      tsconfig: packageTsconfig,
     },
     format: {
       dependencies: {
         external: ["mime"],
       },
-      tsconfig: packageTsconfig,
     },
     fs: {
       dependencies: {
@@ -197,7 +193,6 @@ const workspaces = {
           "@types/node",
           "@types/unbzip2-stream",
           "purify-ts",
-          "ts-log",
           "typescript-memoize",
           "unbzip2-stream",
         ],
@@ -206,6 +201,7 @@ const workspaces = {
           "data-factory",
           "format",
           "graph-store",
+          "logger",
           "parser",
           "serializer",
           "stream",
@@ -216,11 +212,16 @@ const workspaces = {
         internal: ["testing"],
       },
       tsconfig: {
-        ...packageTsconfig,
+        ...tsconfigDefault,
         compilerOptions: {
-          ...packageTsconfig.compilerOptions,
+          ...tsconfigDefault.compilerOptions,
           types: ["node"],
         },
+      },
+    },
+    logger: {
+      devDependencies: {
+        external: ["pino"],
       },
     },
     git: {
@@ -229,22 +230,19 @@ const workspaces = {
           "@rdfjs/types",
           "isomorphic-git",
           "purify-ts",
-          "ts-log",
           "typescript-memoize",
         ],
-        internal: ["data-factory", "fs", "graph-store"],
+        internal: ["data-factory", "fs", "graph-store", "logger"],
       },
-      tsconfig: packageTsconfig,
     },
     "graph-store": {
       dependencies: {
-        external: ["@rdfjs/types", "purify-ts", "ts-log"],
-        internal: ["stream"],
+        external: ["@rdfjs/types", "purify-ts"],
+        internal: ["logger", "stream"],
       },
       devDependencies: {
         internal: ["collection", "data-factory", "testing"],
       },
-      tsconfig: packageTsconfig,
     },
     literal: {
       dependencies: {
@@ -254,7 +252,6 @@ const workspaces = {
         external: ["@tpluscode/rdf-ns-builders"],
         internal: ["data-factory", "testing"],
       },
-      tsconfig: packageTsconfig,
     },
     parser: {
       dependencies: {
@@ -269,7 +266,6 @@ const workspaces = {
         ],
         internal: ["format", "stream"],
       },
-      tsconfig: packageTsconfig,
     },
     resource: {
       dependencies: {
@@ -280,7 +276,6 @@ const workspaces = {
         external: ["@tpluscode/rdf-ns-builders", "housemd", "ts-invariant"],
         internal: ["data-factory", "testing"],
       },
-      tsconfig: packageTsconfig,
     },
     serializer: {
       dependencies: {
@@ -306,7 +301,6 @@ const workspaces = {
         ],
         internal: ["format", "stream"],
       },
-      tsconfig: packageTsconfig,
     },
     "sparql-client": {
       dependencies: {
@@ -316,7 +310,6 @@ const workspaces = {
         external: ["oxigraph"],
         internal: ["testing"],
       },
-      tsconfig: packageTsconfig,
     },
     stream: {
       dependencies: {
@@ -327,7 +320,6 @@ const workspaces = {
           "purify-ts",
         ],
       },
-      tsconfig: packageTsconfig,
     },
     string: {
       dependencies: {
@@ -337,7 +329,6 @@ const workspaces = {
         external: ["@types/rdfjs__to-ntriples"],
         // internal: ["data-factory"], // Don't declare a circular dependency
       },
-      tsconfig: packageTsconfig,
     },
     testing: {
       dependencies: {
@@ -350,24 +341,15 @@ const workspaces = {
           "vitest",
         ],
       },
-      tsconfig: packageTsconfig,
     },
     tinybase: {
       dependencies: {
-        external: [
-          "@rdfjs/types",
-          "@types/n3",
-          "n3",
-          "purify-ts",
-          "tinybase",
-          "ts-log",
-        ],
-        internal: ["graph-store", "stream", "string"],
+        external: ["@rdfjs/types", "@types/n3", "n3", "purify-ts", "tinybase"],
+        internal: ["graph-store", "logger", "stream", "string"],
       },
       devDependencies: {
         internal: ["collection", "data-factory"],
       },
-      tsconfig: packageTsconfig,
     },
   } satisfies Record<PackageName, Workspace>,
 } as const;
@@ -518,7 +500,7 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
 
     fs.writeFileSync(
       path.resolve(workspaceDirectoryPath, "tsconfig.json"),
-      `${JSON.stringify(workspace.tsconfig, undefined, 2)}\n`,
+      `${JSON.stringify(workspace.tsconfig ?? tsconfigDefault, undefined, 2)}\n`,
     );
 
     if (testsDirectoryPath !== null) {
@@ -589,7 +571,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 30 dev dev:tests",
+        dev: "turbo run --concurrency 32 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

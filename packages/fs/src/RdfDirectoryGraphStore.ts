@@ -6,10 +6,10 @@ import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { RdfFormat, uncompressedRdfFormatsByMimeType } from "@rdfx/format";
 import { GraphIdentifier, type GraphStore } from "@rdfx/graph-store";
+import { type Logger, nopLogger } from "@rdfx/logger";
 import parsers from "@rdfx/parser";
 import { NTriplesTerm } from "@rdfx/string";
 import { Either, EitherAsync, Left, Maybe } from "purify-ts";
-import { dummyLogger, type Logger } from "ts-log";
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfDirectory } from "./RdfDirectory.js";
@@ -33,7 +33,7 @@ export class RdfDirectoryGraphStore implements GraphStore {
     },
   ) {
     this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
-    this.logger = options?.logger ?? dummyLogger;
+    this.logger = options?.logger ?? nopLogger;
   }
 
   async clear(): Promise<Either<Error, object>> {

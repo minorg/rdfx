@@ -1,6 +1,6 @@
 import type { Stream } from "@rdfjs/types";
+import type { Logger } from "@rdfx/logger";
 import type { Either, Maybe } from "purify-ts";
-import type { Logger } from "ts-log";
 import { ForwardingGraphStore } from "./ForwardingGraphStore.js";
 import type { GraphIdentifier } from "./GraphIdentifier.js";
 import type { GraphStore } from "./GraphStore.js";
