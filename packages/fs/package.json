@@ -1,14 +1,14 @@
 {
   "dependencies": {
-    "@rdfx/collection": "0.0.54",
-    "@rdfx/data-factory": "0.0.54",
-    "@rdfx/format": "0.0.54",
-    "@rdfx/graph-store": "0.0.54",
-    "@rdfx/logger": "0.0.54",
-    "@rdfx/parser": "0.0.54",
-    "@rdfx/serializer": "0.0.54",
-    "@rdfx/stream": "0.0.54",
-    "@rdfx/string": "0.0.54",
+    "@rdfx/collection": "0.0.55",
+    "@rdfx/data-factory": "0.0.55",
+    "@rdfx/format": "0.0.55",
+    "@rdfx/graph-store": "0.0.55",
+    "@rdfx/logger": "0.0.55",
+    "@rdfx/parser": "0.0.55",
+    "@rdfx/serializer": "0.0.55",
+    "@rdfx/stream": "0.0.55",
+    "@rdfx/string": "0.0.55",
     "@rdfjs/types": "~2.0.1",
     "@types/node": "^24",
     "@types/unbzip2-stream": "~1.4.3",
@@ -17,7 +17,7 @@
     "unbzip2-stream": "~1.4.3"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.54"
+    "@rdfx/testing": "0.0.55"
   },
   "files": [
     "LICENSE",
@@ -42,5 +42,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.54"
+  "version": "0.0.55"
 }
