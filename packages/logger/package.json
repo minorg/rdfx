@@ -2,7 +2,9 @@
   "dependencies": {},
   "devDependencies": {},
   "files": [
-    "LICENSE"
+    "LICENSE",
+    "dist/*.d.ts",
+    "dist/*.js"
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
