@@ -1,5 +1,5 @@
 import { datasetFactory } from "@rdfx/collection";
-import { dummyLogger } from "ts-log";
+import { nopLogger } from "@rdfx/logger";
 import { describe } from "vitest";
 import { LoggingGraphStore } from "../src/LoggingGraphStore.js";
 import { RdfjsDatasetGraphStore } from "../src/RdfjsDatasetGraphStore.js";
@@ -10,7 +10,7 @@ describe("LoggingGraphStore", () => {
     use(
       new LoggingGraphStore(
         new RdfjsDatasetGraphStore(datasetFactory.dataset()),
-        dummyLogger,
+        nopLogger,
       ),
     ),
   );

@@ -1,5 +1,5 @@
+import type { Logger } from "@rdfx/logger";
 import { type Either, EitherAsync } from "purify-ts";
-import type { Logger } from "ts-log";
 import type { FileSystem } from "./FileSystem.js";
 import { NodeFileSystem } from "./NodeFileSystem.js";
 import { RdfDirectory } from "./RdfDirectory.js";

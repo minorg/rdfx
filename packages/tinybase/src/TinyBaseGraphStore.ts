@@ -6,6 +6,7 @@ import type {
   Stream,
 } from "@rdfjs/types";
 import { GraphIdentifier, type GraphStore } from "@rdfx/graph-store";
+import type { Logger } from "@rdfx/logger";
 import { iterableToStream } from "@rdfx/stream";
 import { NTriplesTerm } from "@rdfx/string";
 
@@ -16,7 +17,6 @@ import {
   type NoValuesSchema,
   type Store,
 } from "tinybase/with-schemas";
-import type { Logger } from "ts-log";
 
 export class TinyBaseGraphStore implements GraphStore {
   protected readonly dataFactory: DataFactory;
@@ -120,8 +120,8 @@ export class TinyBaseGraphStore implements GraphStore {
 
         const elapsedTimeMs = performance.now() - startTimestampMs;
         this.logger.debug(
-          "parsed %d quads from %d rows in %.2fms",
-          quads,
+          "parsed %d quads from %d rows in %d",
+          quads.length,
           rows.length,
           elapsedTimeMs,
         );

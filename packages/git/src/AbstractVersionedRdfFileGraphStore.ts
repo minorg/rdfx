@@ -12,9 +12,9 @@ import {
   type Stat,
 } from "@rdfx/fs";
 import type { GraphIdentifier, VersionedGraphStore } from "@rdfx/graph-store";
+import { type Logger, nopLogger } from "@rdfx/logger";
 import * as git from "isomorphic-git";
 import { type Either, EitherAsync, type Maybe } from "purify-ts";
-import { dummyLogger, type Logger } from "ts-log";
 
 export abstract class AbstractVersionedRdfFileGraphStore
   implements VersionedGraphStore<string>
@@ -36,7 +36,7 @@ export abstract class AbstractVersionedRdfFileGraphStore
       ...gitParameters,
       fs,
     };
-    this.logger = logger ?? dummyLogger;
+    this.logger = logger ?? nopLogger;
   }
 
   async clear(): Promise<Either<Error, { readonly version: string }>> {

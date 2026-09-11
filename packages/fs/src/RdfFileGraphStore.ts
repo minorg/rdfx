@@ -6,9 +6,9 @@ import {
   type GraphStore,
   RdfjsDatasetGraphStore,
 } from "@rdfx/graph-store";
+import { type Logger, nopLogger } from "@rdfx/logger";
 import { iterableToStream } from "@rdfx/stream";
 import { Either, EitherAsync, Left, type Maybe } from "purify-ts";
-import { dummyLogger, type Logger } from "ts-log";
 import { Memoize } from "typescript-memoize";
 import { isErrnoException } from "./ErrnoException.js";
 import type { FileSystem } from "./FileSystem.js";
@@ -37,7 +37,7 @@ export class RdfFileGraphStore implements GraphStore {
     this.fileSystem = options?.fileSystem ?? NodeFileSystem.instance;
     this.format =
       options?.format ?? RdfFormat.fromFileName(path).unsafeCoerce();
-    this.logger = options?.logger ?? dummyLogger;
+    this.logger = options?.logger ?? nopLogger;
     this.prefixMap = options?.prefixMap;
   }
 
