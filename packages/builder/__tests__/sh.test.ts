@@ -456,6 +456,96 @@ describe("sh", () => {
       });
     });
 
+    describe("maxCount", () => {
+      it("unspecified", () => {
+        const propertyShape = sh.PropertyShape("property");
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toBeUndefined();
+      });
+
+      it("with optional cardinality", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "optional",
+          maxCount: 2n,
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
+        expect(propertyShape.minCount.extract()).toBeUndefined();
+      });
+
+      it("with required cardinality", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+          maxCount: 10n,
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
+        expect(propertyShape.minCount.extract()).toStrictEqual(1n);
+      });
+
+      it("with set cardinality", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "set",
+          maxCount: 2n,
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toStrictEqual(2n);
+        expect(propertyShape.minCount.extract()).toBeUndefined();
+      });
+
+      it("without cardinality", () => {
+        const propertyShape = sh.PropertyShape("property", { maxCount: 1n });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
+        expect(propertyShape.minCount.extract()).toBeUndefined();
+      });
+    });
+
+    describe("minCount", () => {
+      it("unspecified", () => {
+        const propertyShape = sh.PropertyShape("property");
+        expectValidShapes(propertyShape);
+        expect(propertyShape.minCount.extract()).toBeUndefined();
+      });
+
+      it("with optional cardinality", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "optional",
+          minCount: 1n,
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
+        expect(propertyShape.minCount.extract()).toBeUndefined();
+      });
+
+      it("with required cardinality", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "required",
+          minCount: 0n,
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
+        expect(propertyShape.minCount.extract()).toStrictEqual(1n);
+      });
+
+      it("with set cardinality", () => {
+        const propertyShape = sh.PropertyShape("property", {
+          cardinality: "set",
+          minCount: 1n,
+        });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toBeUndefined();
+        expect(propertyShape.minCount.extract()).toStrictEqual(1n);
+      });
+
+      it("without cardinality", () => {
+        const propertyShape = sh.PropertyShape("property", { minCount: 1n });
+        expectValidShapes(propertyShape);
+        expect(propertyShape.maxCount.extract()).toBeUndefined();
+        expect(propertyShape.minCount.extract()).toStrictEqual(1n);
+      });
+    });
+
     describe("path", () => {
       it("unspecified", () => {
         const propertyShape = sh.PropertyShape("property");
