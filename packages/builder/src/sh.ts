@@ -96,6 +96,8 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
     > & {
       readonly cardinality?: "optional" | "required" | "set";
       readonly in_?: skos_ConceptScheme | ConvertibleInArray;
+      readonly maxCount?: bigint | number;
+      readonly minCount?: bigint | number;
       readonly nodeKind?: NodeKindIri | NodeKindString;
       readonly path?: DefaultNamespaceKey | PropertyPath;
     },
@@ -105,6 +107,8 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
     const {
       cardinality: cardinalityParameter,
       in_: inParameter,
+      maxCount: maxCountParameter,
+      minCount: minCountParameter,
       path: pathParameter,
       nodeKind: nodeKindParameter,
       ...otherParameters
@@ -134,18 +138,22 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
 
     let maxCount: bigint | undefined;
     let minCount: bigint | undefined;
-    if (cardinalityParameter) {
-      switch (cardinalityParameter) {
-        case "optional":
-          maxCount = 1n;
-          break;
-        case "required":
-          maxCount = 1n;
-          minCount = 1n;
-          break;
-        case "set":
-          break;
-      }
+    switch (cardinalityParameter ?? "set") {
+      case "optional":
+        maxCount = 1n;
+        break;
+      case "required":
+        maxCount = 1n;
+        minCount = 1n;
+        break;
+      case "set":
+        if (maxCountParameter !== undefined) {
+          maxCount = BigInt(maxCountParameter);
+        }
+        if (minCountParameter !== undefined) {
+          minCount = BigInt(minCountParameter);
+        }
+        break;
     }
 
     return sh_PropertyShape.createUnsafe<DefaultNamespaceT>({
