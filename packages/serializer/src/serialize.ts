@@ -39,7 +39,7 @@ export async function serialize(
     const serializersOptions: Parameters<typeof serializersFactory>[0] = {};
     switch (options.format) {
       case "application/ld+json":
-        serializersOptions.jsonLd = options;
+        serializersOptions.jsonLd = { ...options, encoding: "string" };
         break;
       case "application/n-quads":
       case "application/n-triples":
