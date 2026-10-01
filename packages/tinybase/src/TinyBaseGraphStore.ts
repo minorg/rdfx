@@ -14,8 +14,8 @@ import { Parser } from "n3";
 import { Either, Left, Maybe } from "purify-ts";
 import {
   createMergeableStore,
+  type MergeableStore,
   type NoValuesSchema,
-  type Store,
 } from "tinybase/with-schemas";
 
 export class TinyBaseGraphStore implements GraphStore {
@@ -282,7 +282,9 @@ export class TinyBaseGraphStore implements GraphStore {
 }
 
 export namespace TinyBaseGraphStore {
-  export type TinyBaseStore = Store<[typeof tablesSchema, NoValuesSchema]>;
+  export type TinyBaseStore = MergeableStore<
+    [typeof tablesSchema, NoValuesSchema]
+  >;
 
   export const tablesSchema = {
     graph: {
