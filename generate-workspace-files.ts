@@ -78,6 +78,7 @@ const externalDependencies = {
 type PackageName =
   | "builder"
   | "collection"
+  | "curie"
   | "data-factory"
   | "format"
   | "fs"
@@ -173,6 +174,20 @@ const workspaces = {
           "@types/rdfjs__term-map",
           "@types/rdfjs__term-set",
         ],
+      },
+    },
+    curie: {
+      dependencies: {
+        external: [
+          "@rdfjs/prefix-map",
+          "@rdfjs/types",
+          "@types/rdfjs__prefix-map",
+          "purify-ts",
+          "ts-invariant",
+        ],
+      },
+      devDependencies: {
+        internal: ["data-factory"],
       },
     },
     "data-factory": {

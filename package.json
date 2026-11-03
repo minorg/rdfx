@@ -33,6 +33,7 @@
   "workspaces": [
     "packages/builder",
     "packages/collection",
+    "packages/curie",
     "packages/data-factory",
     "packages/format",
     "packages/fs",
