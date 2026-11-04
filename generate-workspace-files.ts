@@ -56,6 +56,7 @@ const externalDependencies = {
   housemd: "0.1.3",
   "isomorphic-git": "~1.38.3",
   "js-sha256": "~0.11.1",
+  "libreoffice-convert": "~1.8.1",
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
@@ -389,7 +390,7 @@ const workspaces = {
         internal: ["logger"],
       },
       devDependencies: {
-        external: ["@types/node"],
+        external: ["@types/node", "libreoffice-convert"],
       },
     },
   } satisfies Record<PackageName, Workspace>,
@@ -561,6 +562,11 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
               "@tsconfig/strictest/tsconfig.json",
             ],
             include: ["./**/*.ts", "../src/**/*"],
+            types: (workspace.dependencies?.external ?? [])
+              .concat(workspace.devDependencies?.external ?? [])
+              .includes("@types/node")
+              ? ["node"]
+              : undefined,
           },
           undefined,
           2,
