@@ -55,6 +55,7 @@ const externalDependencies = {
   "fast-formula-parser": "1.0.19",
   housemd: "0.1.3",
   "isomorphic-git": "~1.38.3",
+  "js-sha256": "~0.11.1",
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
@@ -379,12 +380,16 @@ const workspaces = {
       dependencies: {
         external: [
           "fast-formula-parser",
+          "js-sha256",
           "purify-ts",
           "ts-invariant",
           "typescript-memoize",
           "xlsx",
         ],
         internal: ["logger"],
+      },
+      devDependencies: {
+        external: ["@types/node"],
       },
     },
   } satisfies Record<PackageName, Workspace>,

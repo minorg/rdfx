@@ -1,9 +1,11 @@
 import type { Logger } from "@rdfx/logger";
 import type { DepParser } from "fast-formula-parser";
+import { sha256 } from "js-sha256";
 import { Maybe } from "purify-ts";
 import { invariant } from "ts-invariant";
 import { Memoize } from "typescript-memoize";
 import * as xlsx from "xlsx";
+
 import type { Cell } from "./Cell.js";
 import { CellAddress } from "./CellAddress.js";
 import { ErrorCell } from "./ErrorCell.js";
@@ -211,6 +213,18 @@ export class Worksheet {
     }
 
     return [...result.values()];
+  }
+
+  /**
+   * SHA-256 hash hex digest of this worksheet.
+   */
+  @Memoize()
+  get hash(): string {
+    const hasher = sha256.create();
+    for (const cell of this.cells) {
+      hasher.update(cell.hash);
+    }
+    return hasher.hex();
   }
 
   cell(address: CellAddress): Maybe<Cell> {

@@ -4,7 +4,19 @@ import type { Worksheet } from "./Worksheet.js";
 export abstract class AbstractCell {
   protected readonly worksheet: Worksheet;
 
+  /**
+   * Address of this cell.
+   */
   readonly address: CellAddress;
+
+  /**
+   * SHA-256 hash hex digest of this cell.
+   */
+  abstract readonly hash: string;
+
+  /**
+   * Type discriminant.
+   */
   abstract readonly kind: "ErrorCell" | "FormulaCell" | "ValueCell";
 
   constructor({

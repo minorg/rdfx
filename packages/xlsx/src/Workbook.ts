@@ -1,10 +1,10 @@
 import { type Logger, nopLogger } from "@rdfx/logger";
 import { DepParser } from "fast-formula-parser";
+import { sha256 } from "js-sha256";
 import { Either, Maybe } from "purify-ts";
 import { invariant } from "ts-invariant";
 import { Memoize } from "typescript-memoize";
 import * as xlsx from "xlsx";
-
 import type { Cell } from "./Cell.js";
 import type { CellAddress } from "./CellAddress.js";
 import { Worksheet } from "./Worksheet.js";
@@ -40,6 +40,18 @@ export class Workbook {
       }
     }
     return cellsByAddress;
+  }
+
+  /**
+   * SHA-256 hash hex digest of this workbook.
+   */
+  @Memoize()
+  get hash(): string {
+    const hasher = sha256.create();
+    for (const worksheet of this.worksheets) {
+      hasher.update(worksheet.hash);
+    }
+    return hasher.hex();
   }
 
   @Memoize()

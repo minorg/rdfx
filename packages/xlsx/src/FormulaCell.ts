@@ -1,4 +1,5 @@
 import { type DepParser, MAX_COLUMN, MAX_ROW } from "fast-formula-parser";
+import { sha256 } from "js-sha256";
 import { Either, type Maybe } from "purify-ts";
 import { Memoize } from "typescript-memoize";
 
@@ -10,8 +11,10 @@ import type { Worksheet } from "./Worksheet.js";
 export class FormulaCell extends AbstractCell {
   private readonly depParser: DepParser;
 
+  #hash: string | null = null;
+
   readonly formula: string;
-  readonly kind = "FormulaCell";
+  override readonly kind = "FormulaCell";
   readonly value: boolean | Date | number | string;
 
   constructor({
@@ -96,6 +99,13 @@ export class FormulaCell extends AbstractCell {
     });
   }
 
+  override get hash(): string {
+    if (this.#hash !== null) {
+      return this.#hash;
+    }
+    return this.hashRecursive(new Set());
+  }
+
   override toJSON() {
     return {
       ...super.toJSON(),
@@ -104,5 +114,55 @@ export class FormulaCell extends AbstractCell {
       })),
       formula: this.formula,
     };
+  }
+
+  protected hashRecursive(visitedCellAddresses: Set<string>): string {
+    if (this.#hash !== null) {
+      return this.#hash;
+    }
+
+    visitedCellAddresses.add(this.address.string);
+
+    const circularDependencyCellAddresses: string[] = [];
+    const resolvedDependencyHashes: string[] = [];
+    const unresolvedDependencyCellAddresses: string[] = [];
+
+    for (const dependencyCellAddress of this.dependencyCellAddresses.orDefault(
+      [],
+    )) {
+      if (visitedCellAddresses.has(dependencyCellAddress.string)) {
+        circularDependencyCellAddresses.push(dependencyCellAddress.string);
+        continue;
+      }
+
+      this.worksheet.workbook
+        .cell(dependencyCellAddress)
+        .ifJust((dependency) => {
+          if (dependency.kind === "FormulaCell") {
+            resolvedDependencyHashes.push(
+              dependency.hashRecursive(visitedCellAddresses),
+            );
+          } else {
+            resolvedDependencyHashes.push(dependency.hash);
+          }
+        })
+        .ifNothing(() => {
+          unresolvedDependencyCellAddresses.push(dependencyCellAddress.string);
+        });
+    }
+
+    visitedCellAddresses.delete(this.address.string);
+
+    this.#hash = sha256(
+      JSON.stringify({
+        ...super.toJSON(),
+        circularDependencyCellAddresses,
+        formula: this.formula,
+        resolvedDependencyHashes,
+        unresolvedDependencyCellAddresses,
+      }),
+    );
+
+    return this.#hash;
   }
 }

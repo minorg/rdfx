@@ -1,3 +1,6 @@
+import { sha256 } from "js-sha256";
+import { Memoize } from "typescript-memoize";
+
 import { AbstractCell } from "./AbstractCell.js";
 
 export class ErrorCell extends AbstractCell {
@@ -10,6 +13,11 @@ export class ErrorCell extends AbstractCell {
   }: { message: string } & ConstructorParameters<typeof AbstractCell>[0]) {
     super(superParameters);
     this.message = message;
+  }
+
+  @Memoize()
+  get hash(): string {
+    return sha256(JSON.stringify(this.toJSON()));
   }
 
   override toJSON() {
