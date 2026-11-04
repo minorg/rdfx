@@ -26,6 +26,7 @@ const externalDependencies = {
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
+  "@shaclmate/cli": shaclmateVersion,
   "@shaclmate/compiler": shaclmateVersion,
   "@shaclmate/validator": shaclmateVersion,
   "@tpluscode/rdf-ns-builders": "~4.3.0",
@@ -390,7 +391,7 @@ const workspaces = {
         internal: ["logger"],
       },
       devDependencies: {
-        external: ["@types/node", "libreoffice-convert"],
+        external: ["@shaclmate/cli", "@types/node", "libreoffice-convert"],
       },
     },
   } satisfies Record<PackageName, Workspace>,
