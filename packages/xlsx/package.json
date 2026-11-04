@@ -1,10 +1,17 @@
 {
   "dependencies": {
+    "@rdfx/logger": "0.0.59",
+    "fast-formula-parser": "1.0.19",
+    "purify-ts": "~2.1.4",
+    "ts-invariant": "~0.10.3",
+    "typescript-memoize": "~1.1.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {},
   "files": [
-    "LICENSE"
+    "LICENSE",
+    "dist/*.d.ts",
+    "dist/*.js"
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
@@ -18,7 +25,9 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
-    "dev": "tsc -w --preserveWatchOutput"
+    "dev": "tsc -w --preserveWatchOutput",
+    "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run packages/xlsx/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
