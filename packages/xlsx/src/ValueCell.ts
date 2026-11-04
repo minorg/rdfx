@@ -17,7 +17,7 @@ export class ValueCell extends AbstractCell {
   }
 
   @Memoize()
-  get hash(): string {
+  get sha256(): string {
     return sha256(JSON.stringify(this.toJSON()));
   }
 

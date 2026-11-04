@@ -216,13 +216,13 @@ export class Worksheet {
   }
 
   /**
-   * SHA-256 hash hex digest of this worksheet.
+   * SHA-256 sha256 hex digest of this worksheet.
    */
   @Memoize()
-  get hash(): string {
+  get sha256(): string {
     const hasher = sha256.create();
     for (const cell of this.cells) {
-      hasher.update(cell.hash);
+      hasher.update(cell.sha256);
     }
     return hasher.hex();
   }

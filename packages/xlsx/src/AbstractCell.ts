@@ -10,14 +10,14 @@ export abstract class AbstractCell {
   readonly address: CellAddress;
 
   /**
-   * SHA-256 hash hex digest of this cell.
-   */
-  abstract readonly hash: string;
-
-  /**
    * Type discriminant.
    */
   abstract readonly kind: "ErrorCell" | "FormulaCell" | "ValueCell";
+
+  /**
+   * SHA-256 sha256 hex digest of this cell.
+   */
+  abstract readonly sha256: string;
 
   constructor({
     address,

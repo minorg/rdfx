@@ -11,7 +11,7 @@ import type { Worksheet } from "./Worksheet.js";
 export class FormulaCell extends AbstractCell {
   private readonly depParser: DepParser;
 
-  #hash: string | null = null;
+  #sha256: string | null = null;
 
   readonly formula: string;
   override readonly kind = "FormulaCell";
@@ -99,9 +99,9 @@ export class FormulaCell extends AbstractCell {
     });
   }
 
-  override get hash(): string {
-    if (this.#hash !== null) {
-      return this.#hash;
+  override get sha256(): string {
+    if (this.#sha256 !== null) {
+      return this.#sha256;
     }
     return this.hashRecursive(new Set());
   }
@@ -117,8 +117,8 @@ export class FormulaCell extends AbstractCell {
   }
 
   protected hashRecursive(visitedCellAddresses: Set<string>): string {
-    if (this.#hash !== null) {
-      return this.#hash;
+    if (this.#sha256 !== null) {
+      return this.#sha256;
     }
 
     visitedCellAddresses.add(this.address.string);
@@ -143,7 +143,7 @@ export class FormulaCell extends AbstractCell {
               dependency.hashRecursive(visitedCellAddresses),
             );
           } else {
-            resolvedDependencyHashes.push(dependency.hash);
+            resolvedDependencyHashes.push(dependency.sha256);
           }
         })
         .ifNothing(() => {
@@ -153,7 +153,7 @@ export class FormulaCell extends AbstractCell {
 
     visitedCellAddresses.delete(this.address.string);
 
-    this.#hash = sha256(
+    this.#sha256 = sha256(
       JSON.stringify({
         ...super.toJSON(),
         circularDependencyCellAddresses,
@@ -163,6 +163,6 @@ export class FormulaCell extends AbstractCell {
       }),
     );
 
-    return this.#hash;
+    return this.#sha256;
   }
 }
