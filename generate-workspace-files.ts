@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.57";
+const VERSION = "0.0.58";
 
 const shaclmateVersion = "4.0.88";
 const vitestVersion = "~4.1.5";
@@ -78,6 +78,7 @@ const externalDependencies = {
 type PackageName =
   | "builder"
   | "collection"
+  | "curie"
   | "data-factory"
   | "format"
   | "fs"
@@ -173,6 +174,20 @@ const workspaces = {
           "@types/rdfjs__term-map",
           "@types/rdfjs__term-set",
         ],
+      },
+    },
+    curie: {
+      dependencies: {
+        external: [
+          "@rdfjs/prefix-map",
+          "@rdfjs/types",
+          "@types/rdfjs__prefix-map",
+          "purify-ts",
+          "ts-invariant",
+        ],
+      },
+      devDependencies: {
+        internal: ["data-factory"],
       },
     },
     "data-factory": {
@@ -571,7 +586,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 32 dev dev:tests",
+        dev: "turbo run --concurrency 34 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },
