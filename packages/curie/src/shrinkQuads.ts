@@ -1,51 +1,51 @@
 import type { default as PrefixMap } from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DataFactory, NamedNode, Quad, Term } from "@rdfjs/types";
-import type { Curie } from "./Curie.js";
-import { shrinkIri } from "./shrinkIri.js";
+import { Curie } from "./Curie.js";
 
 export function* shrinkQuads(
   quads: Iterable<Quad>,
   {
     dataFactory,
     prefixMap,
+    referenceCounts,
   }: {
     dataFactory: DataFactory;
     prefixMap: PrefixMap;
+    referenceCounts?: Record<string, number>;
   },
 ): Iterable<Quad> {
   const curieCache = new Map<string, Curie | NamedNode>();
-  const referenceCounts: Record<string, Record<string, number>> = {};
 
-  const termToCurie = <TermT extends Term>(term: TermT): TermT => {
+  const shrinkTerm = <TermT extends Term>(term: TermT): TermT => {
     if (term.termType !== "NamedNode") {
       return term;
     }
+
     const cachedCurie = curieCache.get(term.value);
     if (cachedCurie) {
+      if (referenceCounts && cachedCurie instanceof Curie) {
+        referenceCounts[cachedCurie.reference] =
+          (referenceCounts[cachedCurie.reference] ?? 0) + 1;
+      }
       return cachedCurie as TermT;
     }
-    const curie =
-      shrinkIri(term, { prefixMap, referenceCounts }).extract() ?? term;
-    curieCache.set(term.value, curie);
-    return curie as TermT;
+
+    const curie = Curie.fromIri(term, { prefixMap }).extract();
+    if (curie && referenceCounts) {
+      referenceCounts[curie.reference] =
+        (referenceCounts[curie.reference] ?? 0) + 1;
+    }
+    curieCache.set(term.value, curie ?? term);
+
+    return (curie ?? term) as TermT;
   };
 
   for (const quad of quads) {
-    const curieObject = termToCurie(quad.object);
-    const curieSubject = termToCurie(quad.subject);
-
-    if (
-      !Object.is(curieObject, quad.object) ||
-      !Object.is(curieSubject, quad.subject)
-    ) {
-      yield dataFactory.quad(
-        curieSubject,
-        quad.predicate,
-        curieObject,
-        quad.graph,
-      );
-    } else {
-      yield quad;
-    }
+    yield dataFactory.quad(
+      shrinkTerm(quad.subject),
+      shrinkTerm(quad.predicate),
+      shrinkTerm(quad.object),
+      shrinkTerm(quad.graph),
+    );
   }
 }
