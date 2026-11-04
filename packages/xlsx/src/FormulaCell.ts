@@ -45,7 +45,7 @@ export class FormulaCell extends AbstractCell {
   }
 
   @Memoize()
-  private get dependencyCellAddresses(): Either<Error, readonly CellAddress[]> {
+  get dependencyCellAddresses(): Either<Error, readonly CellAddress[]> {
     return Either.encase(() => {
       const dependencyCellAddresses: CellAddress[] = [];
 
