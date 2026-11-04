@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.57";
+const VERSION = "0.0.58";
 
 const shaclmateVersion = "4.0.88";
 const vitestVersion = "~4.1.5";
@@ -586,7 +586,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 32 dev dev:tests",
+        dev: "turbo run --concurrency 34 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },
