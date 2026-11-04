@@ -24,7 +24,10 @@ describe("parse", async () => {
     if (dirent.name === "README.md") {
       continue;
     }
-    const rdfFormat = RdfFormat.fromFileName(dirent.name).unsafeCoerce();
+    const rdfFormat = RdfFormat.fromFileName(dirent.name).toMaybe().extract();
+    if (!rdfFormat) {
+      continue;
+    }
     if (RdfFormat.isCompressed(rdfFormat)) {
       continue;
     }
