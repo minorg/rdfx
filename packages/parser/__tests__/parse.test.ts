@@ -15,7 +15,7 @@ const testDataDirectoryPath = path.resolve(
 );
 
 describe("parse", async () => {
-  for (const dirent of await readdir(testDataDirectoryPath, {
+  for (const dirent of await readdir(path.join(testDataDirectoryPath, "rdf"), {
     withFileTypes: true,
   })) {
     if (!dirent.isFile()) {
@@ -24,10 +24,7 @@ describe("parse", async () => {
     if (dirent.name === "README.md") {
       continue;
     }
-    const rdfFormat = RdfFormat.fromFileName(dirent.name).toMaybe().extract();
-    if (!rdfFormat) {
-      continue;
-    }
+    const rdfFormat = RdfFormat.fromFileName(dirent.name).unsafeCoerce();
     if (RdfFormat.isCompressed(rdfFormat)) {
       continue;
     }

@@ -8,7 +8,7 @@ import { testDataDirectoryPath } from "./paths.js";
 const convert = promisify(convertCallback);
 
 export async function readTestWorkbook(fileName: string): Promise<Workbook> {
-  const filePath = path.join(testDataDirectoryPath, fileName);
+  const filePath = path.join(testDataDirectoryPath, "xlsx", fileName);
   if (fileName.endsWith(".xls")) {
     return Workbook.read(
       await convert(
