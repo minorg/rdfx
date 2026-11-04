@@ -48,6 +48,7 @@
     "packages/stream",
     "packages/string",
     "packages/testing",
-    "packages/tinybase"
+    "packages/tinybase",
+    "packages/xlsx"
   ]
 }

@@ -71,6 +71,7 @@ const externalDependencies = {
   typescript: "6.0.3",
   "typescript-memoize": "~1.1.1",
   "unbzip2-stream": "~1.4.3",
+  xlsx: "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
   vitest: vitestVersion,
   "vitest-fetch-mock": "~0.4.5",
 };
@@ -93,7 +94,8 @@ type PackageName =
   | "stream"
   | "string"
   | "testing"
-  | "tinybase";
+  | "tinybase"
+  | "xlsx";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -106,6 +108,9 @@ interface Tsconfig {
 
 interface Workspace {
   bin?: Record<string, string>;
+  bundleDependencies?: {
+    external?: readonly (keyof typeof externalDependencies)[];
+  };
   dependencies?: {
     external?: readonly (keyof typeof externalDependencies)[];
     internal?: readonly PackageName[];
@@ -364,6 +369,14 @@ const workspaces = {
       },
       devDependencies: {
         internal: ["collection", "data-factory"],
+      },
+    },
+    xlsx: {
+      bundleDependencies: {
+        external: ["xlsx"],
+      },
+      dependencies: {
+        external: ["xlsx"],
       },
     },
   } satisfies Record<PackageName, Workspace>,
