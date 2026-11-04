@@ -81,6 +81,24 @@ function $convertToIdentifierProperty<
   }
 }
 
+function $convertToIri<
+  DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+>(
+  value: NamedNode | (keyof DefaultNamespaceT & string),
+  defaultNamespace?: DefaultNamespaceT,
+): Either<Error, NamedNode> {
+  switch (typeof value) {
+    case "object":
+      return Either.of(value);
+    case "string":
+      return Either.of(
+        defaultNamespace
+          ? defaultNamespace(value)
+          : dataFactory.namedNode(value),
+      );
+  }
+}
+
 function $convertToIriIdentifierProperty<
   DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
 >(
@@ -104,6 +122,38 @@ function $convertToIriIdentifierProperty<
       return Either.of(() => captureIdentifier);
     }
   }
+}
+
+function $convertToLazy<PartialT, ResolvedT>(
+  isPartial: (object: PartialT | ResolvedT) => object is PartialT,
+  resolvedToPartial: (resolved: ResolvedT) => PartialT,
+): $ConversionFunction<
+  $Lazy<PartialT, ResolvedT> | PartialT | ResolvedT,
+  $Lazy<PartialT, ResolvedT>
+> {
+  return (value) => {
+    if (value instanceof $Lazy) {
+      return Either.of(value);
+    }
+
+    if (isPartial(value)) {
+      const partial: PartialT = value;
+      return Either.of(
+        new $Lazy({
+          partial,
+          resolver: async () => Left(new Error("unable to resolve")),
+        }),
+      );
+    }
+
+    const resolved: ResolvedT = value;
+    return Either.of(
+      new $Lazy({
+        partial: resolvedToPartial(resolved),
+        resolver: async () => Right(resolved),
+      }),
+    );
+  };
 }
 
 function $convertToMaybe<
@@ -235,6 +285,37 @@ interface $IriSchema<IriT extends string = string> {
   readonly hasValues?: readonly NamedNode[];
   readonly in?: readonly NamedNode<IriT>[];
   readonly kind: "Iri";
+}
+
+/**
+ * Type of lazy properties that return a single required value. This is a class instead of an interface so it can be instanceof'd elsewhere.
+ */
+export class $Lazy<PartialT, ResolvedT> {
+  readonly partial: PartialT;
+  private readonly resolver: (
+    partial: PartialT,
+    options?: { preferredLanguages?: readonly string[] },
+  ) => Promise<Either<Error, ResolvedT>>;
+
+  constructor({
+    partial,
+    resolver,
+  }: {
+    partial: PartialT;
+    resolver: (
+      partial: PartialT,
+      options?: { preferredLanguages?: readonly string[] },
+    ) => Promise<Either<Error, ResolvedT>>;
+  }) {
+    this.partial = partial;
+    this.resolver = resolver;
+  }
+
+  resolve(options?: {
+    preferredLanguages?: readonly string[];
+  }): Promise<Either<Error, ResolvedT>> {
+    return this.resolver(this.partial, options);
+  }
 }
 
 function $maybeFromRdfResourceValues<ItemT, ItemSchemaT>(
@@ -597,10 +678,118 @@ function $wrap_FromRdfResourceFunction<T>(
     });
   };
 }
+export type $DefaultPartial = {
+  readonly $identifier: () => $DefaultPartial.Identifier;
+
+  readonly $type: "DefaultPartial";
+};
+
+export namespace $DefaultPartial {
+  export const _fromRdfResource: $_FromRdfResourceFunction<$DefaultPartial> = (
+    resource,
+    options,
+  ) =>
+    $sequenceRecord({
+      $identifier: $identifierFromRdfResourceValues(
+        $rdfResourceIdentifierValues(resource),
+        {
+          ...options,
+          focusResource: resource,
+          propertyPath: $RdfVocabularies.rdf.subject,
+          schema: $DefaultPartial.schema.properties.$identifier.type,
+        },
+      ).chain((values) => values.head()),
+    }).chain((properties) => $DefaultPartial.create(properties));
+
+  export const $toString: (_defaultPartial: $DefaultPartial) => string = (
+    _defaultPartial,
+  ) => `$DefaultPartial(${JSON.stringify(toStringRecord(_defaultPartial))})`;
+
+  export const create = <
+    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+  >(parameters?: {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => $DefaultPartial.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+  }): Either<Error, $DefaultPartial> =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(
+        parameters?.$identifier,
+        parameters?.$defaultNamespace,
+      ),
+    })
+      .map((properties) => ({
+        ...properties,
+        $type: "DefaultPartial" as const,
+      }))
+      .map((object) =>
+        $monkeyPatchObject(object, { $toString: $DefaultPartial.$toString }),
+      );
+
+  export function createUnsafe<
+    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+  >(parameters?: {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => $DefaultPartial.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+  }): $DefaultPartial {
+    return create(parameters).unsafeCoerce();
+  }
+
+  export const fromRdfResource =
+    $wrap_FromRdfResourceFunction(_fromRdfResource);
+
+  export const fromRdfResourceValues: $FromRdfResourceValuesFunction<
+    $DefaultPartial,
+    $DefaultPartial.Schema
+  > = (values, options) =>
+    values.chainMap((value) =>
+      value
+        .toResource()
+        .chain((resource) => fromRdfResource(resource, options)),
+    );
+
+  export type Identifier = BlankNode | NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIdentifier;
+    export const stringify = NTriplesTerm.stringify;
+  }
+
+  export const is$DefaultPartial = (
+    object: $Object,
+  ): object is $DefaultPartial => object.$type === "DefaultPartial";
+
+  export const schema = {
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" as const },
+      },
+      $type: { kind: "Discriminant", value: "DefaultPartial" },
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toStringRecord: (
+    _defaultPartial: $DefaultPartial,
+  ) => Record<string, string> = (_defaultPartial) =>
+    $compactRecord({ $identifier: _defaultPartial.$identifier().toString() });
+}
 export type NodeShape1 = {
   readonly $identifier: () => NodeShape1.Identifier;
 
   readonly $type: "NodeShape1";
+
+  readonly iriProperty: NamedNode;
+
+  readonly nodeProperty: $Lazy<$DefaultPartial, NodeShape2>;
 
   readonly stringProperty: string;
 };
@@ -626,6 +815,45 @@ export namespace NodeShape1 {
             schema: NodeShape1.schema.properties.$identifier.type,
           },
         ).chain((values) => values.head()),
+        iriProperty: $shaclPropertyFromRdf<NamedNode, $IriSchema<string>>({
+          ...options,
+          focusResource: resource,
+          ignoreRdfType: true,
+          propertySchema: NodeShape1.schema.properties.iriProperty,
+          typeFromRdfResourceValues: $iriFromRdfResourceValues<string>,
+        }),
+        nodeProperty: $shaclPropertyFromRdf<
+          $Lazy<$DefaultPartial, NodeShape2>,
+          { kind: "Lazy"; partialType: $DefaultPartial.Schema }
+        >({
+          ...options,
+          focusResource: resource,
+          ignoreRdfType: true,
+          propertySchema: NodeShape1.schema.properties.nodeProperty,
+          typeFromRdfResourceValues: ((
+            values,
+            { objectSet, schema, ...otherOptions },
+          ) =>
+            $DefaultPartial
+              .fromRdfResourceValues(values, {
+                ...otherOptions,
+                objectSet,
+                schema: schema.partialType,
+              })
+              .map((values) =>
+                values.map(
+                  (partial) =>
+                    new $Lazy<$DefaultPartial, NodeShape2>({
+                      partial,
+                      resolver: (partial, options) =>
+                        objectSet.nodeShape2(partial.$identifier(), options),
+                    }),
+                ),
+              )) satisfies $FromRdfResourceValuesFunction<
+            $Lazy<$DefaultPartial, NodeShape2>,
+            { kind: "Lazy"; partialType: $DefaultPartial.Schema }
+          >,
+        }),
         stringProperty: $shaclPropertyFromRdf<string, $StringSchema<string>>({
           ...options,
           focusResource: resource,
@@ -647,6 +875,11 @@ export namespace NodeShape1 {
       | (() => NodeShape1.Identifier)
       | (keyof $DefaultNamespaceT & string)
       | NamedNode;
+    readonly iriProperty: (keyof $DefaultNamespaceT & string) | NamedNode;
+    readonly nodeProperty:
+      | $Lazy<$DefaultPartial, NodeShape2>
+      | $DefaultPartial
+      | NodeShape2;
     readonly stringProperty: string;
   }): Either<Error, NodeShape1> =>
     $sequenceRecord({
@@ -654,6 +887,14 @@ export namespace NodeShape1 {
         parameters.$identifier,
         parameters.$defaultNamespace,
       ),
+      iriProperty: $convertToIri(
+        parameters.iriProperty,
+        parameters.$defaultNamespace,
+      ),
+      nodeProperty: $convertToLazy<$DefaultPartial, NodeShape2>(
+        $DefaultPartial.is$DefaultPartial,
+        $DefaultPartial.createUnsafe,
+      )(parameters.nodeProperty, parameters.$defaultNamespace),
       stringProperty: Either.of(parameters.stringProperty),
     })
       .map((properties) => ({ ...properties, $type: "NodeShape1" as const }))
@@ -669,6 +910,11 @@ export namespace NodeShape1 {
       | (() => NodeShape1.Identifier)
       | (keyof $DefaultNamespaceT & string)
       | NamedNode;
+    readonly iriProperty: (keyof $DefaultNamespaceT & string) | NamedNode;
+    readonly nodeProperty:
+      | $Lazy<$DefaultPartial, NodeShape2>
+      | $DefaultPartial
+      | NodeShape2;
     readonly stringProperty: string;
   }): NodeShape1 {
     return create(parameters).unsafeCoerce();
@@ -701,6 +947,23 @@ export namespace NodeShape1 {
     properties: {
       $identifier: { kind: "Identifier", type: { kind: "Iri" as const } },
       $type: { kind: "Discriminant", value: "NodeShape1" },
+      iriProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/iriProperty"),
+        type: { kind: "Iri" as const },
+      },
+      nodeProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/nodeProperty"),
+        get type() {
+          return {
+            kind: "Lazy" as const,
+            get partialType() {
+              return $DefaultPartial.schema;
+            },
+          };
+        },
+      },
       stringProperty: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://example.com/stringProperty"),
@@ -859,11 +1122,13 @@ export namespace NodeShape2 {
   ) => Record<string, string> = (_nodeShape2) =>
     $compactRecord({ $identifier: _nodeShape2.$identifier().toString() });
 }
-export type $Object = NodeShape1 | NodeShape2;
+export type $Object = $DefaultPartial | NodeShape1 | NodeShape2;
 
 export namespace $Object {
   export function $toString(object: $Object) {
     switch (object.$type) {
+      case "DefaultPartial":
+        return $DefaultPartial.$toString(object);
       case "NodeShape1":
         return NodeShape1.$toString(object);
       case "NodeShape2":

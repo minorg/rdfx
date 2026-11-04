@@ -9,6 +9,16 @@
     a rdfs:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
     sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path :iriProperty
+    ], [
+        shaclmate:resolve :NodeShape2 ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :nodeProperty
+    ], [
         sh:datatype xsd:string ;
         sh:maxCount 1 ;
         sh:minCount 1 ;
