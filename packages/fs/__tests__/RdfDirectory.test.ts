@@ -2,10 +2,10 @@ import { datasetFactory, PrefixMap } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { describe, it } from "vitest";
 import { RdfDirectory } from "../src/RdfDirectory.js";
-import { testDataDirPath } from "./paths.js";
+import { testDataDirectoryPath } from "./paths.js";
 
 describe("RdfDirectory", () => {
-  const sut = new RdfDirectory(testDataDirPath);
+  const sut = new RdfDirectory(testDataDirectoryPath);
 
   it("files", async ({ expect }) => {
     let count = 0;

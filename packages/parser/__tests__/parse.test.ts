@@ -6,7 +6,7 @@ import { describe, it } from "vitest";
 import { parse } from "../src/parse.js";
 import { parseSync } from "../src/parseSync.js";
 
-const testDataDirPath = path.resolve(
+const testDataDirectoryPath = path.resolve(
   path.join(__dirname),
   "..",
   "..",
@@ -15,7 +15,7 @@ const testDataDirPath = path.resolve(
 );
 
 describe("parse", async () => {
-  for (const dirent of await readdir(testDataDirPath, {
+  for (const dirent of await readdir(testDataDirectoryPath, {
     withFileTypes: true,
   })) {
     if (!dirent.isFile()) {
