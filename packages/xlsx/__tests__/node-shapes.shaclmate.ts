@@ -837,23 +837,18 @@ export namespace NodeShape1 {
         focusResource: resource,
         ignoreRdfType: true,
         propertySchema: NodeShape1.schema.properties.nodeProperty,
-        typeFromRdfResourceValues: (
-          values,
-          { objectSet, schema, ...otherOptions },
-        ) =>
+        typeFromRdfResourceValues: (values, fromRdfResourceValuesOptions) =>
           $DefaultPartial
             .fromRdfResourceValues(values, {
-              objectSet,
-              schema: schema.partialType,
-              ...otherOptions,
+              ...fromRdfResourceValuesOptions,
+              schema: fromRdfResourceValuesOptions.schema.partialType,
             })
             .map((values) =>
               values.map(
                 (partial) =>
                   new $Lazy<$DefaultPartial, NodeShape2>({
                     partial,
-                    resolver: (partial, options) =>
-                      objectSet.nodeShape2(partial.$identifier(), options),
+                    resolver: $missingResolver,
                   }),
               ),
             ),

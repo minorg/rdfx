@@ -9,7 +9,7 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@shaclmate/cli": "4.0.95",
+    "@shaclmate/cli": "4.0.96",
     "@types/node": "^24",
     "libreoffice-convert": "~1.8.1"
   },
