@@ -5,24 +5,58 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
+import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
+import { LiteralFactory } from "@rdfx/literal";
 import {
   PropertyPath as RdfxResourcePropertyPath,
-  Resource,
+  type Resource,
+  ResourceSet,
 } from "@rdfx/resource";
 import { NTriplesIdentifier } from "@rdfx/string";
 import { Either, Left, Right } from "purify-ts";
+import { z } from "zod";
 
-type $_FromRdfResourceFunction<T> = (
-  resource: Resource,
-  options: {
-    context: undefined | unknown;
-    graph: Exclude<Quad_Graph, Variable> | undefined;
-    ignoreRdfType: boolean;
+export type $_ToRdfResourceFunction<
+  IdentifierT extends Resource.Identifier,
+  ObjectT extends object,
+> = (parameters: {
+  graph: Exclude<Quad_Graph, Variable> | undefined;
+  ignoreRdfType: boolean;
+  object: ObjectT;
+  resource: Resource<IdentifierT>;
+  resourceSet: ResourceSet;
+}) => void;
 
-    preferredLanguages: readonly string[] | undefined;
-  },
-) => Either<Error, T>;
+function $arrayFromJsonArray<ItemJsonValueT, ItemT, ItemSchemaT>(
+  itemFromJsonValue: $FromJsonValueFunction<ItemJsonValueT, ItemT, ItemSchemaT>,
+): $FromJsonValueFunction<
+  ItemJsonValueT[] | undefined,
+  ItemT[],
+  $CollectionSchema<ItemSchemaT>
+> {
+  return (jsonArray, options) => {
+    if (jsonArray === undefined) {
+      return Either.of([]);
+    }
+    const { schema, ...otherOptions } = options;
+    const itemFromJsonValueOptions = {
+      schema: schema.itemType,
+      ...otherOptions,
+    };
+    return Either.sequence(
+      jsonArray.map((itemJsonValue) =>
+        itemFromJsonValue(itemJsonValue, itemFromJsonValueOptions),
+      ),
+    );
+  };
+}
+
+const $blankNodeFromJsonString: $FromJsonValueFunction<
+  string,
+  BlankNode,
+  undefined
+> = (jsonValue) => Right(dataFactory.blankNode(jsonValue.substring(2)));
 
 interface $CollectionSchema<ItemSchemaT> {
   readonly itemType: ItemSchemaT;
@@ -199,62 +233,46 @@ function $convertToScalarSet<
   };
 }
 
-function $ensureRdfResourceType(
-  resource: Resource,
-  types: readonly NamedNode[],
-  options: { graph: Exclude<Quad_Graph, Variable> | undefined },
-): Either<Error, undefined> {
-  return resource
-    .value($rdf_type, options)
-    .chain((actualRdfTypeValue) => actualRdfTypeValue.toIri())
-    .chain((actualRdfType) => {
-      // Check the expected type and its known subtypes
-      for (const type of types) {
-        if (resource.isInstanceOf(type, options)) {
-          return Right(undefined);
-        }
-      }
+export type $FromJsonObjectFunction<
+  JsonObjectT extends object,
+  ValueT,
+  ValueSchemaT,
+> = [ValueSchemaT] extends [undefined]
+  ? (
+      jsonObject: JsonObjectT,
+      options?: { context?: unknown; schema?: unknown },
+    ) => Either<Error, ValueT>
+  : (
+      jsonObject: JsonObjectT,
+      options: { context?: unknown; schema: ValueSchemaT },
+    ) => Either<Error, ValueT>;
 
-      return Left(
-        new Error(
-          `${resource.identifier} has unexpected RDF type (actual: ${actualRdfType}, expected one of ${types})`,
-        ),
-      );
-    });
-}
+export type $FromJsonValueFunction<JsonValueT, ValueT, ValueSchemaT> = [
+  ValueSchemaT,
+] extends [undefined]
+  ? (
+      jsonValue: JsonValueT,
+      options?: { context?: unknown; schema?: unknown },
+    ) => Either<Error, ValueT>
+  : (
+      jsonValue: JsonValueT,
+      options: { context?: unknown; schema: ValueSchemaT },
+    ) => Either<Error, ValueT>;
 
-export type $FromRdfResourceFunction<T> = (
-  resource: Resource,
-  options?: {
-    context?: unknown;
-    graph?: Exclude<Quad_Graph, Variable>;
-    ignoreRdfType?: boolean;
-
-    preferredLanguages?: readonly string[];
-  },
-) => Either<Error, T>;
-
-export type $FromRdfResourceValuesFunction<ValueT, ValueSchemaT> = (
-  resourceValues: Resource.Values,
-  options: {
-    context?: unknown;
-    graph?: Exclude<Quad_Graph, Variable>;
-    focusResource: Resource;
-    ignoreRdfType?: boolean;
-
-    preferredLanguages?: readonly string[];
-    propertyPath: $PropertyPath;
-    schema: ValueSchemaT;
-  },
-) => Either<Error, Resource.Values<ValueT>>;
-
-const $identifierFromRdfResourceValues: $FromRdfResourceValuesFunction<
+const $identifierFromJsonString: $FromJsonValueFunction<
+  string,
   BlankNode | NamedNode,
   $IdentifierSchema
-> = (values, options) =>
-  $termLikeFromRdfResourceValues(values, options).chain((values) =>
-    values.chainMap((value) => value.toIdentifier()),
-  );
+> = (jsonString, options) =>
+  jsonString.startsWith("_:")
+    ? ($blankNodeFromJsonString(jsonString, options) as Either<
+        Error,
+        BlankNode | NamedNode
+      >)
+    : ($iriFromJsonString(jsonString, options) as Either<
+        Error,
+        BlankNode | NamedNode
+      >);
 
 interface $IdentifierSchema {
   readonly hasValues?: readonly NamedNode[];
@@ -268,34 +286,33 @@ function $identityValidationFunction<T>(
   return Either.of(value);
 }
 
-function $iriFromRdfResourceValues<IriT extends string = string>(
-  values: Resource.Values,
-  options: Parameters<
-    $FromRdfResourceValuesFunction<NamedNode<IriT>, $IriSchema<IriT>>
+function $iriFromJsonString<IriT extends string = string>(
+  jsonValue: IriT,
+  _options: Parameters<
+    $FromJsonValueFunction<IriT, NamedNode<IriT>, object>
   >[1],
-): Either<Error, Resource.Values<NamedNode<IriT>>> {
-  return $termLikeFromRdfResourceValues(values, options).chain((values) =>
-    values.chainMap((value) =>
-      options.schema.in
-        ? value.toIri(options.schema.in)
-        : (value.toIri() as Either<Error, NamedNode<IriT>>),
-    ),
-  );
+): Either<Error, NamedNode<IriT>> {
+  return Either.of(dataFactory.namedNode(jsonValue));
 }
 
-interface $IriSchema<IriT extends string = string> {
-  readonly hasValues?: readonly NamedNode[];
-  readonly in?: readonly NamedNode<IriT>[];
-  readonly kind: "Iri";
-}
-
-const $langStringFromRdfResourceValues: $FromRdfResourceValuesFunction<
+const $langStringFromJsonObject: $FromJsonObjectFunction<
+  $LangStringJsonObject,
   Literal,
   $LangStringSchema
-> = (values, options) =>
-  $termLikeFromRdfResourceValues(values, options).chain((values) =>
-    values.chainMap((value) => value.toLangString(options.schema.in)),
+> = (jsonObject) =>
+  Either.of<Error, Literal>(
+    dataFactory.literal(jsonObject["@value"], jsonObject["@language"]),
   );
+
+interface $LangStringJsonObject {
+  "@language": string;
+  "@value": string;
+}
+
+namespace $LangStringJsonObject {
+  export const schema = () =>
+    z.object({ "@language": z.string().min(1), "@value": z.string().min(1) });
+}
 
 type $LangStringSchema = Omit<$LiteralSchema, "kind"> & {
   readonly kind: "LangString";
@@ -337,6 +354,8 @@ export class $Lazy<PartialT, ResolvedT> {
     return this.resolver(this.partial, options);
   }
 }
+
+const $literalFactory = new LiteralFactory({ dataFactory: dataFactory });
 
 interface $LiteralSchema {
   readonly hasValues?: readonly Literal[];
@@ -406,22 +425,24 @@ export function $parseIri(identifier: string): Either<Error, NamedNode> {
 export type $PropertyPath = RdfxResourcePropertyPath;
 
 export namespace $PropertyPath {
-  export const fromRdfResource: $FromRdfResourceFunction<$PropertyPath> =
-    RdfxResourcePropertyPath.fromResource;
-
-  export const fromRdfResourceValues: $FromRdfResourceValuesFunction<
-    $PropertyPath,
-    object
-  > = (values, options) =>
-    values.chainMap((value) =>
-      value
-        .toResource()
-        .chain((resource) => fromRdfResource(resource, options)),
-    );
-
   export const schema: Readonly<object> = {};
 
   export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    Resource.Identifier,
+    $PropertyPath
+  > = RdfxResourcePropertyPath.toResource;
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    $PropertyPath,
+    Resource.Identifier
+  > = (value, options) => [
+    toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
 
   export const $toString = RdfxResourcePropertyPath.toString;
 }
@@ -430,22 +451,9 @@ const $rdf_langString = dataFactory.namedNode(
   "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
 );
 
-const $rdf_subject = dataFactory.namedNode(
-  "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject",
-);
-
 const $rdf_type = dataFactory.namedNode(
   "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 );
-
-function $rdfResourceIdentifierValues(resource: Resource): Resource.Values {
-  return new Resource.Value({
-    dataFactory: dataFactory,
-    focusResource: resource,
-    propertyPath: $rdf_subject,
-    term: resource.identifier,
-  }).toValues();
-}
 
 const $rdfs_label = dataFactory.namedNode(
   "http://www.w3.org/2000/01/rdf-schema#label",
@@ -467,71 +475,13 @@ function $sequenceRecord<T extends Record<string, unknown>>(
   return Right(result as T);
 }
 
-function $setFromRdfResourceValues<ItemT, ItemSchemaT>(
-  itemFromRdfResourceValues: $FromRdfResourceValuesFunction<ItemT, ItemSchemaT>,
-): $FromRdfResourceValuesFunction<
-  readonly ItemT[],
-  $CollectionSchema<ItemSchemaT>
-> {
-  return (values, options) =>
-    itemFromRdfResourceValues(values, {
-      ...options,
-      schema: options.schema.itemType,
-    })
-      .map((values) => values.toArray())
-      .map((valuesArray) =>
-        Resource.Values.fromValue({
-          focusResource: options.focusResource,
-          propertyPath: options.propertyPath,
-          value: valuesArray,
-        }),
-      );
-}
-
-function $shaclPropertyFromRdf<TypeT, TypeSchemaT>({
-  focusResource,
-  graph,
-  propertySchema,
-  typeFromRdfResourceValues,
-  ...otherParameters
-}: {
-  propertySchema: $ShaclPropertySchema<TypeSchemaT>;
-  typeFromRdfResourceValues: $FromRdfResourceValuesFunction<TypeT, TypeSchemaT>;
-} & Omit<
-  Parameters<$FromRdfResourceValuesFunction<TypeT, TypeSchemaT>>[1],
-  "propertyPath" | "schema"
->): Either<Error, TypeT> {
-  return typeFromRdfResourceValues(
-    focusResource.values(propertySchema.path, { graph, unique: true }),
-    {
-      ...otherParameters,
-      focusResource,
-      graph,
-      propertyPath: propertySchema.path,
-      schema: propertySchema.type,
-    },
-  ).chain((values) => values.head());
-}
-
-export interface $ShaclPropertySchema<TypeSchemaT> {
-  readonly kind: "Shacl";
-  readonly path: $PropertyPath;
-  readonly type: TypeSchemaT;
-}
-
-function $stringFromRdfResourceValues<StringT extends string>(
-  values: Resource.Values,
-  options: Parameters<
-    $FromRdfResourceValuesFunction<StringT, $StringSchema<StringT>>
+function $stringFromJsonString<StringT extends string>(
+  jsonString: StringT,
+  _options: Parameters<
+    $FromJsonValueFunction<StringT, StringT, $StringSchema<StringT>>
   >[1],
-): Either<Error, Resource.Values<StringT>> {
-  return $termLikeFromRdfResourceValues(values, options).chain((values) =>
-    values.chainMap((value) =>
-      options.schema.in
-        ? value.toString(options.schema.in)
-        : (value.toString() as Either<Error, StringT>),
-    ),
-  );
+): Either<Error, StringT> {
+  return Either.of(jsonString);
 }
 
 interface $StringSchema<StringT extends string> {
@@ -542,83 +492,34 @@ interface $StringSchema<StringT extends string> {
   readonly kind: "String";
 }
 
-const $termLikeFromRdfResourceValues: $FromRdfResourceValuesFunction<
-  Resource.Value,
-  {
-    readonly hasValues?: readonly (Literal | NamedNode)[];
-    readonly languageIn?: readonly string[];
-  }
-> = (values, { preferredLanguages, schema: { hasValues, languageIn } }) => {
-  let chain = Either.of<Error, Resource.Values>(values);
+export type $ToRdfResourceFunction<
+  IdentifierT extends Resource.Identifier,
+  ObjectT extends object,
+> = (
+  object: ObjectT,
+  options?: {
+    graph?: Exclude<Quad_Graph, Variable>;
+    ignoreRdfType?: boolean;
+    resourceSet?: ResourceSet;
+  },
+) => Resource<IdentifierT>;
 
-  if (hasValues && hasValues.length > 0) {
-    chain = chain.chain((values) =>
-      Either.sequence(
-        hasValues.map((hasValue) =>
-          values.find((value) => value.term.equals(hasValue)),
-        ),
-      ).map(() => values),
-    );
-  }
-
-  if (languageIn && languageIn.length > 0) {
-    chain = chain.chain((values) =>
-      values.chainMap((value) =>
-        value.toLiteral().chain((literal) =>
-          languageIn.includes(literal.language)
-            ? Right(value)
-            : Left(
-                new Resource.MistypedValueError({
-                  actualValue: literal,
-                  expectedValueType: "Literal",
-                  focusResource: value.focusResource,
-                  propertyPath: value.propertyPath,
-                }),
-              ),
-        ),
-      ),
-    );
-  }
-
-  if (preferredLanguages && preferredLanguages.length > 0) {
-    chain = chain.chain((values) => {
-      const literals: Literal[] = [];
-      const literalValues: Resource.Value[] = [];
-      const nonLiteralValues: Resource.Value[] = [];
-
-      for (const value of values) {
-        const term = value.toTerm().unsafeCoerce();
-        if (term.termType === "Literal") {
-          literals.push(term);
-          literalValues.push(value);
-        } else {
-          nonLiteralValues.push(value);
-        }
-      }
-
-      // Return all literals for the first preferredLanguage, then all literals for the second preferredLanguage, etc.
-      // Within a preferredLanguage the literals may be in any order.
-      const preferredLanguageLiteralValues: Resource.Value[] = [];
-      for (const preferredLanguage of preferredLanguages) {
-        for (let literalI = 0; literalI < literals.length; literalI++) {
-          if (literals[literalI].language === preferredLanguage) {
-            preferredLanguageLiteralValues.push(literalValues[literalI]);
-          }
-        }
-      }
-
-      return Right(
-        Resource.Values.fromArray({
-          focusResource: values.focusResource,
-          propertyPath: values.propertyPath,
-          values: nonLiteralValues.concat(preferredLanguageLiteralValues),
-        }),
-      );
-    });
-  }
-
-  return chain;
-};
+export type $ToRdfResourceValuesFunction<
+  ValueT,
+  ReturnT extends BlankNode | Literal | NamedNode =
+    | BlankNode
+    | Literal
+    | NamedNode,
+> = (
+  value: ValueT,
+  options: {
+    graph?: Exclude<Quad_Graph, Variable>;
+    ignoreRdfType?: boolean;
+    propertyPath: $PropertyPath;
+    resource: Resource;
+    resourceSet: ResourceSet;
+  },
+) => ReturnT[];
 
 export type $ToStringFunction<T> = (value: T) => string;
 
@@ -647,22 +548,45 @@ type $ValidationFunction<SchemaT, ValueT> = (
   value: ValueT,
 ) => Either<Error, ValueT>;
 
-function $wrap_FromRdfResourceFunction<T>(
-  _fromRdfResourceFunction: $_FromRdfResourceFunction<T>,
-): $FromRdfResourceFunction<T> {
-  return (resource, options) => {
-    const {
-      context,
-      graph,
-      ignoreRdfType = false,
-      preferredLanguages,
-    } = options ?? {};
-    return _fromRdfResourceFunction(resource, {
-      context,
+function $wrap_ToRdfResourceFunction<
+  IdentifierT extends Resource.Identifier,
+  ObjectT extends { $identifier: () => IdentifierT },
+>(
+  _toRdfResourceFunction: $_ToRdfResourceFunction<IdentifierT, ObjectT>,
+): $ToRdfResourceFunction<IdentifierT, ObjectT>;
+function $wrap_ToRdfResourceFunction<
+  _IdentifierT extends BlankNode,
+  ObjectT extends object,
+>(
+  _toRdfResourceFunction: $_ToRdfResourceFunction<BlankNode, ObjectT>,
+): $ToRdfResourceFunction<BlankNode, ObjectT>;
+function $wrap_ToRdfResourceFunction<
+  IdentifierT extends Resource.Identifier,
+  ObjectT extends object & { $identifier?: () => IdentifierT },
+>(
+  _toRdfResourceFunction: $_ToRdfResourceFunction<IdentifierT, ObjectT>,
+): $ToRdfResourceFunction<IdentifierT, ObjectT> {
+  return (object, options) => {
+    let { graph, ignoreRdfType = false, resourceSet } = options ?? {};
+    if (!resourceSet) {
+      resourceSet = new ResourceSet({
+        dataFactory: dataFactory,
+        dataset: datasetFactory.dataset(),
+      });
+    }
+    const resource = (
+      object.$identifier
+        ? resourceSet.resource(object.$identifier())
+        : resourceSet.resource(dataFactory.blankNode())
+    ) as Resource<IdentifierT>;
+    _toRdfResourceFunction({
       graph,
       ignoreRdfType,
-      preferredLanguages,
+      object,
+      resource,
+      resourceSet,
     });
+    return resource;
   };
 }
 
@@ -675,20 +599,12 @@ export type $DefaultPartial = {
 };
 
 export namespace $DefaultPartial {
-  export const _fromRdfResource: $_FromRdfResourceFunction<
-    $DefaultPartial.Discriminated
-  > = (resource, options) =>
-    $sequenceRecord({
-      $identifier: $identifierFromRdfResourceValues(
-        $rdfResourceIdentifierValues(resource),
-        {
-          ...options,
-          focusResource: resource,
-          propertyPath: $rdf_subject,
-          schema: $DefaultPartial.schema.properties.$identifier.type,
-        },
-      ).chain((values) => values.head()),
-    }).chain((properties) => $DefaultPartial.create(properties));
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    $DefaultPartial.Identifier,
+    $DefaultPartial
+  > = (parameters) => {
+    return parameters.resource;
+  };
 
   export const $toString: $ToStringFunction<$DefaultPartial> = (
     _defaultPartial,
@@ -732,20 +648,17 @@ export namespace $DefaultPartial {
     readonly $type: "DefaultPartial";
   };
 
-  export const fromRdfResource: $FromRdfResourceFunction<$DefaultPartial.Discriminated> =
-    $wrap_FromRdfResourceFunction($DefaultPartial._fromRdfResource);
-
-  export const fromRdfResourceValues: $FromRdfResourceValuesFunction<
+  export const fromJson: $FromJsonObjectFunction<
+    $DefaultPartial.Json,
     $DefaultPartial.Discriminated,
-    $DefaultPartial.Schema
-  > = (values, options) =>
-    values.chainMap((value) =>
-      value
-        .toResource()
-        .chain((resource) =>
-          $DefaultPartial.fromRdfResource(resource, options),
-        ),
-    );
+    undefined
+  > = (jsonObject, options = {}) =>
+    $sequenceRecord({
+      $identifier: $identifierFromJsonString(jsonObject["@id"], {
+        ...options,
+        schema: $DefaultPartial.schema.properties.$identifier.type,
+      }),
+    }).chain($DefaultPartial.create);
 
   export type Identifier = BlankNode | NamedNode;
   export namespace Identifier {
@@ -757,6 +670,8 @@ export namespace $DefaultPartial {
   > = (object): object is $DefaultPartial.Discriminated =>
     object.$type === "DefaultPartial";
 
+  export type Json = { "@id": string };
+
   export const schema = {
     properties: {
       $identifier: {
@@ -767,6 +682,23 @@ export namespace $DefaultPartial {
   } as const;
 
   export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    $DefaultPartial.Identifier,
+    $DefaultPartial
+  > = $wrap_ToRdfResourceFunction<$DefaultPartial.Identifier, $DefaultPartial>(
+    $DefaultPartial._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    $DefaultPartial,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    $DefaultPartial.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
 
   export const toStringRecord: $ToStringRecordFunction<$DefaultPartial> = (
     _defaultPartial,
@@ -787,80 +719,48 @@ export type NodeShape1 = {
 };
 
 export namespace NodeShape1 {
-  export const _fromRdfResource: $_FromRdfResourceFunction<
-    NodeShape1.Discriminated
-  > = (resource, options) =>
-    $sequenceRecord({
-      $identifier: $iriFromRdfResourceValues<string>(
-        $rdfResourceIdentifierValues(resource),
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    NodeShape1.Identifier,
+    NodeShape1
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        NodeShape1.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      NodeShape1.schema.properties.iriProperty.path,
+      [parameters.object.iriProperty],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.langStringProperty.path,
+      parameters.object.langStringProperty.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.nodeProperty.path,
+      $DefaultPartial.toRdfResourceValues(
+        parameters.object.nodeProperty.partial,
         {
-          ...options,
-          focusResource: resource,
-          propertyPath: $rdf_subject,
-          schema: NodeShape1.schema.properties.$identifier.type,
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: NodeShape1.schema.properties.nodeProperty.path,
         },
-      ).chain((values) => values.head()),
-      $rdfType: !options.ignoreRdfType
-        ? $ensureRdfResourceType(
-            resource,
-            [NodeShape1.schema.properties.$rdfType.fromRdfType],
-            {
-              graph: options.graph,
-            },
-          )
-        : Right(true as const),
-      iriProperty: $shaclPropertyFromRdf<NamedNode, $IriSchema<string>>({
-        ...options,
-        focusResource: resource,
-        ignoreRdfType: true,
-        propertySchema: NodeShape1.schema.properties.iriProperty,
-        typeFromRdfResourceValues: $iriFromRdfResourceValues<string>,
-      }),
-      langStringProperty: $shaclPropertyFromRdf<
-        readonly Literal[],
-        $CollectionSchema<$LangStringSchema>
-      >({
-        ...options,
-        focusResource: resource,
-        ignoreRdfType: true,
-        propertySchema: NodeShape1.schema.properties.langStringProperty,
-        typeFromRdfResourceValues: $setFromRdfResourceValues<
-          Literal,
-          $LangStringSchema
-        >($langStringFromRdfResourceValues),
-      }),
-      nodeProperty: $shaclPropertyFromRdf<
-        $Lazy<$DefaultPartial, NodeShape2>,
-        { kind: "Lazy"; partialType: $DefaultPartial.Schema }
-      >({
-        ...options,
-        focusResource: resource,
-        ignoreRdfType: true,
-        propertySchema: NodeShape1.schema.properties.nodeProperty,
-        typeFromRdfResourceValues: (values, fromRdfResourceValuesOptions) =>
-          $DefaultPartial
-            .fromRdfResourceValues(values, {
-              ...fromRdfResourceValuesOptions,
-              schema: fromRdfResourceValuesOptions.schema.partialType,
-            })
-            .map((values) =>
-              values.map(
-                (partial) =>
-                  new $Lazy<$DefaultPartial, NodeShape2>({
-                    partial,
-                    resolver: $missingResolver,
-                  }),
-              ),
-            ),
-      }),
-      stringProperty: $shaclPropertyFromRdf<string, $StringSchema<string>>({
-        ...options,
-        focusResource: resource,
-        ignoreRdfType: true,
-        propertySchema: NodeShape1.schema.properties.stringProperty,
-        typeFromRdfResourceValues: $stringFromRdfResourceValues<string>,
-      }),
-    }).chain((properties) => NodeShape1.create(properties));
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.stringProperty.path,
+      [$literalFactory.string(parameters.object.stringProperty)],
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
 
   export const $toString: $ToStringFunction<Pick<NodeShape1, "$identifier">> = (
     _nodeShape1,
@@ -921,18 +821,51 @@ export namespace NodeShape1 {
 
   export type Discriminated = NodeShape1 & { readonly $type: "NodeShape1" };
 
-  export const fromRdfResource: $FromRdfResourceFunction<NodeShape1.Discriminated> =
-    $wrap_FromRdfResourceFunction(NodeShape1._fromRdfResource);
-
-  export const fromRdfResourceValues: $FromRdfResourceValuesFunction<
+  export const fromJson: $FromJsonObjectFunction<
+    NodeShape1.Json,
     NodeShape1.Discriminated,
-    NodeShape1.Schema
-  > = (values, options) =>
-    values.chainMap((value) =>
-      value
-        .toResource()
-        .chain((resource) => NodeShape1.fromRdfResource(resource, options)),
-    );
+    undefined
+  > = (jsonObject, options = {}) =>
+    $sequenceRecord({
+      $identifier: $iriFromJsonString<string>(jsonObject["@id"], {
+        ...options,
+        schema: NodeShape1.schema.properties.$identifier.type,
+      }),
+      iriProperty: $iriFromJsonString<string>(jsonObject["iriProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.iriProperty.type,
+      }),
+      langStringProperty: $arrayFromJsonArray($langStringFromJsonObject)(
+        jsonObject["langStringProperty"],
+        {
+          ...options,
+          schema: NodeShape1.schema.properties.langStringProperty.type,
+        },
+      ),
+      nodeProperty: ((jsonValue, fromJsonValueOptions) =>
+        $DefaultPartial
+          .fromJson(jsonValue, {
+            ...fromJsonValueOptions,
+            schema: fromJsonValueOptions.schema.partialType,
+          })
+          .map(
+            (partial) =>
+              new $Lazy<$DefaultPartial, NodeShape2>({
+                partial,
+                resolver: $missingResolver,
+              }),
+          ))(jsonObject["nodeProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.nodeProperty.type,
+      }),
+      stringProperty: $stringFromJsonString<string>(
+        jsonObject["stringProperty"],
+        {
+          ...options,
+          schema: NodeShape1.schema.properties.stringProperty.type,
+        },
+      ),
+    }).chain(NodeShape1.create);
 
   export type Identifier = NamedNode;
   export namespace Identifier {
@@ -943,6 +876,15 @@ export namespace NodeShape1 {
     NodeShape1.Discriminated
   > = (object): object is NodeShape1.Discriminated =>
     object.$type === "NodeShape1";
+
+  export type Json = {
+    "@id": string;
+    "@type": string;
+    iriProperty: string;
+    langStringProperty: $LangStringJsonObject[];
+    nodeProperty: $DefaultPartial.Json;
+    stringProperty: string;
+  };
 
   export const schema = {
     properties: {
@@ -988,6 +930,23 @@ export namespace NodeShape1 {
 
   export type Schema = typeof schema;
 
+  export const toRdfResource: $ToRdfResourceFunction<
+    NodeShape1.Identifier,
+    NodeShape1
+  > = $wrap_ToRdfResourceFunction<NodeShape1.Identifier, NodeShape1>(
+    NodeShape1._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    NodeShape1,
+    NamedNode
+  > = (value, options) => [
+    NodeShape1.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
   export const toStringRecord: $ToStringRecordFunction<
     Pick<NodeShape1, "$identifier">
   > = (_nodeShape1) =>
@@ -1000,42 +959,24 @@ export type NodeShape2 = {
 };
 
 export namespace NodeShape2 {
-  export const _fromRdfResource: $_FromRdfResourceFunction<
-    NodeShape2.Discriminated
-  > = (resource, options) =>
-    $sequenceRecord({
-      $identifier: $identifierFromRdfResourceValues(
-        $rdfResourceIdentifierValues(resource),
-        {
-          ...options,
-          focusResource: resource,
-          propertyPath: $rdf_subject,
-          schema: NodeShape2.schema.properties.$identifier.type,
-        },
-      ).chain((values) => values.head()),
-      $rdfType: !options.ignoreRdfType
-        ? $ensureRdfResourceType(
-            resource,
-            [NodeShape2.schema.properties.$rdfType.fromRdfType],
-            {
-              graph: options.graph,
-            },
-          )
-        : Right(true as const),
-      labels: $shaclPropertyFromRdf<
-        readonly Literal[],
-        $CollectionSchema<$LangStringSchema>
-      >({
-        ...options,
-        focusResource: resource,
-        ignoreRdfType: true,
-        propertySchema: NodeShape2.schema.properties.labels,
-        typeFromRdfResourceValues: $setFromRdfResourceValues<
-          Literal,
-          $LangStringSchema
-        >($langStringFromRdfResourceValues),
-      }),
-    }).chain((properties) => NodeShape2.create(properties));
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    NodeShape2.Identifier,
+    NodeShape2
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        NodeShape2.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      NodeShape2.schema.properties.labels.path,
+      parameters.object.labels.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
 
   export const $toString: $ToStringFunction<Pick<NodeShape2, "$identifier">> = (
     _nodeShape2,
@@ -1086,18 +1027,24 @@ export namespace NodeShape2 {
 
   export type Discriminated = NodeShape2 & { readonly $type: "NodeShape2" };
 
-  export const fromRdfResource: $FromRdfResourceFunction<NodeShape2.Discriminated> =
-    $wrap_FromRdfResourceFunction(NodeShape2._fromRdfResource);
-
-  export const fromRdfResourceValues: $FromRdfResourceValuesFunction<
+  export const fromJson: $FromJsonObjectFunction<
+    NodeShape2.Json,
     NodeShape2.Discriminated,
-    NodeShape2.Schema
-  > = (values, options) =>
-    values.chainMap((value) =>
-      value
-        .toResource()
-        .chain((resource) => NodeShape2.fromRdfResource(resource, options)),
-    );
+    undefined
+  > = (jsonObject, options = {}) =>
+    $sequenceRecord({
+      $identifier: $identifierFromJsonString(jsonObject["@id"], {
+        ...options,
+        schema: NodeShape2.schema.properties.$identifier.type,
+      }),
+      labels: $arrayFromJsonArray($langStringFromJsonObject)(
+        jsonObject["labels"],
+        {
+          ...options,
+          schema: NodeShape2.schema.properties.labels.type,
+        },
+      ),
+    }).chain(NodeShape2.create);
 
   export type Identifier = BlankNode | NamedNode;
   export namespace Identifier {
@@ -1108,6 +1055,12 @@ export namespace NodeShape2 {
     NodeShape2.Discriminated
   > = (object): object is NodeShape2.Discriminated =>
     object.$type === "NodeShape2";
+
+  export type Json = {
+    "@id": string;
+    "@type": string;
+    labels?: $LangStringJsonObject[];
+  };
 
   export const schema = {
     properties: {
@@ -1133,6 +1086,23 @@ export namespace NodeShape2 {
 
   export type Schema = typeof schema;
 
+  export const toRdfResource: $ToRdfResourceFunction<
+    NodeShape2.Identifier,
+    NodeShape2
+  > = $wrap_ToRdfResourceFunction<NodeShape2.Identifier, NodeShape2>(
+    NodeShape2._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    NodeShape2,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    NodeShape2.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
   export const toStringRecord: $ToStringRecordFunction<
     Pick<NodeShape2, "$identifier">
   > = (_nodeShape2) =>
@@ -1145,6 +1115,23 @@ export type $Object =
   | NodeShape2.Discriminated;
 
 export namespace $Object {
+  export const toRdfResource: $ToRdfResourceFunction<
+    Resource.Identifier,
+    $Object
+  > = (object, options) => {
+    switch (object.$type) {
+      case "DefaultPartial":
+        return $DefaultPartial.toRdfResource(object, options);
+      case "NodeShape1":
+        return NodeShape1.toRdfResource(object, options);
+      case "NodeShape2":
+        return NodeShape2.toRdfResource(object, options);
+      default:
+        object satisfies never;
+        throw new Error("should never reach this point");
+    }
+  };
+
   export function $toString(object: $Object) {
     switch (object.$type) {
       case "DefaultPartial":
