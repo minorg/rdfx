@@ -23,6 +23,13 @@ describe("CellAddress", () => {
     });
   });
 
+  it("parse", ({ expect }) => {
+    const parsed = CellAddress.parse("A1", "Other");
+    expect(parsed.columnIndex).toStrictEqual(0);
+    expect(parsed.rowIndex).toStrictEqual(0);
+    expect(parsed.worksheetName).toStrictEqual("Other");
+  });
+
   describe("string", () => {
     it("Test!A1", ({ expect }) => {
       expect(
