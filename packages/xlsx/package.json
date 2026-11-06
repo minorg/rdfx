@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "@rdfx/collection": "0.0.59",
     "@rdfx/logger": "0.0.59",
+    "@rdfx/resource": "0.0.59",
+    "@rdfjs/types": "~2.0.1",
     "fast-formula-parser": "1.0.19",
     "js-sha256": "~0.11.1",
     "purify-ts": "~2.1.4",
@@ -11,7 +14,8 @@
   "devDependencies": {
     "@shaclmate/cli": "4.0.96",
     "@types/node": "^24",
-    "libreoffice-convert": "~1.8.1"
+    "libreoffice-convert": "~1.8.1",
+    "zod": "~4.1.12"
   },
   "files": [
     "LICENSE",

@@ -78,6 +78,7 @@ const externalDependencies = {
   xlsx: "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
   vitest: vitestVersion,
   "vitest-fetch-mock": "~0.4.5",
+  zod: "~4.1.12",
 };
 
 type PackageName =
@@ -381,6 +382,7 @@ const workspaces = {
       },
       dependencies: {
         external: [
+          "@rdfjs/types",
           "fast-formula-parser",
           "js-sha256",
           "purify-ts",
@@ -388,10 +390,15 @@ const workspaces = {
           "typescript-memoize",
           "xlsx",
         ],
-        internal: ["logger"],
+        internal: ["collection", "logger", "resource"],
       },
       devDependencies: {
-        external: ["@shaclmate/cli", "@types/node", "libreoffice-convert"],
+        external: [
+          "@shaclmate/cli",
+          "@types/node",
+          "libreoffice-convert",
+          "zod",
+        ],
       },
     },
   } satisfies Record<PackageName, Workspace>,
