@@ -37,3 +37,7 @@ export abstract class AbstractCell {
     };
   }
 }
+
+export namespace AbstractCell {
+  export type Value = boolean | Date | number | string;
+}

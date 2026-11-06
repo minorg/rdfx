@@ -4,13 +4,13 @@ import { AbstractCell } from "./AbstractCell.js";
 
 export class ValueCell extends AbstractCell {
   readonly kind = "ValueCell";
-  readonly value: boolean | Date | number | string;
+  readonly value: AbstractCell.Value;
 
   constructor({
     value,
     ...superParameters
   }: {
-    value: boolean | Date | number | string;
+    value: AbstractCell.Value;
   } & ConstructorParameters<typeof AbstractCell>[0]) {
     super(superParameters);
     this.value = value;

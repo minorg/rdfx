@@ -79,9 +79,10 @@ export class Workbook {
       return new Workbook({
         delegate: xlsx.read(data, {
           cellFormula: true,
-          cellNF: false,
-          cellDates: false,
-          WTF: false,
+          cellNF: true,
+          cellDates: true,
+          sheetStubs: true,
+          WTF: true,
         }),
         logger: options?.logger ?? nopLogger,
       });

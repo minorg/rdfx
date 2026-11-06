@@ -74,18 +74,14 @@ export class Worksheet {
       }
       const cellObject = cellAny as xlsx.CellObject;
 
-      const decodedCellAddress = xlsx.utils.decode_cell(cellAddressString); // { r: 0, c: 0 } (0-based)
-      const cellAddress = new CellAddress({
-        columnIndex: decodedCellAddress.c,
-        rowIndex: decodedCellAddress.r,
-        worksheetName: this.name,
-      });
+      const cellAddress = CellAddress.parse(cellAddressString, this.name);
 
       switch (cellObject.t) {
         case "b": // Boolean
         case "d": // Date
         case "n": // Number
         case "s": // String
+        case "z": // Empty, which may be a formula (without a value)
           break;
 
         case "e": {
@@ -99,8 +95,6 @@ export class Worksheet {
           );
           continue;
         }
-        case "z": // Empty
-          continue;
         default:
           throw new RangeError(
             `${cellAddress}: unexpected cell object type: ${cellObject.t}`,
@@ -108,7 +102,10 @@ export class Worksheet {
       }
 
       const cellFormula = cellObject.f;
-      if (!cellFormula) {
+      if (typeof cellFormula === "undefined") {
+        if (cellObject.t === "z") {
+          continue;
+        }
         if (typeof cellObject.v === "undefined") {
           throw new RangeError(
             `${cellAddress}: value cell has undefined value`,
@@ -145,7 +142,10 @@ export class Worksheet {
           address: cellAddress,
           depParser: this.depParser,
           formula: cellFormula,
-          value: cellObject.v!,
+          value:
+            cellObject.t !== "z"
+              ? Maybe.fromNullable(cellObject.v)
+              : Maybe.empty(),
           worksheet: this,
         }),
       );
@@ -215,6 +215,22 @@ export class Worksheet {
     return [...result.values()];
   }
 
+  @Memoize()
+  get rows(): readonly Worksheet.Row[] {
+    const worksheetRange = xlsx.utils.decode_range(
+      this.delegate["!ref"] || "A1",
+    );
+    const rows: Worksheet.Row[] = [];
+    for (let r = worksheetRange.s.r; r <= worksheetRange.e.r; ++r) {
+      const row: (Cell | undefined)[] = [];
+      for (let c = worksheetRange.s.c; c <= worksheetRange.e.c; ++c) {
+        row.push(this.cellsByAddress.get(xlsx.utils.encode_cell({ c, r })));
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+
   /**
    * SHA-256 sha256 hex digest of this worksheet.
    */
@@ -227,12 +243,22 @@ export class Worksheet {
     return hasher.hex();
   }
 
-  cell(address: CellAddress): Maybe<Cell> {
-    return Maybe.fromNullable(this.cellsByAddress.get(address.string));
+  cell(address: CellAddress | string): Maybe<Cell> {
+    return Maybe.fromNullable(
+      this.cellsByAddress.get(
+        typeof address === "object"
+          ? address.string
+          : CellAddress.parse(address, this.name).string,
+      ),
+    );
   }
 
   @Memoize()
   toString(): string {
     return `Worksheet(name=${this.name})`;
   }
+}
+
+export namespace Worksheet {
+  export type Row = readonly (Cell | undefined)[];
 }

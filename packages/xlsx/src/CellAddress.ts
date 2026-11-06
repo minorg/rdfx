@@ -1,5 +1,6 @@
 import { invariant } from "ts-invariant";
 import { Memoize } from "typescript-memoize";
+import * as xlsx from "xlsx";
 
 export class CellAddress {
   /**
@@ -61,6 +62,15 @@ export class CellAddress {
         `'${this.worksheetName.replace(/'/g, "''")}'`
       : this.worksheetName;
     return `${quotedSheetName}!${this.columnLetter}${this.rowIndex + 1}`;
+  }
+
+  static parse(cellAddress: string, worksheetName: string): CellAddress {
+    const decodedCellAddress = xlsx.utils.decode_cell(cellAddress); // { r: 0, c: 0 } (0-based)
+    return new CellAddress({
+      columnIndex: decodedCellAddress.c,
+      rowIndex: decodedCellAddress.r,
+      worksheetName: worksheetName,
+    });
   }
 
   toJSON(): string {

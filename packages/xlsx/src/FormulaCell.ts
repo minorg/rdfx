@@ -15,7 +15,7 @@ export class FormulaCell extends AbstractCell {
 
   readonly formula: string;
   override readonly kind = "FormulaCell";
-  readonly value: boolean | Date | number | string;
+  readonly value: Maybe<AbstractCell.Value>;
 
   constructor({
     depParser,
@@ -25,7 +25,7 @@ export class FormulaCell extends AbstractCell {
   }: {
     depParser: DepParser;
     formula: string;
-    value: boolean | Date | number | string;
+    value: Maybe<AbstractCell.Value>;
     worksheet: Worksheet;
   } & ConstructorParameters<typeof AbstractCell>[0]) {
     super(superParameters);

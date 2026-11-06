@@ -1,12 +1,14 @@
 import path from "node:path";
 import { describe, it } from "vitest";
+import type { FormulaCell } from "../src/FormulaCell.js";
 import { snapshotsDirectoryPath } from "./paths.js";
 import { readTestWorkbook } from "./readTestWorkbook.js";
 
-describe("FormulaCell", () => {
+describe("FormulaCell", async () => {
+  const workbookFileName = "formulas.xlsx";
+  const workbook = await readTestWorkbook(workbookFileName);
+
   it("dependencies", async ({ expect }) => {
-    const workbookFileName = "formulas.xlsx";
-    const workbook = await readTestWorkbook(workbookFileName);
     expect(workbook.worksheets).not.toHaveLength(0);
     for (const worksheet of workbook.worksheets) {
       await expect(
@@ -38,4 +40,16 @@ describe("FormulaCell", () => {
       );
     }
   }, 30000);
+
+  it("formula", ({ expect }) => {
+    const cell = workbook.worksheets[0].cell("D2").unsafeCoerce();
+    expect(cell.kind).toStrictEqual("FormulaCell");
+    expect((cell as FormulaCell).formula).toStrictEqual("B2*C2");
+  });
+
+  it("value", ({ expect }) => {
+    const cell = workbook.worksheets[0].cell("D2").unsafeCoerce();
+    expect(cell.kind).toStrictEqual("FormulaCell");
+    expect((cell as FormulaCell).value.extract()).toBeUndefined();
+  });
 });

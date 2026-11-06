@@ -23,6 +23,19 @@ describe("Worksheet", async () => {
     });
   });
 
+  it("cells", ({ expect }) => {
+    const worksheet = formulasWorkbook.worksheets[0];
+    expect(
+      worksheet.cells.filter((cell) => cell.kind === "ErrorCell"),
+    ).toHaveLength(0);
+    expect(
+      worksheet.cells.filter((cell) => cell.kind === "FormulaCell"),
+    ).toHaveLength(18);
+    expect(
+      worksheet.cells.filter((cell) => cell.kind === "ValueCell"),
+    ).toHaveLength(26);
+  });
+
   it("definedNames", async ({ expect }) => {
     const workbookFileName = "defined_names.xlsx";
     const workbook = await readTestWorkbook(workbookFileName);
