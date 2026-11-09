@@ -1,7 +1,7 @@
-import type { Literal } from "@rdfjs/types";
-
 export type ResourceRow = Record<string, ResourceRow.Cell>;
 
 export namespace ResourceRow {
-  export type Cell = boolean | Date | Literal | number | string;
+  type LangString = { readonly language: string; readonly value: string };
+
+  export type Cell = boolean | Date | LangString | number | string;
 }

@@ -1,5 +1,7 @@
 import type { DataFactory } from "@rdfjs/types";
+import { LiteralFactory } from "@rdfx/literal";
 import type { Logger } from "@rdfx/logger";
+import { Memoize } from "typescript-memoize";
 
 export abstract class AbstractParser {
   protected readonly dataFactory: DataFactory;
@@ -14,5 +16,10 @@ export abstract class AbstractParser {
   }) {
     this.dataFactory = dataFactory;
     this.logger = logger;
+  }
+
+  @Memoize()
+  protected get literalFactory(): LiteralFactory {
+    return new LiteralFactory({ dataFactory: this.dataFactory });
   }
 }
