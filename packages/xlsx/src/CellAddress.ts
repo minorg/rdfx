@@ -2,6 +2,9 @@ import { invariant } from "ts-invariant";
 import { Memoize } from "typescript-memoize";
 import * as xlsx from "xlsx";
 
+/**
+ * A cell address qualified with the worksheet name. Can be serialized with the .string method to "Sheet!A1".
+ */
 export class CellAddress {
   /**
    * Zero-based column index.

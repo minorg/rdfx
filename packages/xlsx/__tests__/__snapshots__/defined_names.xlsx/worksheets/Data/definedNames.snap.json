@@ -1,0 +1,14 @@
+[
+  [
+    "Config!B1",
+    "TaxRate",
+  ],
+  [
+    "'My Sheet'!B1",
+    "LocalVal",
+  ],
+  [
+    "Config!B2",
+    "_Hidden",
+  ],
+]

@@ -53,11 +53,18 @@ export class Worksheet {
     this.workbook = workbook;
   }
 
+  /**
+   * Array of all cells.
+   */
   @Memoize()
   get cells(): readonly Cell[] {
     return [...this.cellsByAddress.values()];
   }
 
+  /**
+   * Sparse map of cell address strings (qualified with sheet name: "Sheet!A1") to cells,
+   * mirroring the way .xlsx stores cells natively.
+   */
   @Memoize()
   get cellsByAddress(): ReadonlyMap<string, Cell> {
     const cellsByAddress = new Map<string, Cell>();
@@ -215,6 +222,11 @@ export class Worksheet {
     return [...result.values()];
   }
 
+  /**
+   * Dense array of rows with undefined's for empty cells.
+   *
+   * Includes any row that has a populated cell (i.e., within the !ref range of the worksheet).
+   */
   @Memoize()
   get rows(): readonly Worksheet.Row[] {
     const worksheetRange = xlsx.utils.decode_range(
@@ -224,7 +236,12 @@ export class Worksheet {
     for (let r = worksheetRange.s.r; r <= worksheetRange.e.r; ++r) {
       const row: (Cell | undefined)[] = [];
       for (let c = worksheetRange.s.c; c <= worksheetRange.e.c; ++c) {
-        row.push(this.cellsByAddress.get(xlsx.utils.encode_cell({ c, r })));
+        row.push(
+          this.cellsByAddress.get(
+            CellAddress.parse(xlsx.utils.encode_cell({ c, r }), this.name)
+              .string,
+          ),
+        );
       }
       rows.push(row);
     }

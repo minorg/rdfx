@@ -50,10 +50,29 @@ describe("Worksheet", async () => {
     }
   });
 
-  it("sha256", async ({ expect }) => {
+  it("rows", ({ expect }) => {
+    const worksheet = formulasWorkbook.worksheets[0];
+    expect(worksheet.rows).toHaveLength(17);
+    for (const row of worksheet.rows) {
+      expect(row.length).toBeGreaterThanOrEqual(4);
+      expect(row.length).toBeLessThanOrEqual(5);
+    }
+    expect(worksheet.rows[4].every((cell) => cell === undefined)).toStrictEqual(
+      true,
+    );
+    for (const row of worksheet.rows.slice(5)) {
+      expect(row[0]).toBeDefined();
+      expect(row[1]).toBeUndefined();
+      expect(row[2]).toBeUndefined();
+      expect(row[3]).toBeDefined();
+      expect(row[4]).toBeUndefined();
+    }
+  });
+
+  it("sha256", ({ expect }) => {
     expect(formulasWorkbook.worksheets).toHaveLength(3);
     expect(formulasWorkbook.worksheets[0].sha256).toStrictEqual(
-      "512db8ed343112d55a87f1f47f74c50b698f762891b5d40160329ecfa8dd3b1e",
+      "b488df6999a887a63339072f67f91582f0d59be0c6705e860564dd59e9bc52d4",
     );
     expect(formulasWorkbook.worksheets[1].sha256).toStrictEqual(
       "390eb44b27a0971fc215183d832cb95e00568f994075c76eaa25fe03ae03ec6c",
