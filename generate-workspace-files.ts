@@ -382,7 +382,9 @@ const workspaces = {
       },
       dependencies: {
         external: [
+          "@rdfjs/namespace",
           "@rdfjs/types",
+          "@types/rdfjs__namespace",
           "fast-formula-parser",
           "js-sha256",
           "purify-ts",
@@ -390,7 +392,7 @@ const workspaces = {
           "typescript-memoize",
           "xlsx",
         ],
-        internal: ["collection", "logger", "resource"],
+        internal: ["collection", "literal", "logger", "resource"],
       },
       devDependencies: {
         external: [
