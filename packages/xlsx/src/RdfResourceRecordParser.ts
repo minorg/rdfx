@@ -1,15 +1,11 @@
 import type { NamespaceBuilder } from "@rdfjs/namespace";
 import { default as PrefixMap } from "@rdfjs/prefix-map/PrefixMap.js";
-import type {
-  DatasetCoreFactory,
-  Literal,
-  NamedNode,
-  Quad,
-} from "@rdfjs/types";
+import type { Literal, NamedNode, Quad } from "@rdfjs/types";
 import { LiteralFactory } from "@rdfx/literal";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import { Either, Left } from "purify-ts";
 import { invariant } from "ts-invariant";
+import { LangString } from "./LangString.js";
 import type { ResourceRecord } from "./ResourceRecord.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 
@@ -130,8 +126,10 @@ export class RdfResourceRecordParser implements ResourceRecordParser {
         case "object":
           if (cell instanceof Date) {
             object = literalFactory.date(cell);
-          } else {
+          } else if (cell instanceof LangString) {
             object = dataFactory.literal(cell.value, cell.language);
+          } else {
+            throw new Error("not implemented");
           }
           break;
         case "string":
