@@ -30,7 +30,6 @@ export class FormulaCell extends AbstractCell {
   } & ConstructorParameters<typeof AbstractCell>[0]) {
     super(superParameters);
     this.depParser = depParser;
-    this.hyperlink = hyperlink;
     this.formula = formula;
     this.value = value;
   }
