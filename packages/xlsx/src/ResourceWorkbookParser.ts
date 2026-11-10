@@ -1,33 +1,34 @@
 import type { Quad } from "@rdfjs/types";
 import { Either } from "purify-ts";
 import { AbstractParser } from "./AbstractParser.js";
-import type { ResourceRowParser } from "./ResourceRowParser.js";
+import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 import { ResourceWorksheetParser } from "./ResourceWorksheetParser.js";
 import type { Workbook } from "./Workbook.js";
 
 export class ResourceWorkbookParser extends AbstractParser {
-  private readonly resourceRowParsersByWorksheetName: Readonly<
-    Record<string, ResourceRowParser>
+  private readonly resourceRecordParsersByWorksheetName: Readonly<
+    Record<string, ResourceRecordParser>
   >;
 
   constructor({
-    resourceRowParsersByWorksheetName,
+    resourceRecordParsersByWorksheetName,
     ...superParameters
   }: {
-    resourceRowParsersByWorksheetName: Readonly<
-      Record<string, ResourceRowParser>
+    resourceRecordParsersByWorksheetName: Readonly<
+      Record<string, ResourceRecordParser>
     >;
   } & ConstructorParameters<typeof AbstractParser>[0]) {
     super(superParameters);
-    this.resourceRowParsersByWorksheetName = resourceRowParsersByWorksheetName;
+    this.resourceRecordParsersByWorksheetName =
+      resourceRecordParsersByWorksheetName;
   }
 
   parse(workbook: Workbook): Either<Error, readonly Quad[]> {
     let workbookQuads: Quad[] = [];
     for (const worksheet of workbook.worksheets) {
-      const resourceRowParser =
-        this.resourceRowParsersByWorksheetName[worksheet.name];
-      if (resourceRowParser === undefined) {
+      const resourceRecordParser =
+        this.resourceRecordParsersByWorksheetName[worksheet.name];
+      if (resourceRecordParser === undefined) {
         this.logger.debug(
           { worksheet: { name: worksheet.name } },
           "no resource row parser for worksheet",
@@ -39,7 +40,7 @@ export class ResourceWorkbookParser extends AbstractParser {
         dataFactory: this.dataFactory,
         datasetFactory: this.datasetFactory,
         logger: this.logger,
-        resourceRowParser,
+        resourceRecordParser,
       }).parse(worksheet);
       if (worksheetDatasetEither.isLeft()) {
         return worksheetDatasetEither;

@@ -10,12 +10,12 @@ import { LiteralFactory } from "@rdfx/literal";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import { Either, Left } from "purify-ts";
 import { invariant } from "ts-invariant";
-import type { ResourceRow } from "./ResourceRow.js";
-import type { ResourceRowParser } from "./ResourceRowParser.js";
+import type { ResourceRecord } from "./ResourceRecord.js";
+import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 
 const OPAQUE_IRI_SCHEMES = new Set(["did", "file", "mailto", "tag", "urn"]);
 
-export class RdfResourceRowParser implements ResourceRowParser {
+export class RdfResourceRecordParser implements ResourceRecordParser {
   private readonly defaultNamespace?: NamespaceBuilder;
   private readonly prefixMap?: PrefixMap;
 
@@ -28,8 +28,11 @@ export class RdfResourceRowParser implements ResourceRowParser {
   }
 
   parse(
-    resourceRow: ResourceRow,
-    { dataFactory, datasetFactory }: Parameters<ResourceRowParser["parse"]>[1],
+    resourceRecord: ResourceRecord,
+    {
+      dataFactory,
+      datasetFactory,
+    }: Parameters<ResourceRecordParser["parse"]>[1],
   ): Either<Error, readonly Quad[]> {
     const defaultNamespace = this.defaultNamespace;
     const literalFactory = new LiteralFactory({ dataFactory });
@@ -89,9 +92,9 @@ export class RdfResourceRowParser implements ResourceRowParser {
     });
 
     let resourceIdentifier: Resource.Identifier;
-    switch (typeof resourceRow["@id"]) {
+    switch (typeof resourceRecord["@id"]) {
       case "string": {
-        const resourceIriEither = iriFromString(resourceRow["@id"]);
+        const resourceIriEither = iriFromString(resourceRecord["@id"]);
         if (resourceIriEither.isLeft()) {
           return resourceIriEither;
         }
@@ -104,14 +107,14 @@ export class RdfResourceRowParser implements ResourceRowParser {
       default:
         return Left(
           new Error(
-            `${typeof resourceRow["@id"]} @id cell cannot be converted to an identifier`,
+            `${typeof resourceRecord["@id"]} @id cell cannot be converted to an identifier`,
           ),
         );
     }
 
     const resource = resourceSet.resource(resourceIdentifier);
 
-    for (const [key, cell] of Object.entries(resourceRow)) {
+    for (const [key, cell] of Object.entries(resourceRecord)) {
       const predicateEither = iriFromString(key);
       if (predicateEither.isLeft()) {
         return predicateEither;

@@ -3,8 +3,8 @@ import { type Resource, ResourceSet } from "@rdfx/resource";
 
 import type { Either } from "purify-ts";
 
-import type { ResourceRow } from "./ResourceRow.js";
-import type { ResourceRowParser } from "./ResourceRowParser.js";
+import type { ResourceRecord } from "./ResourceRecord.js";
+import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 
 interface IntermediateObjectFunctions<IntermediateObjectT extends object> {
   fromJson: (jsonObject: object) => Either<Error, IntermediateObjectT>;
@@ -16,8 +16,8 @@ interface IntermediateObjectFunctions<IntermediateObjectT extends object> {
   ) => Resource;
 }
 
-export class JsonResourceRowParser<IntermediateObjectT extends object>
-  implements ResourceRowParser
+export class JsonResourceRecordParser<IntermediateObjectT extends object>
+  implements ResourceRecordParser
 {
   private readonly intermediateObjectFunctions: IntermediateObjectFunctions<IntermediateObjectT>;
 
@@ -28,11 +28,14 @@ export class JsonResourceRowParser<IntermediateObjectT extends object>
   }
 
   parse(
-    resourceRow: ResourceRow,
-    { dataFactory, datasetFactory }: Parameters<ResourceRowParser["parse"]>[1],
+    resourceRecord: ResourceRecord,
+    {
+      dataFactory,
+      datasetFactory,
+    }: Parameters<ResourceRecordParser["parse"]>[1],
   ): Either<Error, readonly Quad[]> {
     return this.intermediateObjectFunctions
-      .fromJson(resourceRow)
+      .fromJson(resourceRecord)
       .map((object) => [
         ...this.intermediateObjectFunctions.toRdf(object, {
           resourceSet: new ResourceSet({
