@@ -6,93 +6,92 @@ import type {
   NamedNode,
   Quad,
 } from "@rdfjs/types";
+import { LiteralFactory } from "@rdfx/literal";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import { Either, Left } from "purify-ts";
 import { invariant } from "ts-invariant";
 import type { ResourceRow } from "./ResourceRow.js";
-import { ResourceRowParser } from "./ResourceRowParser.js";
+import type { ResourceRowParser } from "./ResourceRowParser.js";
 
 const OPAQUE_IRI_SCHEMES = new Set(["did", "file", "mailto", "tag", "urn"]);
 
-export class RdfResourceRowParser extends ResourceRowParser {
-  private readonly datasetFactory: DatasetCoreFactory;
+export class RdfResourceRowParser implements ResourceRowParser {
   private readonly defaultNamespace?: NamespaceBuilder;
-  private readonly prefixMap: PrefixMap;
+  private readonly prefixMap?: PrefixMap;
 
-  constructor({
-    datasetFactory,
-    defaultNamespace,
-    prefixMap,
-    ...superParameters
-  }: {
-    datasetFactory: DatasetCoreFactory;
+  constructor(options?: {
     defaultNamespace?: NamespaceBuilder;
     prefixMap?: PrefixMap;
-  } & ConstructorParameters<typeof ResourceRowParser>[0]) {
-    super(superParameters);
-    this.datasetFactory = datasetFactory;
-    this.defaultNamespace = defaultNamespace;
-    this.prefixMap =
-      prefixMap ?? new PrefixMap(undefined, { factory: this.dataFactory });
+  }) {
+    this.defaultNamespace = options?.defaultNamespace;
+    this.prefixMap = options?.prefixMap;
   }
 
-  private iriFromString(string: string): Either<Error, NamedNode> {
-    invariant(string.length > 0);
+  parse(
+    resourceRow: ResourceRow,
+    { dataFactory, datasetFactory }: Parameters<ResourceRowParser["parse"]>[1],
+  ): Either<Error, readonly Quad[]> {
+    const defaultNamespace = this.defaultNamespace;
+    const literalFactory = new LiteralFactory({ dataFactory });
+    const prefixMap =
+      this.prefixMap ?? new PrefixMap(undefined, { factory: dataFactory });
 
-    const colonIndex = string.indexOf(":");
-    if (colonIndex === -1) {
-      // No : in the string.
-      if (this.defaultNamespace) {
-        return Either.of(this.defaultNamespace(string));
-      } else {
+    function iriFromString(string: string): Either<Error, NamedNode> {
+      invariant(string.length > 0);
+
+      const colonIndex = string.indexOf(":");
+      if (colonIndex === -1) {
+        // No : in the string.
+        if (defaultNamespace) {
+          return Either.of(defaultNamespace(string));
+        } else {
+          return Left(new Error(`ill-formed IRI: ${string}`));
+        }
+      }
+
+      const prefix = string.substring(0, colonIndex);
+      const path = string.substring(colonIndex + 1);
+      if (path.length === 0) {
         return Left(new Error(`ill-formed IRI: ${string}`));
       }
-    }
 
-    const prefix = string.substring(0, colonIndex);
-    const path = string.substring(colonIndex + 1);
-    if (path.length === 0) {
-      return Left(new Error(`ill-formed IRI: ${string}`));
-    }
+      // Absolute http(s) IRI: always wins over a prefix of the same name.
+      const scheme = prefix.toLowerCase();
+      if ((scheme === "http" || scheme === "https") && path.startsWith("//")) {
+        return Either.of(dataFactory.namedNode(string));
+      }
 
-    // Absolute http(s) IRI: always wins over a prefix of the same name.
-    const scheme = prefix.toLowerCase();
-    if ((scheme === "http" || scheme === "https") && path.startsWith("//")) {
-      return Either.of(this.dataFactory.namedNode(string));
-    }
+      const prefixNamespace = prefixMap.get(prefix);
+      if (prefixNamespace !== undefined) {
+        return Either.of(
+          dataFactory.namedNode(`${prefixNamespace.value}${path}`),
+        );
+      }
 
-    const prefixNamespace = this.prefixMap.get(prefix);
-    if (prefixNamespace !== undefined) {
-      return Either.of(
-        this.dataFactory.namedNode(`${prefixNamespace.value}${path}`),
+      if (prefix.length === 0 && defaultNamespace) {
+        // a "" prefixMap entry takes precedence, above.
+        return Either.of(defaultNamespace(path));
+      }
+
+      // file, urn, et al. prefixes in the prefixMap take precedence.
+      if (OPAQUE_IRI_SCHEMES.has(scheme)) {
+        return Either.of(dataFactory.namedNode(string));
+      }
+
+      return Left(
+        new Error(`unknown IRI prefix or unsupported scheme: ${string}`),
       );
     }
 
-    if (prefix.length === 0 && this.defaultNamespace) {
-      // a "" prefixMap entry takes precedence, above.
-      return Either.of(this.defaultNamespace(path));
-    }
-
-    // file, urn, et al. prefixes in the prefixMap take precedence.
-    if (OPAQUE_IRI_SCHEMES.has(scheme)) {
-      return Either.of(this.dataFactory.namedNode(string));
-    }
-
-    return Left(
-      new Error(`unknown IRI prefix or unsupported scheme: ${string}`),
-    );
-  }
-
-  override parse(resourceRow: ResourceRow): Either<Error, readonly Quad[]> {
     const resourceSet = new ResourceSet({
-      dataFactory: this.dataFactory,
-      dataset: this.datasetFactory.dataset(),
+      dataFactory: dataFactory,
+      dataset: datasetFactory.dataset(),
     });
 
     let resourceIdentifier: Resource.Identifier;
     switch (typeof resourceRow["@id"]) {
       case "string": {
-        const resourceIriEither = this.iriFromString(resourceRow["@id"]);
+        const resourceIriEither = iriFromString(resourceRow["@id"]);
         if (resourceIriEither.isLeft()) {
           return resourceIriEither;
         }
@@ -100,7 +99,7 @@ export class RdfResourceRowParser extends ResourceRowParser {
         break;
       }
       case "undefined":
-        resourceIdentifier = this.dataFactory.blankNode();
+        resourceIdentifier = dataFactory.blankNode();
         break;
       default:
         return Left(
@@ -113,7 +112,7 @@ export class RdfResourceRowParser extends ResourceRowParser {
     const resource = resourceSet.resource(resourceIdentifier);
 
     for (const [key, cell] of Object.entries(resourceRow)) {
-      const predicateEither = this.iriFromString(key);
+      const predicateEither = iriFromString(key);
       if (predicateEither.isLeft()) {
         return predicateEither;
       }
@@ -123,19 +122,19 @@ export class RdfResourceRowParser extends ResourceRowParser {
       switch (typeof cell) {
         case "boolean":
         case "number":
-          object = this.literalFactory.primitive(cell);
+          object = literalFactory.primitive(cell);
           break;
         case "object":
           if (cell instanceof Date) {
-            object = this.literalFactory.date(cell);
+            object = literalFactory.date(cell);
           } else {
-            object = this.dataFactory.literal(cell.value, cell.language);
+            object = dataFactory.literal(cell.value, cell.language);
           }
           break;
         case "string":
           object = (
-            this.iriFromString(cell) as Either<Error, Literal | NamedNode>
-          ).orDefault(this.dataFactory.literal(cell));
+            iriFromString(cell) as Either<Error, Literal | NamedNode>
+          ).orDefault(dataFactory.literal(cell));
           break;
         default:
           cell satisfies never;

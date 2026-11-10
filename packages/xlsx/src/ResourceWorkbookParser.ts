@@ -37,6 +37,7 @@ export class ResourceWorkbookParser extends AbstractParser {
 
       const worksheetDatasetEither = new ResourceWorksheetParser({
         dataFactory: this.dataFactory,
+        datasetFactory: this.datasetFactory,
         logger: this.logger,
         resourceRowParser,
       }).parse(worksheet);
