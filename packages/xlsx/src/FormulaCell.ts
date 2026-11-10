@@ -14,7 +14,7 @@ export class FormulaCell extends AbstractCell {
   #sha256: string | null = null;
 
   readonly formula: string;
-  override readonly kind = "FormulaCell";
+  override readonly kind = "Formula";
   readonly value: Maybe<AbstractCell.Value>;
 
   constructor({
@@ -30,6 +30,7 @@ export class FormulaCell extends AbstractCell {
   } & ConstructorParameters<typeof AbstractCell>[0]) {
     super(superParameters);
     this.depParser = depParser;
+    this.hyperlink = hyperlink;
     this.formula = formula;
     this.value = value;
   }
@@ -138,7 +139,7 @@ export class FormulaCell extends AbstractCell {
       this.worksheet.workbook
         .cell(dependencyCellAddress)
         .ifJust((dependency) => {
-          if (dependency.kind === "FormulaCell") {
+          if (dependency.kind === "Formula") {
             resolvedDependencyHashes.push(
               dependency.hashRecursive(visitedCellAddresses),
             );

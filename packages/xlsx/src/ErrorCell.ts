@@ -4,7 +4,7 @@ import { Memoize } from "typescript-memoize";
 import { AbstractCell } from "./AbstractCell.js";
 
 export class ErrorCell extends AbstractCell {
-  readonly kind = "ErrorCell";
+  readonly kind = "Error";
   readonly message: string;
 
   constructor({

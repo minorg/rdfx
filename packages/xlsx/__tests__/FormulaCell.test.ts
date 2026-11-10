@@ -14,7 +14,7 @@ describe("FormulaCell", async () => {
       await expect(
         worksheet.cells.reduce(
           (acc, cell) => {
-            if (cell.kind === "FormulaCell") {
+            if (cell.kind === "Formula") {
               const dependencies = cell.dependencies.unsafeCoerce();
               if (dependencies.length > 0) {
                 acc.push([
@@ -43,13 +43,13 @@ describe("FormulaCell", async () => {
 
   it("formula", ({ expect }) => {
     const cell = workbook.worksheets[0].cell("D2").unsafeCoerce();
-    expect(cell.kind).toStrictEqual("FormulaCell");
+    expect(cell.kind).toStrictEqual("Formula");
     expect((cell as FormulaCell).formula).toStrictEqual("B2*C2");
   });
 
   it("value", ({ expect }) => {
     const cell = workbook.worksheets[0].cell("D2").unsafeCoerce();
-    expect(cell.kind).toStrictEqual("FormulaCell");
+    expect(cell.kind).toStrictEqual("Formula");
     expect((cell as FormulaCell).value.extract()).toBeUndefined();
   });
 });

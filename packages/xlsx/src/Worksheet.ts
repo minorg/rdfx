@@ -83,6 +83,13 @@ export class Worksheet {
 
       const cellAddress = CellAddress.parse(cellAddressString, this.name);
 
+      const hyperlink = cellObject.l
+        ? Maybe.of({
+            target: cellObject.l.Target,
+            tooltip: Maybe.fromNullable(cellObject.l.Tooltip),
+          })
+        : Maybe.empty();
+
       switch (cellObject.t) {
         case "b": // Boolean
         case "d": // Date
@@ -92,10 +99,12 @@ export class Worksheet {
           break;
 
         case "e": {
+          invariant(cellObject.w);
           // Error
           addCell(
             new ErrorCell({
               address: cellAddress,
+              hyperlink,
               message: cellObject.w!,
               worksheet: this,
             }),
@@ -121,6 +130,7 @@ export class Worksheet {
         addCell(
           new ValueCell({
             address: cellAddress,
+            hyperlink,
             value: cellObject.v!,
             worksheet: this,
           }),
@@ -133,6 +143,7 @@ export class Worksheet {
         addCell(
           new ErrorCell({
             address: cellAddress,
+            hyperlink,
             message: `unparseable formula or macro`,
             worksheet: this,
           }),
@@ -148,6 +159,7 @@ export class Worksheet {
         new FormulaCell({
           address: cellAddress,
           depParser: this.depParser,
+          hyperlink,
           formula: cellFormula,
           value:
             cellObject.t !== "z"

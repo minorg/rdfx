@@ -3,7 +3,7 @@ import { Memoize } from "typescript-memoize";
 import { AbstractCell } from "./AbstractCell.js";
 
 export class ValueCell extends AbstractCell {
-  readonly kind = "ValueCell";
+  readonly kind = "Value";
   readonly value: AbstractCell.Value;
 
   constructor({

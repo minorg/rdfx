@@ -18,7 +18,7 @@ describe("Worksheet", async () => {
       const worksheet = formulasWorkbook.worksheets[0];
       const cell = worksheet.cell("A2").extract();
       expect(cell).toBeDefined();
-      expect(cell!.kind).toStrictEqual("ValueCell");
+      expect(cell!.kind).toStrictEqual("Value");
       expect((cell as ValueCell).value === "B");
     });
   });
@@ -26,13 +26,13 @@ describe("Worksheet", async () => {
   it("cells", ({ expect }) => {
     const worksheet = formulasWorkbook.worksheets[0];
     expect(
-      worksheet.cells.filter((cell) => cell.kind === "ErrorCell"),
+      worksheet.cells.filter((cell) => cell.kind === "Error"),
     ).toHaveLength(0);
     expect(
-      worksheet.cells.filter((cell) => cell.kind === "FormulaCell"),
+      worksheet.cells.filter((cell) => cell.kind === "Formula"),
     ).toHaveLength(18);
     expect(
-      worksheet.cells.filter((cell) => cell.kind === "ValueCell"),
+      worksheet.cells.filter((cell) => cell.kind === "Value"),
     ).toHaveLength(26);
   });
 
