@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, it } from "vitest";
-import type { ValueCell } from "../src/ValueCell.js";
+import { Cell } from "../src/Cell.js";
 import { snapshotsDirectoryPath } from "./paths.js";
 import { readTestWorkbook } from "./readTestWorkbook.js";
 
@@ -18,22 +18,23 @@ describe("Worksheet", async () => {
       const worksheet = formulasWorkbook.worksheets[0];
       const cell = worksheet.cell("A2").extract();
       expect(cell).toBeDefined();
-      expect(cell!.kind).toStrictEqual("Value");
-      expect((cell as ValueCell).value === "B");
+      expect(cell!.value.extract() === "B");
     });
   });
 
   it("cells", ({ expect }) => {
     const worksheet = formulasWorkbook.worksheets[0];
     expect(
-      worksheet.cells.filter((cell) => cell.kind === "Error"),
+      worksheet.cells.filter(
+        (cell) => cell.value.extract() instanceof Cell.Error,
+      ),
     ).toHaveLength(0);
     expect(
-      worksheet.cells.filter((cell) => cell.kind === "Formula"),
+      worksheet.cells.filter((cell) => cell.formula.isJust()),
     ).toHaveLength(18);
-    expect(
-      worksheet.cells.filter((cell) => cell.kind === "Value"),
-    ).toHaveLength(26);
+    expect(worksheet.cells.filter((cell) => cell.value.isJust())).toHaveLength(
+      26,
+    );
   });
 
   it("definedNames", async ({ expect }) => {
@@ -72,13 +73,13 @@ describe("Worksheet", async () => {
   it("sha256", ({ expect }) => {
     expect(formulasWorkbook.worksheets).toHaveLength(3);
     expect(formulasWorkbook.worksheets[0].sha256).toStrictEqual(
-      "b488df6999a887a63339072f67f91582f0d59be0c6705e860564dd59e9bc52d4",
+      "e1db92d8034a399de2b2b0ae99428ff70be1a30f8ce84d8adaa8952dfea20c1c",
     );
     expect(formulasWorkbook.worksheets[1].sha256).toStrictEqual(
-      "390eb44b27a0971fc215183d832cb95e00568f994075c76eaa25fe03ae03ec6c",
+      "816df721e60c678d43db0d36bcaf65aa3e850ec463d328803b32d9cef07ea069",
     );
     expect(formulasWorkbook.worksheets[2].sha256).toStrictEqual(
-      "6382c811b600dbaffeb7c8f664cdc3d11dc9e9678176400dc2f3efeef29a0569",
+      "fdf5c24d1abda60f47def2f7739cb32b4c04addb2415e39feb15d680492b5183",
     );
   });
 });
