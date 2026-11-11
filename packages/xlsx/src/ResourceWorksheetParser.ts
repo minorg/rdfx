@@ -4,6 +4,7 @@ import { invariant } from "ts-invariant";
 import { AbstractParser } from "./AbstractParser.js";
 import type { ResourceRecord } from "./ResourceRecord.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
+import type { ResourceRecordParserFactory } from "./ResourceRecordParserFactory.js";
 import type { Worksheet } from "./Worksheet.js";
 
 interface ColumnMetadata {
@@ -12,20 +13,32 @@ interface ColumnMetadata {
 }
 
 export class ResourceWorksheetParser extends AbstractParser {
-  private readonly resourceRecordParser: ResourceRecordParser;
+  private readonly resourceRecordParser:
+    | ResourceRecordParser
+    | ResourceRecordParserFactory;
 
   constructor({
     resourceRecordParser,
     ...superParameters
-  }: { resourceRecordParser: ResourceRecordParser } & ConstructorParameters<
-    typeof AbstractParser
-  >[0]) {
+  }: {
+    resourceRecordParser: ResourceRecordParser | ResourceRecordParserFactory;
+  } & ConstructorParameters<typeof AbstractParser>[0]) {
     super(superParameters);
     this.resourceRecordParser = resourceRecordParser;
   }
 
   parse(worksheet: Worksheet): Either<Error, readonly Quad[]> {
     let headerRow: readonly ColumnMetadata[] | undefined;
+    const resourceRecordParser: ResourceRecordParser =
+      typeof this.resourceRecordParser === "function"
+        ? this.resourceRecordParser({
+            dataFactory: this.dataFactory,
+            datasetFactory: this.datasetFactory,
+            defaultNamespace: this.defaultNamespace.extract(),
+            logger: this.logger,
+            prefixMap: this.prefixMap.extract(),
+          })
+        : this.resourceRecordParser;
     let worksheetQuads: Quad[] = [];
     for (
       let worksheetRowI = 0;
@@ -114,11 +127,7 @@ export class ResourceWorksheetParser extends AbstractParser {
           resourceRecord[columnMetadata.property] = [existingValue, newValue];
         }
 
-        const rowQuadsEither = this.resourceRecordParser.parse(resourceRecord, {
-          dataFactory: this.dataFactory,
-          datasetFactory: this.datasetFactory,
-          logger: this.logger,
-        });
+        const rowQuadsEither = resourceRecordParser.parse(resourceRecord);
         if (rowQuadsEither.isLeft()) {
           return rowQuadsEither;
         }

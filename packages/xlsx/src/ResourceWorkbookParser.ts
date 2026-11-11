@@ -2,12 +2,13 @@ import type { Quad } from "@rdfjs/types";
 import { Either } from "purify-ts";
 import { AbstractParser } from "./AbstractParser.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
+import type { ResourceRecordParserFactory } from "./ResourceRecordParserFactory.js";
 import { ResourceWorksheetParser } from "./ResourceWorksheetParser.js";
 import type { Workbook } from "./Workbook.js";
 
 export class ResourceWorkbookParser extends AbstractParser {
   private readonly resourceRecordParsersByWorksheetName: Readonly<
-    Record<string, ResourceRecordParser>
+    Record<string, ResourceRecordParser | ResourceRecordParserFactory>
   >;
 
   constructor({
@@ -15,7 +16,7 @@ export class ResourceWorkbookParser extends AbstractParser {
     ...superParameters
   }: {
     resourceRecordParsersByWorksheetName: Readonly<
-      Record<string, ResourceRecordParser>
+      Record<string, ResourceRecordParser | ResourceRecordParserFactory>
     >;
   } & ConstructorParameters<typeof AbstractParser>[0]) {
     super(superParameters);
