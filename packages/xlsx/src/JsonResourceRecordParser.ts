@@ -7,15 +7,23 @@ import { AbstractParser } from "./AbstractParser.js";
 import type { ResourceRecord } from "./ResourceRecord.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 
-interface IntermediateObjectFunctions<IntermediateObjectT extends object> {
+interface IntermediateObjectFunctions<
+  IntermediateObjectT extends object,
+  JsonObjectT extends object,
+> {
+  Json: {
+    parse(json: unknown): Either<Error, JsonObjectT>;
+  };
+
   fromJson: (
-    jsonObject: object,
+    jsonObject: JsonObjectT,
     options?: {
       defaultNamespace?: NamespaceBuilder;
       prefixMap?: PrefixMap;
     },
   ) => Either<Error, IntermediateObjectT>;
-  toRdf: (
+
+  toRdfResource: (
     object: IntermediateObjectT,
     options?: {
       resourceSet?: ResourceSet;
@@ -23,14 +31,23 @@ interface IntermediateObjectFunctions<IntermediateObjectT extends object> {
   ) => Resource;
 }
 
-export class JsonResourceRecordParser<IntermediateObjectT extends object>
+export class JsonResourceRecordParser<
+    IntermediateObjectT extends object,
+    JsonObjectT extends object,
+  >
   extends AbstractParser
   implements ResourceRecordParser
 {
-  private readonly intermediateObjectFunctions: IntermediateObjectFunctions<IntermediateObjectT>;
+  private readonly intermediateObjectFunctions: IntermediateObjectFunctions<
+    IntermediateObjectT,
+    JsonObjectT
+  >;
 
   constructor(
-    intermediateObjectFunctions: IntermediateObjectFunctions<IntermediateObjectT>,
+    intermediateObjectFunctions: IntermediateObjectFunctions<
+      IntermediateObjectT,
+      JsonObjectT
+    >,
     superParameters: ConstructorParameters<typeof AbstractParser>[0],
   ) {
     super(superParameters);
@@ -43,18 +60,21 @@ export class JsonResourceRecordParser<IntermediateObjectT extends object>
    * Takes dataFactory, et al. parameters here rather than in the constructor in order to simplify construction.
    */
   parse(resourceRecord: ResourceRecord): Either<Error, readonly Quad[]> {
-    return this.intermediateObjectFunctions
-      .fromJson(resourceRecord, {
-        defaultNamespace: this.defaultNamespace.extract(),
-        prefixMap: this.prefixMap.extract(),
-      })
-      .map((object) => [
-        ...this.intermediateObjectFunctions.toRdf(object, {
-          resourceSet: new ResourceSet({
-            dataFactory: this.dataFactory,
-            dataset: this.datasetFactory.dataset(),
-          }),
-        }).dataset,
-      ]);
+    return this.intermediateObjectFunctions.Json.parse(resourceRecord).chain(
+      (jsonObject) =>
+        this.intermediateObjectFunctions
+          .fromJson(jsonObject, {
+            defaultNamespace: this.defaultNamespace.extract(),
+            prefixMap: this.prefixMap.extract(),
+          })
+          .map((object) => [
+            ...this.intermediateObjectFunctions.toRdfResource(object, {
+              resourceSet: new ResourceSet({
+                dataFactory: this.dataFactory,
+                dataset: this.datasetFactory.dataset(),
+              }),
+            }).dataset,
+          ]),
+    );
   }
 }

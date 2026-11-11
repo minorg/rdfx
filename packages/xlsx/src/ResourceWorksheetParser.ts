@@ -48,7 +48,7 @@ export class ResourceWorksheetParser extends AbstractParser {
     ) {
       const worksheetRow = worksheet.rows[worksheetRowI];
       if (worksheetRowI === 0) {
-        const headerRowEither = this.parseHeaderRow(worksheetRow);
+        const headerRowEither = this.parseHeaderRow(worksheet, worksheetRow);
         if (headerRowEither.isLeft()) {
           return headerRowEither.mapLeft(
             (error) => new Error(`${worksheet.name}: ${error.message}`),
@@ -133,29 +133,55 @@ export class ResourceWorksheetParser extends AbstractParser {
   }
 
   private parseHeaderRow(
+    worksheet: Worksheet,
     row: Worksheet.Row,
   ): Either<Error, readonly ColumnMetadata[]> {
     const parsed: ColumnMetadata[] = [];
-    for (const cell of row) {
+    for (const [columnI, cell] of row.entries()) {
       if (cell === undefined) {
-        return Left(new Error("empty cell in header row"));
+        return Left(
+          new Error(
+            `worksheet ${worksheet.name} header row column ${columnI} is empty`,
+          ),
+        );
       }
+
       const cellValue = cell.value.extract();
       if (cellValue === undefined) {
-        return Left(new Error("cell without value in header row"));
+        return Left(new Error(`header cell ${cell.address} has no value`));
       }
+
       if (typeof cellValue !== "string") {
-        return Left(new Error("non-string cell value in header row"));
+        return Left(
+          new Error(`header cell ${cell.address} has non-string value`),
+        );
       }
-      let [property, language] = cellValue.split("@", 2);
+
+      let property: string;
+      let language: string | undefined;
+      if (cellValue.startsWith("@")) {
+        property = cellValue;
+      } else {
+        [property, language] = cellValue.split("@", 2);
+      }
+
       property = property.trim();
       if (property.length === 0) {
-        return Left(new Error("empty/blank cell value in header row"));
+        return Left(
+          new Error(
+            `header cell ${cell.address} doesn't specify a property: ${cellValue}`,
+          ),
+        );
       }
+
       if (language) {
         language = language.trim();
         if (language.length === 0) {
-          return Left(new Error(`empty language in header row: ${cell.value}`));
+          return Left(
+            new Error(
+              `empty language in header cell ${cell.address}: ${cellValue}`,
+            ),
+          );
         }
       }
       parsed.push({
