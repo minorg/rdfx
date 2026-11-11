@@ -5,12 +5,8 @@ import { Maybe } from "purify-ts";
 import { invariant } from "ts-invariant";
 import { Memoize } from "typescript-memoize";
 import * as xlsx from "xlsx";
-
-import type { Cell } from "./Cell.js";
+import { Cell } from "./Cell.js";
 import { CellAddress } from "./CellAddress.js";
-import { ErrorCell } from "./ErrorCell.js";
-import { FormulaCell } from "./FormulaCell.js";
-import { ValueCell } from "./ValueCell.js";
 import type { Workbook } from "./Workbook.js";
 
 export class Worksheet {
@@ -69,11 +65,6 @@ export class Worksheet {
   get cellsByAddress(): ReadonlyMap<string, Cell> {
     const cellsByAddress = new Map<string, Cell>();
 
-    const addCell = (cell: Cell): void => {
-      invariant(!cellsByAddress.has(cell.address.string), cell.address.string);
-      cellsByAddress.set(cell.address.string, cell);
-    };
-
     for (const [cellAddressString, cellAny] of Object.entries(this.delegate)) {
       // SheetJS uses keys like '!ref', '!margins' etc for metadata
       if (cellAddressString.startsWith("!")) {
@@ -90,84 +81,46 @@ export class Worksheet {
           })
         : Maybe.empty();
 
+      let value: Maybe<Cell.Value>;
       switch (cellObject.t) {
         case "b": // Boolean
         case "d": // Date
         case "n": // Number
         case "s": // String
-        case "z": // Empty, which may be a formula (without a value)
+          value = Maybe.fromNullable(cellObject.v);
           break;
-
-        case "e": {
+        case "e": // Error
           invariant(cellObject.w);
-          // Error
-          addCell(
-            new ErrorCell({
-              address: cellAddress,
-              hyperlink,
-              message: cellObject.w!,
-              worksheet: this,
-            }),
-          );
-          continue;
-        }
+          value = Maybe.of(new Cell.Error(cellObject.w!));
+          break;
+        case "z": // Empty
+          value = Maybe.empty();
+          break;
         default:
           throw new RangeError(
             `${cellAddress}: unexpected cell object type: ${cellObject.t}`,
           );
       }
 
-      const cellFormula = cellObject.f;
-      if (typeof cellFormula === "undefined") {
-        if (cellObject.t === "z") {
-          continue;
-        }
-        if (typeof cellObject.v === "undefined") {
-          throw new RangeError(
-            `${cellAddress}: value cell has undefined value`,
-          );
-        }
-        addCell(
-          new ValueCell({
-            address: cellAddress,
-            hyperlink,
-            value: cellObject.v!,
-            worksheet: this,
-          }),
-        );
-        continue;
+      let formula: Maybe<string>;
+      if (cellObject.f === "undefined") {
+        formula = Maybe.empty();
+        value = Maybe.of(new Cell.Error("unparseable formula or macro"));
+      } else {
+        formula = Maybe.fromNullable(cellObject.f);
       }
 
-      if (cellFormula === "undefined") {
-        // xlxs parsing error
-        addCell(
-          new ErrorCell({
-            address: cellAddress,
-            hyperlink,
-            message: `unparseable formula or macro`,
-            worksheet: this,
-          }),
-        );
-        continue;
-      }
+      const cell = new Cell({
+        address: cellAddress,
+        depParser: this.depParser,
+        hyperlink,
+        formula,
+        value,
+        worksheet: this,
+      });
 
-      if (typeof cellObject.v === "undefined") {
-        throw new RangeError(`${cellAddress}: value cell has undefined value`);
-      }
-
-      addCell(
-        new FormulaCell({
-          address: cellAddress,
-          depParser: this.depParser,
-          hyperlink,
-          formula: cellFormula,
-          value:
-            cellObject.t !== "z"
-              ? Maybe.fromNullable(cellObject.v)
-              : Maybe.empty(),
-          worksheet: this,
-        }),
-      );
+      invariant(!cellsByAddress.has(cell.address.string), cell.address.string);
+      cellsByAddress.set(cell.address.string, cell);
     }
 
     return cellsByAddress;

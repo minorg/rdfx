@@ -12,11 +12,6 @@ export class CellAddress {
   readonly columnIndex: number;
 
   /**
-   * Type discriminant.
-   */
-  readonly kind = "CellAddress";
-
-  /**
    * Zero-based row index
    */
   readonly rowIndex: number;
