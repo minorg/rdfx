@@ -17,6 +17,7 @@ declare module "vitest" {
     toEqualRdfQuadArray: (actual: RDF.BaseQuad[]) => T;
     toEqualRdfTerm: (actual: RDF.Term) => T;
     toEqualRdfTermArray: (actual: RDF.Term[]) => T;
+    toEqualRdfTermSet: (actual: RDF.Term[]) => T;
   }
 }
 

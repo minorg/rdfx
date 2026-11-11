@@ -9,6 +9,7 @@ import {
   toEqualRdfTermArray,
 } from "./jestRdfMatchers.js";
 import { toBeLeft } from "./purifyMatchers.js";
+import { toEqualRdfTermSet } from "./rdfxRdfMatchers.js";
 
 export const matchers = {
   toBeRdfDatasetContaining,
@@ -19,5 +20,6 @@ export const matchers = {
   toEqualRdfQuadArray,
   toEqualRdfTerm,
   toEqualRdfTermArray,
+  toEqualRdfTermSet,
   toBeLeft,
 };
