@@ -8,7 +8,11 @@ import { testDataDirectoryPath } from "./paths.js";
 describe("RdfFileSystemEntry", () => {
   it("fromPath (directory)", async ({ expect }) => {
     expect(
-      (await RdfFileSystemEntry.fromPath(testDataDirectoryPath)).unsafeCoerce(),
+      (
+        await RdfFileSystemEntry.fromPath(
+          path.join(testDataDirectoryPath, "rdf"),
+        )
+      ).unsafeCoerce(),
     ).toBeInstanceOf(RdfDirectory);
   });
 
@@ -16,7 +20,7 @@ describe("RdfFileSystemEntry", () => {
     expect(
       (
         await RdfFileSystemEntry.fromPath(
-          path.join(testDataDirectoryPath, "unesco-thesaurus.nt"),
+          path.join(testDataDirectoryPath, "rdf", "unesco-thesaurus.nt"),
         )
       ).unsafeCoerce(),
     ).toBeInstanceOf(RdfFile);
