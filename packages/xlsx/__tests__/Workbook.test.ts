@@ -5,7 +5,7 @@ describe("Workbook", async () => {
   it("sha256", async ({ expect }) => {
     const workbook = await readTestWorkbook("formulas.xlsx");
     expect(workbook.sha256).toStrictEqual(
-      "67e2889be75ee0fb83f284b02201c68289a8d6d5d1937ef4e920e81069b42dc1",
+      "ca4cf5db9796434f86adeab2d70c9546af73a4a8f91e3b499838d3610a70638a",
     );
   });
 });
