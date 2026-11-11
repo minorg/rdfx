@@ -1,3 +1,4 @@
+import path from "node:path";
 import { datasetFactory, PrefixMap } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { describe, it } from "vitest";
@@ -5,7 +6,7 @@ import { RdfDirectory } from "../src/RdfDirectory.js";
 import { testDataDirectoryPath } from "./paths.js";
 
 describe("RdfDirectory", () => {
-  const sut = new RdfDirectory(testDataDirectoryPath);
+  const sut = new RdfDirectory(path.join(testDataDirectoryPath, "rdf"));
 
   it("files", async ({ expect }) => {
     let count = 0;
