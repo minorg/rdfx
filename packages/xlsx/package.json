@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@rdfx/collection": "0.0.59",
+    "@rdfx/testing": "0.0.59",
     "@shaclmate/cli": "4.0.98",
     "@types/node": "^24",
     "libreoffice-convert": "~1.8.1",

@@ -403,7 +403,7 @@ const workspaces = {
           "libreoffice-convert",
           "zod",
         ],
-        internal: ["collection"],
+        internal: ["collection", "testing"],
       },
     },
   } satisfies Record<PackageName, Workspace>,
