@@ -5,7 +5,7 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-import { datasetFactory } from "@rdfx/collection";
+import { datasetFactory, type PrefixMap } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { LiteralFactory } from "@rdfx/literal";
 import {
@@ -29,8 +29,8 @@ export type $_ToRdfResourceFunction<
 }) => void;
 
 function $arrayFromJsonArray<ItemJsonValueT, ItemT, ItemSchemaT>(
-  itemFromJsonValue: $FromJsonValueFunction<ItemJsonValueT, ItemT, ItemSchemaT>,
-): $FromJsonValueFunction<
+  itemFromJsonValue: $FromJsonFunction<ItemJsonValueT, ItemT, ItemSchemaT>,
+): $FromJsonFunction<
   ItemJsonValueT[] | undefined,
   ItemT[],
   $CollectionSchema<ItemSchemaT>
@@ -52,7 +52,7 @@ function $arrayFromJsonArray<ItemJsonValueT, ItemT, ItemSchemaT>(
   };
 }
 
-const $blankNodeFromJsonString: $FromJsonValueFunction<
+const $blankNodeFromJsonString: $FromJsonFunction<
   string,
   BlankNode,
   undefined
@@ -108,12 +108,10 @@ function $convertToIdentifierProperty<
       const captureIdentifier = identifier;
       return Either.of(() => captureIdentifier);
     }
-    case "string": {
-      const captureIdentifier = defaultNamespace
-        ? defaultNamespace(identifier)
-        : dataFactory.namedNode(identifier);
-      return Either.of(() => captureIdentifier);
-    }
+    case "string":
+      return $iriFromString(identifier, { defaultNamespace }).map(
+        (iri) => () => iri,
+      );
     case "undefined": {
       const captureIdentifier = dataFactory.blankNode();
       return Either.of(() => captureIdentifier);
@@ -131,11 +129,7 @@ function $convertToIri<
     case "object":
       return Either.of(value);
     case "string":
-      return Either.of(
-        defaultNamespace
-          ? defaultNamespace(value)
-          : dataFactory.namedNode(value),
-      );
+      return $iriFromString(value, { defaultNamespace });
   }
 }
 
@@ -156,10 +150,9 @@ function $convertToIriIdentifierProperty<
       return Either.of(() => captureIdentifier);
     }
     case "string": {
-      const captureIdentifier = defaultNamespace
-        ? defaultNamespace(identifier)
-        : dataFactory.namedNode(identifier);
-      return Either.of(() => captureIdentifier);
+      return $iriFromString(identifier, { defaultNamespace }).map(
+        (iri) => () => iri,
+      );
     }
   }
 }
@@ -233,33 +226,29 @@ function $convertToScalarSet<
   };
 }
 
-export type $FromJsonObjectFunction<
-  JsonObjectT extends object,
-  ValueT,
-  ValueSchemaT,
-> = [ValueSchemaT] extends [undefined]
-  ? (
-      jsonObject: JsonObjectT,
-      options?: { context?: unknown; schema?: unknown },
-    ) => Either<Error, ValueT>
-  : (
-      jsonObject: JsonObjectT,
-      options: { context?: unknown; schema: ValueSchemaT },
-    ) => Either<Error, ValueT>;
-
-export type $FromJsonValueFunction<JsonValueT, ValueT, ValueSchemaT> = [
+export type $FromJsonFunction<JsonValueT, ValueT, ValueSchemaT> = [
   ValueSchemaT,
 ] extends [undefined]
   ? (
       jsonValue: JsonValueT,
-      options?: { context?: unknown; schema?: unknown },
+      options?: {
+        context?: unknown;
+        defaultNamespace?: $NamespaceBuilder;
+        prefixMap?: PrefixMap;
+        schema?: unknown;
+      },
     ) => Either<Error, ValueT>
   : (
       jsonValue: JsonValueT,
-      options: { context?: unknown; schema: ValueSchemaT },
+      options: {
+        context?: unknown;
+        defaultNamespace?: $NamespaceBuilder;
+        prefixMap?: PrefixMap;
+        schema: ValueSchemaT;
+      },
     ) => Either<Error, ValueT>;
 
-const $identifierFromJsonString: $FromJsonValueFunction<
+const $identifierFromJsonString: $FromJsonFunction<
   string,
   BlankNode | NamedNode,
   $IdentifierSchema
@@ -286,16 +275,78 @@ function $identityValidationFunction<T>(
   return Either.of(value);
 }
 
-function $iriFromJsonString<IriT extends string = string>(
-  jsonValue: IriT,
-  _options: Parameters<
-    $FromJsonValueFunction<IriT, NamedNode<IriT>, object>
-  >[1],
-): Either<Error, NamedNode<IriT>> {
-  return Either.of(dataFactory.namedNode(jsonValue));
+function $iriFromJsonString(
+  jsonString: string,
+  options: Parameters<$FromJsonFunction<string, NamedNode, object>>[1],
+): Either<Error, NamedNode> {
+  return $iriFromString(jsonString, options);
 }
 
-const $langStringFromJsonObject: $FromJsonObjectFunction<
+export function $iriFromString(
+  string: string,
+  options?: { defaultNamespace?: $NamespaceBuilder; prefixMap?: PrefixMap },
+): Either<Error, NamedNode> {
+  if (string.trim().length === 0) {
+    return Left(new Error("empty/blank IRI"));
+  }
+
+  const defaultNamespace = options?.defaultNamespace;
+
+  const colonIndex = string.indexOf(":");
+  if (colonIndex === -1) {
+    // No : in the string.
+    if (defaultNamespace) {
+      return Right(defaultNamespace(string));
+    } else {
+      return Left(new Error(`ill-formed IRI: ${string}`));
+    }
+  }
+
+  const prefix = string.substring(0, colonIndex);
+  const path = string.substring(colonIndex + 1);
+  if (path.length === 0) {
+    return Left(new Error(`ill-formed IRI: ${string}`));
+  }
+
+  // Absolute IRIs with scheme:// always win over prefixes with the same name.
+  switch (prefix.toLowerCase()) {
+    case "file":
+    case "ftp":
+    case "http":
+    case "https":
+    case "git":
+    case "irc":
+    case "ldap":
+    case "postgres":
+    case "rtsp":
+    case "sftp":
+    case "smb":
+    case "ssh":
+    case "ws":
+    case "wss":
+      if (path.startsWith("//")) {
+        return Right(dataFactory.namedNode(string));
+      }
+      break;
+  }
+
+  const prefixMap = options?.prefixMap;
+  if (prefixMap) {
+    const prefixNamespace = prefixMap.get(prefix);
+    if (prefixNamespace !== undefined) {
+      return Right(dataFactory.namedNode(`${prefixNamespace.value}${path}`));
+    }
+  }
+
+  if (prefix.length === 0 && defaultNamespace) {
+    // a "" prefixMap entry takes precedence, above.
+    return Right(defaultNamespace(path));
+  }
+
+  return Right(dataFactory.namedNode(string));
+}
+
+const $langStringFromJsonObject: $FromJsonFunction<
   $LangStringJsonObject,
   Literal,
   $LangStringSchema
@@ -478,7 +529,7 @@ function $sequenceRecord<T extends Record<string, unknown>>(
 function $stringFromJsonString<StringT extends string>(
   jsonString: StringT,
   _options: Parameters<
-    $FromJsonValueFunction<StringT, StringT, $StringSchema<StringT>>
+    $FromJsonFunction<StringT, StringT, $StringSchema<StringT>>
   >[1],
 ): Either<Error, StringT> {
   return Either.of(jsonString);
@@ -648,7 +699,7 @@ export namespace $DefaultPartial {
     readonly $type: "DefaultPartial";
   };
 
-  export const fromJson: $FromJsonObjectFunction<
+  export const fromJson: $FromJsonFunction<
     $DefaultPartial.Json,
     $DefaultPartial.Discriminated,
     undefined
@@ -821,17 +872,17 @@ export namespace NodeShape1 {
 
   export type Discriminated = NodeShape1 & { readonly $type: "NodeShape1" };
 
-  export const fromJson: $FromJsonObjectFunction<
+  export const fromJson: $FromJsonFunction<
     NodeShape1.Json,
     NodeShape1.Discriminated,
     undefined
   > = (jsonObject, options = {}) =>
     $sequenceRecord({
-      $identifier: $iriFromJsonString<string>(jsonObject["@id"], {
+      $identifier: $iriFromJsonString(jsonObject["@id"], {
         ...options,
         schema: NodeShape1.schema.properties.$identifier.type,
       }),
-      iriProperty: $iriFromJsonString<string>(jsonObject["iriProperty"], {
+      iriProperty: $iriFromJsonString(jsonObject["iriProperty"], {
         ...options,
         schema: NodeShape1.schema.properties.iriProperty.type,
       }),
@@ -1027,7 +1078,7 @@ export namespace NodeShape2 {
 
   export type Discriminated = NodeShape2 & { readonly $type: "NodeShape2" };
 
-  export const fromJson: $FromJsonObjectFunction<
+  export const fromJson: $FromJsonFunction<
     NodeShape2.Json,
     NodeShape2.Discriminated,
     undefined
