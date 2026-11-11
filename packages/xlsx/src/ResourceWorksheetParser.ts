@@ -3,6 +3,7 @@ import { Either, Left, Maybe } from "purify-ts";
 import { invariant } from "ts-invariant";
 import { AbstractParser } from "./AbstractParser.js";
 import { Cell } from "./Cell.js";
+import { LangString } from "./LangString.js";
 import type { ResourceRecord } from "./ResourceRecord.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 import type { ResourceRecordParserFactory } from "./ResourceRecordParserFactory.js";
@@ -41,12 +42,7 @@ export class ResourceWorksheetParser extends AbstractParser {
           })
         : this.resourceRecordParser;
     let worksheetQuads: Quad[] = [];
-    for (
-      let worksheetRowI = 0;
-      worksheetRowI < worksheet.rows.length;
-      worksheetRowI++
-    ) {
-      const worksheetRow = worksheet.rows[worksheetRowI];
+    for (const [worksheetRowI, worksheetRow] of worksheet.rows.entries()) {
       if (worksheetRowI === 0) {
         const headerRowEither = this.parseHeaderRow(worksheet, worksheetRow);
         if (headerRowEither.isLeft()) {
@@ -60,11 +56,7 @@ export class ResourceWorksheetParser extends AbstractParser {
 
       invariant(headerRow);
       const resourceRecord: ResourceRecord = {};
-      for (
-        let worksheetColumnI = 0;
-        worksheetColumnI < worksheetRow.length;
-        worksheetColumnI++
-      ) {
+      for (const [worksheetColumnI, worksheetCell] of worksheetRow.entries()) {
         const logContext = {
           worksheet: {
             column: worksheetColumnI,
@@ -79,7 +71,6 @@ export class ResourceWorksheetParser extends AbstractParser {
         }
         const columnMetadata = headerRow[worksheetColumnI];
 
-        const worksheetCell = worksheetRow[worksheetColumnI];
         if (worksheetCell === undefined) {
           this.logger.debug(logContext, "undefined cell");
           continue;
@@ -102,13 +93,13 @@ export class ResourceWorksheetParser extends AbstractParser {
         }
 
         if (columnMetadata.language.isJust()) {
-          newValue = {
+          newValue = new LangString({
             language: columnMetadata.language.extract()!,
             value:
               newValue instanceof Date
                 ? newValue.toISOString()
                 : newValue.toString(),
-          };
+          });
         }
 
         const existingValue = resourceRecord[columnMetadata.property];
@@ -119,15 +110,15 @@ export class ResourceWorksheetParser extends AbstractParser {
         } else {
           resourceRecord[columnMetadata.property] = [existingValue, newValue];
         }
-
-        const rowQuadsEither = resourceRecordParser.parse(resourceRecord);
-        if (rowQuadsEither.isLeft()) {
-          return rowQuadsEither;
-        }
-        rowQuadsEither.ifRight((rowQuads) => {
-          worksheetQuads = worksheetQuads.concat(rowQuads);
-        });
       }
+
+      const rowQuadsEither = resourceRecordParser.parse(resourceRecord);
+      if (rowQuadsEither.isLeft()) {
+        return rowQuadsEither;
+      }
+      rowQuadsEither.ifRight((rowQuads) => {
+        worksheetQuads = worksheetQuads.concat(rowQuads);
+      });
     }
     return Either.of(worksheetQuads);
   }

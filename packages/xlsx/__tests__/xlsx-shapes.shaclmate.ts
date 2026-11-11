@@ -243,30 +243,6 @@ function $convertToScalarSet<
   };
 }
 
-function $ensureRdfResourceType(
-  resource: Resource,
-  types: readonly NamedNode[],
-  options: { graph: Exclude<Quad_Graph, Variable> | undefined },
-): Either<Error, undefined> {
-  return resource
-    .value($rdf_type, options)
-    .chain((actualRdfTypeValue) => actualRdfTypeValue.toIri())
-    .chain((actualRdfType) => {
-      // Check the expected type and its known subtypes
-      for (const type of types) {
-        if (resource.isInstanceOf(type, options)) {
-          return Right(undefined);
-        }
-      }
-
-      return Left(
-        new Error(
-          `${resource.identifier} has unexpected RDF type (actual: ${actualRdfType}, expected one of ${types})`,
-        ),
-      );
-    });
-}
-
 function $filterArray<ItemT, ItemFilterT>(
   filterItem: (itemFilter: ItemFilterT, item: ItemT) => boolean,
 ) {
@@ -786,10 +762,6 @@ const $rdf_langString = dataFactory.namedNode(
 
 const $rdf_subject = dataFactory.namedNode(
   "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject",
-);
-
-const $rdf_type = dataFactory.namedNode(
-  "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 );
 
 function $rdfResourceIdentifierValues(resource: Resource): Resource.Values {
@@ -1316,15 +1288,6 @@ export namespace NodeShape1 {
           schema: NodeShape1.schema.properties.$identifier.type,
         },
       ).chain((values) => values.head()),
-      $rdfType: !options.ignoreRdfType
-        ? $ensureRdfResourceType(
-            resource,
-            [NodeShape1.schema.properties.$rdfType.fromRdfType],
-            {
-              graph: options.graph,
-            },
-          )
-        : Right(true as const),
       iriProperty: $shaclPropertyFromRdf<NamedNode, $IriSchema<string>>({
         ...options,
         focusResource: resource,
@@ -1391,13 +1354,6 @@ export namespace NodeShape1 {
     NodeShape1.Identifier,
     NodeShape1
   > = (parameters) => {
-    if (!parameters.ignoreRdfType) {
-      parameters.resource.add(
-        $rdf_type,
-        NodeShape1.schema.properties.$rdfType.toRdfTypes,
-        parameters.graph,
-      );
-    }
     parameters.resource.add(
       NodeShape1.schema.properties.iriProperty.path,
       [parameters.object.iriProperty],
@@ -1620,7 +1576,6 @@ export namespace NodeShape1 {
 
   export type Json = {
     "@id": string;
-    "@type": string;
     iriProperty: string;
     langStringProperty: $LangStringJsonObject[];
     nodeProperty: $DefaultPartial.Json;
@@ -1639,7 +1594,6 @@ export namespace NodeShape1 {
     export function schema() {
       return z.object({
         "@id": z.string().min(1),
-        "@type": z.string(),
         iriProperty: z.string().min(1),
         langStringProperty: z.array($LangStringJsonObject.schema()).min(1),
         nodeProperty: $DefaultPartial.Json.schema(),
@@ -1651,11 +1605,6 @@ export namespace NodeShape1 {
   export const schema = {
     properties: {
       $identifier: { kind: "Identifier", type: { kind: "Iri" as const } },
-      $rdfType: {
-        fromRdfType: dataFactory.namedNode("http://example.com/NodeShape1"),
-        kind: "RdfType",
-        toRdfTypes: [dataFactory.namedNode("http://example.com/NodeShape1")],
-      },
       iriProperty: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://example.com/iriProperty"),
@@ -1734,15 +1683,6 @@ export namespace NodeShape2 {
           schema: NodeShape2.schema.properties.$identifier.type,
         },
       ).chain((values) => values.head()),
-      $rdfType: !options.ignoreRdfType
-        ? $ensureRdfResourceType(
-            resource,
-            [NodeShape2.schema.properties.$rdfType.fromRdfType],
-            {
-              graph: options.graph,
-            },
-          )
-        : Right(true as const),
       labels: $shaclPropertyFromRdf<
         readonly Literal[],
         $CollectionSchema<$LangStringSchema>
@@ -1762,13 +1702,6 @@ export namespace NodeShape2 {
     NodeShape2.Identifier,
     NodeShape2
   > = (parameters) => {
-    if (!parameters.ignoreRdfType) {
-      parameters.resource.add(
-        $rdf_type,
-        NodeShape2.schema.properties.$rdfType.toRdfTypes,
-        parameters.graph,
-      );
-    }
     parameters.resource.add(
       NodeShape2.schema.properties.labels.path,
       parameters.object.labels.flatMap((item) => [item]),
@@ -1895,11 +1828,7 @@ export namespace NodeShape2 {
   > = (object): object is NodeShape2.Discriminated =>
     object.$type === "NodeShape2";
 
-  export type Json = {
-    "@id": string;
-    "@type": string;
-    labels?: $LangStringJsonObject[];
-  };
+  export type Json = { "@id": string; labels?: $LangStringJsonObject[] };
 
   export namespace Json {
     export function parse(json: unknown): Either<Error, Json> {
@@ -1913,7 +1842,6 @@ export namespace NodeShape2 {
     export function schema() {
       return z.object({
         "@id": z.string().min(1),
-        "@type": z.string(),
         labels: z.array($LangStringJsonObject.schema()).optional(),
       }) satisfies z.ZodType<Json>;
     }
@@ -1924,11 +1852,6 @@ export namespace NodeShape2 {
       $identifier: {
         kind: "Identifier",
         type: { kind: "Identifier" as const },
-      },
-      $rdfType: {
-        fromRdfType: dataFactory.namedNode("http://example.com/NodeShape2"),
-        kind: "RdfType",
-        toRdfTypes: [dataFactory.namedNode("http://example.com/NodeShape2")],
       },
       labels: {
         kind: "Shacl",
@@ -2152,7 +2075,7 @@ export class $RdfjsDatasetObjectSet implements $ObjectSet {
       {
         filter: NodeShape1.filter,
         fromRdfResource: NodeShape1.fromRdfResource,
-        fromRdfTypes: [NodeShape1.schema.properties.$rdfType.fromRdfType],
+        fromRdfTypes: [],
       },
       query,
     );
@@ -2224,7 +2147,7 @@ export class $RdfjsDatasetObjectSet implements $ObjectSet {
       {
         filter: NodeShape2.filter,
         fromRdfResource: NodeShape2.fromRdfResource,
-        fromRdfTypes: [NodeShape2.schema.properties.$rdfType.fromRdfType],
+        fromRdfTypes: [],
       },
       query,
     );

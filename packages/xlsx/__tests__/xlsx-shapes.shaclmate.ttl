@@ -6,7 +6,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 :NodeShape1
-    a rdfs:Class, sh:NodeShape ;
+    a sh:NodeShape ;
     sh:nodeKind sh:IRI ;
     sh:property [
         sh:maxCount 1 ;
@@ -30,7 +30,7 @@
     ] .
 
 :NodeShape2
-    a rdfs:Class, sh:NodeShape ;
+    a sh:NodeShape ;
     sh:property [
         sh:datatype rdf:langString ;
         sh:name "labels" ;
