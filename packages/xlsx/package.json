@@ -1,12 +1,12 @@
 {
   "dependencies": {
-    "@rdfx/collection": "0.0.59",
-    "@rdfx/literal": "0.0.59",
     "@rdfx/logger": "0.0.59",
     "@rdfx/resource": "0.0.59",
     "@rdfjs/namespace": "~2.0.1",
+    "@rdfjs/prefix-map": "~0.1.2",
     "@rdfjs/types": "~2.0.1",
     "@types/rdfjs__namespace": "~2.0.10",
+    "@types/rdfjs__prefix-map": "~0.1.5",
     "fast-formula-parser": "1.0.19",
     "js-sha256": "~0.11.1",
     "purify-ts": "~2.1.4",
@@ -15,7 +15,8 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@shaclmate/cli": "4.0.96",
+    "@rdfx/collection": "0.0.59",
+    "@shaclmate/cli": "4.0.98",
     "@types/node": "^24",
     "libreoffice-convert": "~1.8.1",
     "zod": "~4.1.12"

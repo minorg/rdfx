@@ -7,7 +7,7 @@ import type { CompilerOptions } from "typescript";
 
 const VERSION = "0.0.59";
 
-const shaclmateVersion = "4.0.96";
+const shaclmateVersion = "4.0.98";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
@@ -383,8 +383,10 @@ const workspaces = {
       dependencies: {
         external: [
           "@rdfjs/namespace",
+          "@rdfjs/prefix-map",
           "@rdfjs/types",
           "@types/rdfjs__namespace",
+          "@types/rdfjs__prefix-map",
           "fast-formula-parser",
           "js-sha256",
           "purify-ts",
@@ -392,7 +394,7 @@ const workspaces = {
           "typescript-memoize",
           "xlsx",
         ],
-        internal: ["collection", "literal", "logger", "resource"],
+        internal: ["logger", "resource"],
       },
       devDependencies: {
         external: [
@@ -401,6 +403,7 @@ const workspaces = {
           "libreoffice-convert",
           "zod",
         ],
+        internal: ["collection"],
       },
     },
   } satisfies Record<PackageName, Workspace>,
