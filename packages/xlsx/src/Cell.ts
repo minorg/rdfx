@@ -184,7 +184,7 @@ export class Cell {
       this.worksheet.workbook
         .cell(dependencyCellAddress)
         .ifJust((dependency) => {
-          if (dependency.kind === "Formula") {
+          if (dependency.formula.isJust()) {
             resolvedDependencyHashes.push(
               dependency.hashRecursive(visitedCellAddresses),
             );
