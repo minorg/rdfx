@@ -61,7 +61,7 @@ function succeed(
   };
 }
 
-function termArrayToString(termArray: RDF.Term[]): string {
+export function termArrayToString(termArray: RDF.Term[]): string {
   return `[ ${termArray.map((term) => JSON.stringify(termToString(term))).join(", ")} ]`;
 }
 

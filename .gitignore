@@ -1,5 +1,7 @@
 .turbo/
+.venv/
 .vscode/
+/test-data/xlsx/*.~lock.*
 coverage/
 dist/
 node_modules/

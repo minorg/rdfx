@@ -5,7 +5,7 @@ import { datasetFactory, PrefixMap } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { describe, expect, it } from "vitest";
 import { RdfFile } from "../src/RdfFile.js";
-import { testDataDirPath } from "./paths.js";
+import { testDataDirectoryPath } from "./paths.js";
 import "@rdfx/testing";
 import {
   type RdfFormat,
@@ -38,8 +38,8 @@ describe("RdfFile", () => {
   });
 
   describe("parse", async () => {
-    for (const fileName of await fs.readdir(testDataDirPath)) {
-      const rdfFilePath = path.resolve(testDataDirPath, fileName);
+    for (const fileName of await fs.readdir(testDataDirectoryPath)) {
+      const rdfFilePath = path.resolve(testDataDirectoryPath, fileName);
       if (fileName.startsWith("unesco-thesaurus")) {
         it(`should parse ${fileName}`, async ({ expect }) => {
           const prefixMap = new PrefixMap(undefined, { factory: dataFactory });

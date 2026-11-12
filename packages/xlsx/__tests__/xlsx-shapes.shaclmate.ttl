@@ -1,0 +1,40 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix : <http://example.com/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:NodeShape1
+    a sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
+    sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path :iriProperty
+    ], [
+        sh:datatype rdf:langString ;
+        sh:minCount 1 ;
+        sh:path :langStringProperty
+    ], [
+        shaclmate:resolve :NodeShape2 ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :nodeProperty
+    ], [
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :stringProperty
+    ] .
+
+:NodeShape2
+    a sh:NodeShape ;
+    sh:property [
+        sh:datatype rdf:langString ;
+        sh:minCount 1 ;
+        sh:name "label" ;
+        sh:path rdfs:label
+    ] .
+

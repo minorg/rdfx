@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": false,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "noUncheckedIndexedAccess": false
+  },
+  "extends": [
+    "@tsconfig/node24/tsconfig.json",
+    "@tsconfig/strictest/tsconfig.json"
+  ],
+  "include": [
+    "./**/*.ts",
+    "../src/**/*"
+  ],
+  "types": [
+    "node"
+  ]
+}

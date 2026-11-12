@@ -5,9 +5,9 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.59";
+const VERSION = "0.0.60";
 
-const shaclmateVersion = "4.0.88";
+const shaclmateVersion = "4.0.100";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
@@ -26,6 +26,7 @@ const externalDependencies = {
   "@rdfjs/term-set": "~2.0.3",
   "@rdfjs/to-ntriples": "~3.0.1",
   "@rdfjs/types": "~2.0.1",
+  "@shaclmate/cli": shaclmateVersion,
   "@shaclmate/compiler": shaclmateVersion,
   "@shaclmate/validator": shaclmateVersion,
   "@tpluscode/rdf-ns-builders": "~4.3.0",
@@ -52,8 +53,11 @@ const externalDependencies = {
   "change-case": "~5.4.4",
   "decimal.js": "~10.6.0",
   depcheck: "~1.4.7",
+  "fast-formula-parser": "1.0.19",
   housemd: "0.1.3",
   "isomorphic-git": "~1.38.3",
+  "js-sha256": "~0.11.1",
+  "libreoffice-convert": "~1.8.1",
   mime: "~4.1.0",
   n3: "~1.26.0",
   oxigraph: "0.5.8",
@@ -71,8 +75,10 @@ const externalDependencies = {
   typescript: "6.0.3",
   "typescript-memoize": "~1.1.1",
   "unbzip2-stream": "~1.4.3",
+  xlsx: "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
   vitest: vitestVersion,
   "vitest-fetch-mock": "~0.4.5",
+  zod: "~4.1.12",
 };
 
 type PackageName =
@@ -93,7 +99,8 @@ type PackageName =
   | "stream"
   | "string"
   | "testing"
-  | "tinybase";
+  | "tinybase"
+  | "xlsx";
 
 interface Tsconfig {
   compilerOptions?: CompilerOptions;
@@ -106,6 +113,9 @@ interface Tsconfig {
 
 interface Workspace {
   bin?: Record<string, string>;
+  bundleDependencies?: {
+    external?: readonly (keyof typeof externalDependencies)[];
+  };
   dependencies?: {
     external?: readonly (keyof typeof externalDependencies)[];
     internal?: readonly PackageName[];
@@ -366,6 +376,36 @@ const workspaces = {
         internal: ["collection", "data-factory"],
       },
     },
+    xlsx: {
+      bundleDependencies: {
+        external: ["xlsx"],
+      },
+      dependencies: {
+        external: [
+          "@rdfjs/namespace",
+          "@rdfjs/prefix-map",
+          "@rdfjs/types",
+          "@types/rdfjs__namespace",
+          "@types/rdfjs__prefix-map",
+          "fast-formula-parser",
+          "js-sha256",
+          "purify-ts",
+          "ts-invariant",
+          "typescript-memoize",
+          "xlsx",
+        ],
+        internal: ["logger", "resource"],
+      },
+      devDependencies: {
+        external: [
+          "@shaclmate/cli",
+          "@types/node",
+          "libreoffice-convert",
+          "zod",
+        ],
+        internal: ["collection", "testing"],
+      },
+    },
   } satisfies Record<PackageName, Workspace>,
 } as const;
 
@@ -535,6 +575,11 @@ for (const [workspacesDirectoryAny, workspaces_] of Object.entries(
               "@tsconfig/strictest/tsconfig.json",
             ],
             include: ["./**/*.ts", "../src/**/*"],
+            types: (workspace.dependencies?.external ?? [])
+              .concat(workspace.devDependencies?.external ?? [])
+              .includes("@types/node")
+              ? ["node"]
+              : undefined,
           },
           undefined,
           2,
@@ -586,7 +631,7 @@ fs.writeFileSync(
         "check:write:unsafe": "biome check --write --unsafe",
         clean: "turbo run clean",
         depcheck: "turbo run depcheck",
-        dev: "turbo run --concurrency 34 dev dev:tests",
+        dev: "turbo run --concurrency 36 dev dev:tests",
         test: "vitest run",
         "test:coverage": "vitest run --coverage",
       },

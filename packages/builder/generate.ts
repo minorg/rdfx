@@ -84,7 +84,7 @@ async function main() {
               name: "termType",
             },
           },
-          logger: console,
+          logger,
         }),
         logger,
       }).compile(shapesGraph),
