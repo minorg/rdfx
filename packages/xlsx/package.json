@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "@rdfx/logger": "0.0.59",
-    "@rdfx/resource": "0.0.59",
+    "@rdfx/logger": "0.0.60",
+    "@rdfx/resource": "0.0.60",
     "@rdfjs/namespace": "~2.0.1",
     "@rdfjs/prefix-map": "~0.1.2",
     "@rdfjs/types": "~2.0.1",
@@ -15,8 +15,8 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@rdfx/collection": "0.0.59",
-    "@rdfx/testing": "0.0.59",
+    "@rdfx/collection": "0.0.60",
+    "@rdfx/testing": "0.0.60",
     "@shaclmate/cli": "4.0.100",
     "@types/node": "^24",
     "libreoffice-convert": "~1.8.1",
@@ -45,5 +45,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.59"
+  "version": "0.0.60"
 }
