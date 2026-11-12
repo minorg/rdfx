@@ -643,6 +643,11 @@ export class $Lazy<PartialT, ResolvedT> {
   }
 }
 
+interface $LazySchema<PartialSchemaT> {
+  readonly kind: "Lazy" | "LazyOption" | "LazySet";
+  readonly partialType: PartialSchemaT;
+}
+
 const $literalFactory = new LiteralFactory({ dataFactory: dataFactory });
 
 type $LiteralFilter = Omit<$TermFilter<Literal>, "typeIn">;
@@ -1224,16 +1229,23 @@ export namespace $DefaultPartial {
     }
 
     export function schema() {
-      return z.object({ "@id": z.string().min(1) }) satisfies z.ZodType<Json>;
+      return z.union([
+        z.object({ "@id": z.string().min(1) }),
+        z
+          .string()
+          .min(1)
+          .transform((id) => ({ "@id": id })),
+      ]) satisfies z.ZodType<Json, Json | string>;
     }
   }
 
   export const schema = {
+    kind: "Object",
     properties: {
       $identifier: {
         kind: "Identifier",
-        type: { kind: "Identifier" as const },
-      },
+        type: { kind: "Identifier" } as const,
+      } as const,
     },
   } as const;
 
@@ -1310,7 +1322,7 @@ export namespace NodeShape1 {
       }),
       nodeProperty: $shaclPropertyFromRdf<
         $Lazy<$DefaultPartial, NodeShape2>,
-        { kind: "Lazy"; partialType: $DefaultPartial.Schema }
+        $LazySchema<$DefaultPartial.Schema>
       >({
         ...options,
         focusResource: resource,
@@ -1603,39 +1615,43 @@ export namespace NodeShape1 {
   }
 
   export const schema = {
+    kind: "Object",
     properties: {
-      $identifier: { kind: "Identifier", type: { kind: "Iri" as const } },
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Iri" } as const,
+      } as const,
       iriProperty: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://example.com/iriProperty"),
-        type: { kind: "Iri" as const },
-      },
+        type: { kind: "Iri" } as const,
+      } as const,
       langStringProperty: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://example.com/langStringProperty"),
         type: {
-          kind: "Set" as const,
-          itemType: { kind: "LangString" as const },
+          itemType: { kind: "LangString" } as const,
+          kind: "Set",
           minCount: 1,
-        },
-      },
+        } as const,
+      } as const,
       nodeProperty: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://example.com/nodeProperty"),
         get type() {
           return {
-            kind: "Lazy" as const,
+            kind: "Lazy",
             get partialType() {
               return $DefaultPartial.schema;
             },
-          };
+          } as const;
         },
-      },
+      } as const,
       stringProperty: {
         kind: "Shacl",
         path: dataFactory.namedNode("http://example.com/stringProperty"),
-        type: { kind: "String" as const, datatype: $xsd_string },
-      },
+        type: { datatype: $xsd_string, kind: "String" } as const,
+      } as const,
     },
   } as const;
 
@@ -1848,19 +1864,20 @@ export namespace NodeShape2 {
   }
 
   export const schema = {
+    kind: "Object",
     properties: {
       $identifier: {
         kind: "Identifier",
-        type: { kind: "Identifier" as const },
-      },
+        type: { kind: "Identifier" } as const,
+      } as const,
       labels: {
         kind: "Shacl",
         path: $rdfs_label,
         type: {
-          kind: "Set" as const,
-          itemType: { kind: "LangString" as const },
-        },
-      },
+          itemType: { kind: "LangString" } as const,
+          kind: "Set",
+        } as const,
+      } as const,
     },
   } as const;
 
