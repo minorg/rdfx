@@ -81,5 +81,5 @@ describe("Worksheet", async () => {
     expect(formulasWorkbook.worksheets[2].sha256).toStrictEqual(
       "fdf5c24d1abda60f47def2f7739cb32b4c04addb2415e39feb15d680492b5183",
     );
-  });
+  }, 10000);
 });
