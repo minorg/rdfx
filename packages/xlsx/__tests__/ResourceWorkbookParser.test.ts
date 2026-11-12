@@ -13,14 +13,16 @@ import {
   NodeShape2,
 } from "./xlsx-shapes.shaclmate.js";
 import "@rdfx/testing";
+import { Maybe } from "purify-ts";
 
 describe("ResourceWorkbookParser", async () => {
   const ex = namespace("http://example.com/");
   const sut = new ResourceWorkbookParser({
     dataFactory,
     datasetFactory,
-    defaultNamespace: ex,
+    defaultNamespace: Maybe.of(ex),
     logger,
+    prefixMap: Maybe.empty(),
     resourceRecordParsersByWorksheetName: {
       NodeShape1: (parameters) =>
         new JsonResourceRecordParser(NodeShape1, parameters),
@@ -44,8 +46,12 @@ describe("ResourceWorkbookParser", async () => {
     });
 
     it("counts", ({ expect }) => {
-      expect(parsedObjectSet.nodeShape1Count()).toStrictEqual(1);
-      expect(parsedObjectSet.nodeShape2Count()).toStrictEqual(1);
+      expect(
+        parsedObjectSet.nodeShape1CountSync().unsafeCoerce(),
+      ).toStrictEqual(1);
+      expect(
+        parsedObjectSet.nodeShape2CountSync().unsafeCoerce(),
+      ).toStrictEqual(1);
     });
 
     it("nodeShape1Id1", async ({ expect }) => {
@@ -64,11 +70,11 @@ describe("ResourceWorkbookParser", async () => {
       const nodeShape2Id1 = (
         await nodeShape1Id1.nodeProperty.resolve()
       ).unsafeCoerce();
-      expect(nodeShape2Id1.labels).toEqualRdfTermSet([
+      expect(nodeShape2Id1.label).toEqualRdfTermSet([
         dataFactory.literal("enlabel1", "en"),
         dataFactory.literal("frlabel1", "fr"),
       ]);
-      expect(nodeShape1Id1.stringProperty);
+      expect(nodeShape1Id1.stringProperty).toStrictEqual("string1");
     });
   });
 });

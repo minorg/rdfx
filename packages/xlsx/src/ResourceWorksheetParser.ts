@@ -36,9 +36,9 @@ export class ResourceWorksheetParser extends AbstractParser {
         ? this.resourceRecordParser({
             dataFactory: this.dataFactory,
             datasetFactory: this.datasetFactory,
-            defaultNamespace: this.defaultNamespace.extract(),
+            defaultNamespace: this.defaultNamespace,
             logger: this.logger,
-            prefixMap: this.prefixMap.extract(),
+            prefixMap: this.prefixMap,
           })
         : this.resourceRecordParser;
     let worksheetQuads: Quad[] = [];

@@ -33,7 +33,8 @@
     a sh:NodeShape ;
     sh:property [
         sh:datatype rdf:langString ;
-        sh:name "labels" ;
+        sh:minCount 1 ;
+        sh:name "label" ;
         sh:path rdfs:label
     ] .
 

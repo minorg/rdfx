@@ -40,7 +40,9 @@ export class ResourceWorkbookParser extends AbstractParser {
       const worksheetDatasetEither = new ResourceWorksheetParser({
         dataFactory: this.dataFactory,
         datasetFactory: this.datasetFactory,
+        defaultNamespace: this.defaultNamespace,
         logger: this.logger,
+        prefixMap: this.prefixMap,
         resourceRecordParser,
       }).parse(worksheet);
       if (worksheetDatasetEither.isLeft()) {

@@ -1682,7 +1682,7 @@ export namespace NodeShape1 {
 
 export type NodeShape2 = {
   readonly $identifier: () => NodeShape2.Identifier;
-  readonly labels: readonly Literal[];
+  readonly label: readonly Literal[];
 };
 
 export namespace NodeShape2 {
@@ -1699,14 +1699,14 @@ export namespace NodeShape2 {
           schema: NodeShape2.schema.properties.$identifier.type,
         },
       ).chain((values) => values.head()),
-      labels: $shaclPropertyFromRdf<
+      label: $shaclPropertyFromRdf<
         readonly Literal[],
         $CollectionSchema<$LangStringSchema>
       >({
         ...options,
         focusResource: resource,
         ignoreRdfType: true,
-        propertySchema: NodeShape2.schema.properties.labels,
+        propertySchema: NodeShape2.schema.properties.label,
         typeFromRdfResourceValues: $setFromRdfResourceValues<
           Literal,
           $LangStringSchema
@@ -1719,8 +1719,8 @@ export namespace NodeShape2 {
     NodeShape2
   > = (parameters) => {
     parameters.resource.add(
-      NodeShape2.schema.properties.labels.path,
-      parameters.object.labels.flatMap((item) => [item]),
+      NodeShape2.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
     return parameters.resource;
@@ -1733,20 +1733,20 @@ export namespace NodeShape2 {
   export const create: <
     $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
   >(
-    parameters?: NodeShape2.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, NodeShape2.Discriminated> = (parameters = {}) =>
+    parameters: NodeShape2.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, NodeShape2.Discriminated> = (parameters) =>
     $sequenceRecord({
       $identifier: $convertToIdentifierProperty(
         parameters.$identifier,
         parameters.$defaultNamespace,
       ),
       $type: Right("NodeShape2" as const),
-      labels: $convertToScalarSet($convertToLangString)(
-        parameters.labels,
+      label: $convertToScalarSet($convertToLangString)(
+        parameters.label,
         parameters.$defaultNamespace,
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          NodeShape2.schema.properties.labels.type,
+          NodeShape2.schema.properties.label.type,
           value,
         ),
       ),
@@ -1763,13 +1763,13 @@ export namespace NodeShape2 {
       | BlankNode
       | NamedNode
       | (keyof $DefaultNamespaceT & string);
-    readonly labels?: Literal | readonly Literal[];
+    readonly label: Literal | readonly Literal[];
   };
 
   export const createUnsafe: <
     $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
   >(
-    parameters?: NodeShape2.CreateParameters<$DefaultNamespaceT>,
+    parameters: NodeShape2.CreateParameters<$DefaultNamespaceT>,
   ) => NodeShape2.Discriminated = (parameters) =>
     create(parameters).unsafeCoerce();
 
@@ -1786,10 +1786,10 @@ export namespace NodeShape2 {
       return false;
     }
     if (
-      filter.labels !== undefined &&
+      filter.label !== undefined &&
       !$filterArray<Literal, $LiteralFilter>($filterLiteral)(
-        filter.labels,
-        value.labels,
+        filter.label,
+        value.label,
       )
     ) {
       return false;
@@ -1799,7 +1799,7 @@ export namespace NodeShape2 {
 
   export type Filter = {
     readonly $identifier?: $IdentifierFilter;
-    readonly labels?: $CollectionFilter<$LiteralFilter>;
+    readonly label?: $CollectionFilter<$LiteralFilter>;
   };
 
   export const fromJson: $FromJsonFunction<
@@ -1812,11 +1812,11 @@ export namespace NodeShape2 {
         ...options,
         schema: NodeShape2.schema.properties.$identifier.type,
       }),
-      labels: $arrayFromJsonArray($langStringFromJsonObject)(
-        jsonObject["labels"],
+      label: $arrayFromJsonArray($langStringFromJsonObject)(
+        jsonObject["label"],
         {
           ...options,
-          schema: NodeShape2.schema.properties.labels.type,
+          schema: NodeShape2.schema.properties.label.type,
         },
       ),
     }).chain(NodeShape2.create);
@@ -1844,7 +1844,7 @@ export namespace NodeShape2 {
   > = (object): object is NodeShape2.Discriminated =>
     object.$type === "NodeShape2";
 
-  export type Json = { "@id": string; labels?: $LangStringJsonObject[] };
+  export type Json = { "@id": string; label: $LangStringJsonObject[] };
 
   export namespace Json {
     export function parse(json: unknown): Either<Error, Json> {
@@ -1858,7 +1858,7 @@ export namespace NodeShape2 {
     export function schema() {
       return z.object({
         "@id": z.string().min(1),
-        labels: z.array($LangStringJsonObject.schema()).optional(),
+        label: z.array($LangStringJsonObject.schema()).min(1),
       }) satisfies z.ZodType<Json>;
     }
   }
@@ -1870,12 +1870,13 @@ export namespace NodeShape2 {
         kind: "Identifier",
         type: { kind: "Identifier" } as const,
       } as const,
-      labels: {
+      label: {
         kind: "Shacl",
         path: $rdfs_label,
         type: {
           itemType: { kind: "LangString" } as const,
           kind: "Set",
+          minCount: 1,
         } as const,
       } as const,
     },

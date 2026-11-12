@@ -3,7 +3,7 @@ import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { DataFactory, DatasetCoreFactory } from "@rdfjs/types";
 
 import type { Logger } from "@rdfx/logger";
-import { Maybe } from "purify-ts";
+import type { Maybe } from "purify-ts";
 
 export abstract class AbstractParser {
   protected readonly dataFactory: DataFactory;
@@ -21,14 +21,14 @@ export abstract class AbstractParser {
   }: {
     dataFactory: DataFactory;
     datasetFactory: DatasetCoreFactory;
-    defaultNamespace?: NamespaceBuilder;
+    defaultNamespace: Maybe<NamespaceBuilder>;
     logger: Logger;
-    prefixMap?: PrefixMap;
+    prefixMap: Maybe<PrefixMap>;
   }) {
     this.dataFactory = dataFactory;
     this.datasetFactory = datasetFactory;
-    this.defaultNamespace = Maybe.fromNullable(defaultNamespace);
+    this.defaultNamespace = defaultNamespace;
     this.logger = logger;
-    this.prefixMap = Maybe.fromNullable(prefixMap);
+    this.prefixMap = prefixMap;
   }
 }
