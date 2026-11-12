@@ -7,7 +7,7 @@
     "ts-invariant": "~0.10.3"
   },
   "devDependencies": {
-    "@rdfx/data-factory": "0.0.61"
+    "@rdfx/data-factory": "0.0.62"
   },
   "files": [
     "LICENSE",
@@ -32,5 +32,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.61"
+  "version": "0.0.62"
 }
