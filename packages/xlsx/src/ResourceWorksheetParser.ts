@@ -3,7 +3,7 @@ import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Quad } from "@rdfjs/types";
 import { Either, Left, Maybe } from "purify-ts";
 import { invariant } from "ts-invariant";
-import { AbstractParser } from "./AbstractParser.js";
+import { AbstractResourceParser } from "./AbstractResourceParser.js";
 import { Cell } from "./Cell.js";
 import { LangString } from "./LangString.js";
 import type { ResourceRecord } from "./ResourceRecord.js";
@@ -16,7 +16,7 @@ interface ColumnMetadata {
   readonly property: string;
 }
 
-export class ResourceWorksheetParser extends AbstractParser {
+export class ResourceWorksheetParser extends AbstractResourceParser {
   private readonly resourceRecordParser:
     | ResourceRecordParser
     | ResourceRecordParserFactory;
@@ -26,7 +26,7 @@ export class ResourceWorksheetParser extends AbstractParser {
     ...superParameters
   }: {
     resourceRecordParser: ResourceRecordParser | ResourceRecordParserFactory;
-  } & ConstructorParameters<typeof AbstractParser>[0]) {
+  } & ConstructorParameters<typeof AbstractResourceParser>[0]) {
     super(superParameters);
     this.resourceRecordParser = resourceRecordParser;
   }

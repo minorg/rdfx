@@ -3,7 +3,7 @@ import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Quad } from "@rdfjs/types";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import type { Either } from "purify-ts";
-import { AbstractParser } from "./AbstractParser.js";
+import { AbstractResourceParser } from "./AbstractResourceParser.js";
 import type { ResourceRecord } from "./ResourceRecord.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 
@@ -35,7 +35,7 @@ export class JsonResourceRecordParser<
     IntermediateObjectT extends object,
     JsonObjectT extends object,
   >
-  extends AbstractParser
+  extends AbstractResourceParser
   implements ResourceRecordParser
 {
   private readonly intermediateObjectFunctions: IntermediateObjectFunctions<
@@ -48,7 +48,7 @@ export class JsonResourceRecordParser<
       IntermediateObjectT,
       JsonObjectT
     >,
-    superParameters: ConstructorParameters<typeof AbstractParser>[0],
+    superParameters: ConstructorParameters<typeof AbstractResourceParser>[0],
   ) {
     super(superParameters);
     this.intermediateObjectFunctions = intermediateObjectFunctions;

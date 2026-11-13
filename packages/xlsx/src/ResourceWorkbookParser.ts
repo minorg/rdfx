@@ -2,13 +2,13 @@ import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Quad } from "@rdfjs/types";
 import { Either } from "purify-ts";
-import { AbstractParser } from "./AbstractParser.js";
+import { AbstractResourceParser } from "./AbstractResourceParser.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 import type { ResourceRecordParserFactory } from "./ResourceRecordParserFactory.js";
 import { ResourceWorksheetParser } from "./ResourceWorksheetParser.js";
 import type { Workbook } from "./Workbook.js";
 
-export class ResourceWorkbookParser extends AbstractParser {
+export class ResourceWorkbookParser extends AbstractResourceParser {
   private readonly resourceRecordParsersByWorksheetName: Readonly<
     Record<string, ResourceRecordParser | ResourceRecordParserFactory>
   >;
@@ -20,7 +20,7 @@ export class ResourceWorkbookParser extends AbstractParser {
     resourceRecordParsersByWorksheetName: Readonly<
       Record<string, ResourceRecordParser | ResourceRecordParserFactory>
     >;
-  } & ConstructorParameters<typeof AbstractParser>[0]) {
+  } & ConstructorParameters<typeof AbstractResourceParser>[0]) {
     super(superParameters);
     this.resourceRecordParsersByWorksheetName =
       resourceRecordParsersByWorksheetName;

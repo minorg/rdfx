@@ -2,7 +2,7 @@ import type { DataFactory, DatasetCoreFactory } from "@rdfjs/types";
 
 import type { Logger } from "@rdfx/logger";
 
-export abstract class AbstractParser {
+export abstract class AbstractResourceParser {
   protected readonly dataFactory: DataFactory;
   protected readonly datasetFactory: DatasetCoreFactory;
   protected readonly logger: Logger;
