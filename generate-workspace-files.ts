@@ -403,6 +403,7 @@ const workspaces = {
         external: [
           "@shaclmate/cli",
           "@types/node",
+          "decimal.js",
           "libreoffice-convert",
           "zod",
         ],
