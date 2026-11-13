@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "@rdfjs/namespace": "~2.0.1",
     "@rdfjs/prefix-map": "~0.1.2",
     "@rdfjs/types": "~2.0.1",
+    "@types/rdfjs__namespace": "~2.0.10",
     "@types/rdfjs__prefix-map": "~0.1.5",
     "purify-ts": "~2.1.4",
     "ts-invariant": "~0.10.3"

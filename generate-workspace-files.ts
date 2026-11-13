@@ -189,8 +189,10 @@ const workspaces = {
     curie: {
       dependencies: {
         external: [
+          "@rdfjs/namespace",
           "@rdfjs/prefix-map",
           "@rdfjs/types",
+          "@types/rdfjs__namespace",
           "@types/rdfjs__prefix-map",
           "purify-ts",
           "ts-invariant",

@@ -34,21 +34,6 @@ export class Curie implements NamedNode {
     return this.value === other.value; // Allow a Curie to equal a NamedNode
   }
 
-  static fromIri(
-    iri: NamedNode,
-    { prefixMap }: { prefixMap: PrefixMap },
-  ): Maybe<Curie> {
-    return Maybe.fromNullable(prefixMap.shrink(iri)?.value).map((value) => {
-      const split = value.split(":", 2);
-      invariant(split.length === 2);
-      return new Curie({
-        prefix: split[0],
-        reference: split[1],
-        value: iri.value,
-      });
-    });
-  }
-
   toString(): string {
     return `${this.prefix}:${this.reference}`;
   }
