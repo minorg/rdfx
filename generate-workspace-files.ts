@@ -7,7 +7,7 @@ import type { CompilerOptions } from "typescript";
 
 const VERSION = "0.0.63";
 
-const shaclmateVersion = "4.0.100";
+const shaclmateVersion = "4.0.102";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
