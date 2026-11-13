@@ -41,6 +41,12 @@ export function validateAbsoluteIri(
     );
   }
 
+  if (!absoluteIri.isWellFormed()) {
+    return Left(
+      new Error(`ill-formed UTF-16 (lone surrogate) in IRI: ${absoluteIri}`),
+    );
+  }
+
   if (BAD_PERCENT_ENCODING.test(absoluteIri)) {
     return Left(new Error(`malformed percent-encoding in IRI: ${absoluteIri}`));
   }

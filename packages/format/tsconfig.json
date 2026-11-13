@@ -6,14 +6,15 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "lib": [
-      "ES2023"
+      "ES2024"
     ],
     "module": "NodeNext",
     "noUncheckedIndexedAccess": false,
     "outDir": "dist",
     "rootDir": "src",
     "sourceMap": true,
-    "target": "ES2023"
+    "target": "ES2023",
+    "types": []
   },
   "extends": [
     "@tsconfig/strictest/tsconfig.json"

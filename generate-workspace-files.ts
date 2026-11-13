@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.62";
+const VERSION = "0.0.63";
 
 const shaclmateVersion = "4.0.100";
 const vitestVersion = "~4.1.5";
@@ -138,13 +138,14 @@ const tsconfigDefault: Tsconfig = {
     exactOptionalPropertyTypes: false,
     experimentalDecorators: true,
     forceConsistentCasingInFileNames: true,
-    lib: ["ES2023"],
+    lib: ["ES2024"],
     module: "NodeNext" as any,
     noUncheckedIndexedAccess: false,
     outDir: "dist",
     rootDir: "src",
     sourceMap: true,
     target: "ES2023" as any,
+    types: [],
   } satisfies CompilerOptions,
   extends: ["@tsconfig/strictest/tsconfig.json"],
   include: ["src/**/*.ts"],
