@@ -60,21 +60,29 @@ export class JsonResourceRecordParser<
    * Takes dataFactory, et al. parameters here rather than in the constructor in order to simplify construction.
    */
   parse(resourceRecord: ResourceRecord): Either<Error, readonly Quad[]> {
-    return this.intermediateObjectFunctions.Json.parse(resourceRecord).chain(
-      (jsonObject) =>
-        this.intermediateObjectFunctions
-          .fromJson(jsonObject, {
-            defaultNamespace: this.defaultNamespace.extract(),
-            prefixMap: this.prefixMap.extract(),
-          })
-          .map((object) => [
-            ...this.intermediateObjectFunctions.toRdfResource(object, {
-              resourceSet: new ResourceSet({
-                dataFactory: this.dataFactory,
-                dataset: this.datasetFactory.dataset(),
-              }),
-            }).dataset,
-          ]),
+    return this.intermediateObjectFunctions.Json.parse(
+      Object.fromEntries(
+        Object.entries(resourceRecord).map(([key, value]) => {
+          if (value instanceof Date) {
+            value = value.toISOString();
+          }
+          return [key, value];
+        }),
+      ),
+    ).chain((jsonObject) =>
+      this.intermediateObjectFunctions
+        .fromJson(jsonObject, {
+          defaultNamespace: this.defaultNamespace.extract(),
+          prefixMap: this.prefixMap.extract(),
+        })
+        .map((object) => [
+          ...this.intermediateObjectFunctions.toRdfResource(object, {
+            resourceSet: new ResourceSet({
+              dataFactory: this.dataFactory,
+              dataset: this.datasetFactory.dataset(),
+            }),
+          }).dataset,
+        ]),
     );
   }
 }

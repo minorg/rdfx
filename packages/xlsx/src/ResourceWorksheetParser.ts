@@ -1,6 +1,8 @@
 import type { Quad } from "@rdfjs/types";
+
 import { Either, Left, Maybe } from "purify-ts";
 import { invariant } from "ts-invariant";
+
 import { AbstractParser } from "./AbstractParser.js";
 import { Cell } from "./Cell.js";
 import { LangString } from "./LangString.js";
@@ -55,69 +57,18 @@ export class ResourceWorksheetParser extends AbstractParser {
       }
 
       invariant(headerRow);
-      const resourceRecord: ResourceRecord = {};
-      for (const [worksheetColumnI, worksheetCell] of worksheetRow.entries()) {
-        const logContext = {
-          worksheet: {
-            column: worksheetColumnI,
-            name: worksheet.name,
-            row: worksheetRowI,
-          },
-        };
 
-        if (worksheetColumnI >= headerRow.length) {
-          this.logger.warn(logContext, "more columns than header row");
-          continue;
-        }
-        const columnMetadata = headerRow[worksheetColumnI];
-
-        if (worksheetCell === undefined) {
-          this.logger.debug(logContext, "undefined cell");
-          continue;
-        }
-
-        let newValue: ResourceRecord.Value;
-        if (worksheetCell.hyperlink.isJust()) {
-          newValue = worksheetCell.hyperlink.extract()!.target;
-        } else {
-          const worksheetCellValue = worksheetCell.value.extract();
-          if (worksheetCellValue === undefined) {
-            this.logger.debug(logContext, "cell without value");
-            continue;
-          }
-          if (worksheetCellValue instanceof Cell.Error) {
-            this.logger.debug(logContext, "error cell");
-            continue;
-          }
-          newValue = worksheetCellValue;
-        }
-
-        if (columnMetadata.language.isJust()) {
-          newValue = new LangString({
-            language: columnMetadata.language.extract()!,
-            value:
-              newValue instanceof Date
-                ? newValue.toISOString()
-                : newValue.toString(),
-          });
-        }
-
-        const existingValue = resourceRecord[columnMetadata.property];
-        if (existingValue === undefined) {
-          resourceRecord[columnMetadata.property] = newValue;
-        } else if (Array.isArray(existingValue)) {
-          existingValue.push(newValue);
-        } else {
-          resourceRecord[columnMetadata.property] = [existingValue, newValue];
-        }
+      const worksheetRowQuadsEither = this.parseResourceRow({
+        headerRow,
+        worksheet,
+        worksheetRow,
+        worksheetRowI,
+      }).chain((resourceRecord) => resourceRecordParser.parse(resourceRecord));
+      if (worksheetRowQuadsEither.isLeft()) {
+        return worksheetRowQuadsEither;
       }
-
-      const rowQuadsEither = resourceRecordParser.parse(resourceRecord);
-      if (rowQuadsEither.isLeft()) {
-        return rowQuadsEither;
-      }
-      rowQuadsEither.ifRight((rowQuads) => {
-        worksheetQuads = worksheetQuads.concat(rowQuads);
+      worksheetRowQuadsEither.ifRight((worksheetRowQuads) => {
+        worksheetQuads = worksheetQuads.concat(worksheetRowQuads);
       });
     }
     return Either.of(worksheetQuads);
@@ -125,10 +76,10 @@ export class ResourceWorksheetParser extends AbstractParser {
 
   private parseHeaderRow(
     worksheet: Worksheet,
-    row: Worksheet.Row,
+    worksheetRow: Worksheet.Row,
   ): Either<Error, readonly ColumnMetadata[]> {
-    const parsed: ColumnMetadata[] = [];
-    for (const [columnI, cell] of row.entries()) {
+    const headerRow: ColumnMetadata[] = [];
+    for (const [columnI, cell] of worksheetRow.entries()) {
       if (cell === undefined) {
         return Left(
           new Error(
@@ -175,11 +126,82 @@ export class ResourceWorksheetParser extends AbstractParser {
           );
         }
       }
-      parsed.push({
+      headerRow.push({
         language: Maybe.fromNullable(language),
         property,
       });
     }
-    return Either.of(parsed);
+    return Either.of(headerRow);
+  }
+
+  private parseResourceRow({
+    headerRow,
+    worksheet,
+    worksheetRow,
+    worksheetRowI,
+  }: {
+    headerRow: readonly ColumnMetadata[];
+    worksheet: Worksheet;
+    worksheetRow: Worksheet.Row;
+    worksheetRowI: number;
+  }): Either<Error, ResourceRecord> {
+    const resourceRecord: ResourceRecord = {};
+    for (const [worksheetColumnI, worksheetCell] of worksheetRow.entries()) {
+      const logContext = {
+        worksheet: {
+          column: worksheetColumnI,
+          name: worksheet.name,
+          row: worksheetRowI,
+        },
+      };
+
+      if (worksheetColumnI >= headerRow.length) {
+        this.logger.warn(logContext, "more columns than header row");
+        continue;
+      }
+      const columnMetadata = headerRow[worksheetColumnI];
+
+      if (worksheetCell === undefined) {
+        this.logger.debug(logContext, "undefined cell");
+        continue;
+      }
+
+      let newValue: ResourceRecord.Value;
+      if (worksheetCell.hyperlink.isJust()) {
+        newValue = worksheetCell.hyperlink.extract()!.target;
+      } else {
+        const worksheetCellValue = worksheetCell.value.extract();
+        if (worksheetCellValue === undefined) {
+          this.logger.debug(logContext, "cell without value");
+          continue;
+        }
+        if (worksheetCellValue instanceof Cell.Error) {
+          this.logger.debug(logContext, "error cell");
+          continue;
+        }
+        newValue = worksheetCellValue;
+      }
+
+      if (columnMetadata.language.isJust()) {
+        newValue = new LangString({
+          language: columnMetadata.language.extract()!,
+          value:
+            newValue instanceof Date
+              ? newValue.toISOString()
+              : newValue.toString(),
+        });
+      }
+
+      const existingValue = resourceRecord[columnMetadata.property];
+      if (existingValue === undefined) {
+        resourceRecord[columnMetadata.property] = newValue;
+      } else if (Array.isArray(existingValue)) {
+        existingValue.push(newValue);
+      } else {
+        resourceRecord[columnMetadata.property] = [existingValue, newValue];
+      }
+    }
+
+    return Either.of(resourceRecord);
   }
 }

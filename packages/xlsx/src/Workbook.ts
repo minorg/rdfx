@@ -78,9 +78,9 @@ export class Workbook {
     return Either.encase(() => {
       return new Workbook({
         delegate: xlsx.read(data, {
+          cellDates: true,
           cellFormula: true,
           cellNF: true,
-          cellDates: true,
           sheetStubs: true,
           WTF: true,
         }),

@@ -7,6 +7,7 @@ import type {
   Variable,
 } from "@rdfjs/types";
 import { datasetFactory, type PrefixMap } from "@rdfx/collection";
+import { expandIri } from "@rdfx/curie";
 import dataFactory from "@rdfx/data-factory";
 import { LiteralFactory } from "@rdfx/literal";
 import {
@@ -15,6 +16,7 @@ import {
   ResourceSet,
 } from "@rdfx/resource";
 import { NTriplesIdentifier } from "@rdfx/string";
+import { Decimal as BigDecimal } from "decimal.js";
 import { Either, Left, Right } from "purify-ts";
 import { z } from "zod";
 
@@ -64,11 +66,119 @@ function $arrayFromJsonArray<ItemJsonValueT, ItemT, ItemSchemaT>(
   };
 }
 
+const $bigDecimalFromJsonString: $FromJsonFunction<
+  string,
+  BigDecimal,
+  $NumericSchema<BigDecimal>
+> = (jsonValue) => Either.encase(() => new BigDecimal(jsonValue));
+
+const $bigDecimalFromRdfResourceValues: $FromRdfResourceValuesFunction<
+  BigDecimal,
+  $NumericSchema<BigDecimal>
+> = (values, options) =>
+  $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) => value.toBigDecimal(options.schema.in)),
+  );
+
+const $bigDecimalJsonSchema = z
+  .union([z.string(), z.number()])
+  .transform((v, ctx) => {
+    try {
+      const d = new BigDecimal(v);
+      if (!d.isFinite()) {
+        throw new Error("not finite");
+      }
+      return d.toFixed();
+    } catch {
+      ctx.issues.push({ code: "custom", message: "Invalid decimal", input: v });
+      return z.NEVER;
+    }
+  }) as unknown as z.ZodType<string, string>;
+
+/**
+ * Create a Literal from a BigDecimal.
+ */
+function $bigDecimalLiteral(value: BigDecimal): Literal {
+  return dataFactory.literal(value.toFixed(), $xsd_decimal);
+}
+
+function $bigIntFromJsonString<
+  JsonValueT extends string,
+  BigIntT extends bigint,
+>(
+  jsonValue: JsonValueT,
+  options: Parameters<
+    $FromJsonFunction<string, BigIntT, $NumericSchema<BigIntT>>
+  >[1],
+): Either<Error, BigIntT> {
+  const { schema } = options;
+  return Either.encase(() => BigInt(jsonValue) as BigIntT).chain((value) =>
+    $constrainPrimitive<BigIntT, bigint>(value, schema.in),
+  ) as Either<Error, BigIntT>;
+}
+
+function $bigIntFromRdfResourceValues<BigIntT extends bigint>(
+  values: Resource.Values,
+  options: Parameters<
+    $FromRdfResourceValuesFunction<BigIntT, $NumericSchema<BigIntT>>
+  >[1],
+): Either<Error, Resource.Values<BigIntT>> {
+  return $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      options.schema.in
+        ? value.toBigInt(options.schema.in)
+        : (value.toBigInt() as Either<Error, BigIntT>),
+    ),
+  );
+}
+
+const $bigIntJsonSchema = z
+  .union([z.string().regex(/^-?\d+$/), z.number().int()])
+  .transform((v) => BigInt(v).toString()) as unknown as z.ZodType<
+  string,
+  string
+>;
+
 const $blankNodeFromJsonString: $FromJsonFunction<
   string,
   BlankNode,
   undefined
 > = (jsonValue) => Right(dataFactory.blankNode(jsonValue.substring(2)));
+
+interface $BooleanFilter {
+  readonly value?: boolean;
+}
+
+function $booleanFromJsonBoolean<BooleanT extends boolean>(
+  jsonBoolean: BooleanT,
+  _options: Parameters<
+    $FromJsonFunction<BooleanT, BooleanT, $BooleanSchema<BooleanT>>
+  >[1],
+): Either<Error, BooleanT> {
+  return Either.of(jsonBoolean);
+}
+
+function $booleanFromRdfResourceValues<BooleanT extends boolean>(
+  values: Resource.Values,
+  options: Parameters<
+    $FromRdfResourceValuesFunction<BooleanT, $BooleanSchema<BooleanT>>
+  >[1],
+): Either<Error, Resource.Values<BooleanT>> {
+  return $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      options.schema.in
+        ? value.toBoolean(options.schema.in)
+        : (value.toBoolean() as Either<Error, BooleanT>),
+    ),
+  );
+}
+
+interface $BooleanSchema<BooleanT extends boolean> {
+  readonly datatype: NamedNode;
+  readonly hasValues?: readonly Literal[];
+  readonly in?: readonly BooleanT[];
+  readonly kind: "Boolean";
+}
 
 type $CollectionFilter<ItemFilterT> = ItemFilterT & {
   readonly $maxCount?: number;
@@ -98,6 +208,23 @@ function $compactRecord<KeyT extends string, ValueT extends {}>(
   );
 }
 
+function $constrainPrimitive<
+  ConstrainedT extends UnconstrainedT,
+  UnconstrainedT extends $Primitive,
+>(
+  value: UnconstrainedT,
+  in_?: readonly ConstrainedT[],
+): Either<Error, ConstrainedT | UnconstrainedT> {
+  if (in_ && !in_.some((check) => value === check)) {
+    return Left(
+      new Error(
+        `primitive ${value} does not match expected ${in_.map((_) => _.toString()).join(" | ")}`,
+      ),
+    );
+  }
+  return Either.of<Error, UnconstrainedT>(value as ConstrainedT);
+}
+
 type $ConversionFunction<
   SourceT,
   TargetT,
@@ -106,6 +233,16 @@ type $ConversionFunction<
   source: SourceT,
   defaultNamespace?: DefaultNamespaceT,
 ) => Either<Error, TargetT>;
+
+const $convertToBigDecimal: $ConversionFunction<
+  number | string | BigDecimal,
+  BigDecimal
+> = (value) => Either.encase(() => new BigDecimal(value));
+
+const $convertToBigInt: $ConversionFunction<
+  bigint | number | string,
+  bigint
+> = (value) => Either.encase(() => BigInt(value));
 
 function $convertToIdentifierProperty<
   DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
@@ -126,9 +263,10 @@ function $convertToIdentifierProperty<
       return Either.of(() => captureIdentifier);
     }
     case "string":
-      return $iriFromString(identifier, { defaultNamespace }).map(
-        (iri) => () => iri,
-      );
+      return expandIri(identifier, {
+        dataFactory: dataFactory,
+        defaultNamespace,
+      }).map((iri) => () => iri);
     case "undefined": {
       const captureIdentifier = dataFactory.blankNode();
       return Either.of(() => captureIdentifier);
@@ -146,7 +284,7 @@ function $convertToIri<
     case "object":
       return Either.of(value);
     case "string":
-      return $iriFromString(value, { defaultNamespace });
+      return expandIri(value, { dataFactory: dataFactory, defaultNamespace });
   }
 }
 
@@ -167,9 +305,10 @@ function $convertToIriIdentifierProperty<
       return Either.of(() => captureIdentifier);
     }
     case "string": {
-      return $iriFromString(identifier, { defaultNamespace }).map(
-        (iri) => () => iri,
-      );
+      return expandIri(identifier, {
+        dataFactory: dataFactory,
+        defaultNamespace,
+      }).map((iri) => () => iri);
     }
   }
 }
@@ -243,6 +382,53 @@ function $convertToScalarSet<
   };
 }
 
+interface $DateFilter {
+  readonly in?: readonly Date[];
+  readonly maxExclusive?: Date;
+  readonly maxInclusive?: Date;
+  readonly minExclusive?: Date;
+  readonly minInclusive?: Date;
+}
+
+const $dateFromJsonString: $FromJsonFunction<string, Date, $DateSchema> = (
+  jsonValue,
+) => Either.encase(() => new Date(jsonValue));
+
+const $dateFromRdfResourceValues: $FromRdfResourceValuesFunction<
+  Date,
+  $DateSchema
+> = (values, options) =>
+  $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      options.schema.in ? value.toDate(options.schema.in) : value.toDate(),
+    ),
+  );
+
+const $dateJsonSchema = z.coerce
+  .date()
+  .transform((v) => v.toISOString().slice(0, 10));
+
+interface $DateSchema {
+  readonly datatype: NamedNode;
+  readonly hasValues?: readonly Literal[];
+  readonly in?: readonly Date[];
+  readonly kind: "Date" | "DateTime";
+}
+
+const $dateTimeFromRdfResourceValues: $FromRdfResourceValuesFunction<
+  Date,
+  $DateSchema
+> = (values, options) =>
+  $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      options.schema.in
+        ? value.toDateTime(options.schema.in)
+        : value.toDateTime(),
+    ),
+  );
+
+const $dateTimeJsonSchema = z.coerce.date().transform((v) => v.toISOString());
+
 function $filterArray<ItemT, ItemFilterT>(
   filterItem: (itemFilter: ItemFilterT, item: ItemT) => boolean,
 ) {
@@ -267,6 +453,98 @@ function $filterArray<ItemT, ItemFilterT>(
     return true;
   };
 }
+
+const $filterBigDecimal: $FilterFunction<
+  $NumericFilter<BigDecimal>,
+  BigDecimal
+> = (filter, value) => {
+  if (
+    filter.in !== undefined &&
+    !filter.in.some((inValue) => inValue.equals(value))
+  ) {
+    return false;
+  }
+
+  if (
+    filter.maxExclusive !== undefined &&
+    value.greaterThanOrEqualTo(filter.maxExclusive)
+  ) {
+    return false;
+  }
+
+  if (
+    filter.maxInclusive !== undefined &&
+    value.greaterThan(filter.maxInclusive)
+  ) {
+    return false;
+  }
+
+  if (
+    filter.minExclusive !== undefined &&
+    value.lessThanOrEqualTo(filter.minExclusive)
+  ) {
+    return false;
+  }
+
+  if (
+    filter.minInclusive !== undefined &&
+    value.lessThan(filter.minInclusive)
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
+const $filterBoolean: $FilterFunction<$BooleanFilter, boolean> = (
+  filter,
+  value,
+) => {
+  if (filter.value !== undefined && value !== filter.value) {
+    return false;
+  }
+
+  return true;
+};
+
+const $filterDate: $FilterFunction<$DateFilter, Date> = (filter, value) => {
+  if (
+    filter.in !== undefined &&
+    !filter.in.some((inValue) => inValue.getTime() === value.getTime())
+  ) {
+    return false;
+  }
+
+  if (
+    filter.maxExclusive !== undefined &&
+    value.getTime() >= filter.maxExclusive.getTime()
+  ) {
+    return false;
+  }
+
+  if (
+    filter.maxInclusive !== undefined &&
+    value.getTime() > filter.maxInclusive.getTime()
+  ) {
+    return false;
+  }
+
+  if (
+    filter.minExclusive !== undefined &&
+    value.getTime() <= filter.minExclusive.getTime()
+  ) {
+    return false;
+  }
+
+  if (
+    filter.minInclusive !== undefined &&
+    value.getTime() < filter.minInclusive.getTime()
+  ) {
+    return false;
+  }
+
+  return true;
+};
 
 export type $FilterFunction<FilterT, ValueT> = (
   filter: FilterT,
@@ -303,6 +581,36 @@ const $filterIri: $FilterFunction<$IriFilter, NamedNode> = (filter, value) => {
 };
 
 const $filterLiteral: $FilterFunction<$LiteralFilter, Literal> = $filterTerm;
+
+function $filterNumeric<NumericT extends bigint | number>(
+  filter: $NumericFilter<NumericT>,
+  value: NumericT,
+) {
+  if (
+    filter.in !== undefined &&
+    !filter.in.some((inValue) => inValue === value)
+  ) {
+    return false;
+  }
+
+  if (filter.maxExclusive !== undefined && value >= filter.maxExclusive) {
+    return false;
+  }
+
+  if (filter.maxInclusive !== undefined && value > filter.maxInclusive) {
+    return false;
+  }
+
+  if (filter.minExclusive !== undefined && value <= filter.minExclusive) {
+    return false;
+  }
+
+  if (filter.minInclusive !== undefined && value < filter.minInclusive) {
+    return false;
+  }
+
+  return true;
+}
 
 const $filterString: $FilterFunction<$StringFilter, string> = (
   filter,
@@ -363,6 +671,30 @@ function $filterTerm<TermT extends BlankNode | Literal | NamedNode>(
   }
 
   return true;
+}
+
+function $floatFromJsonNumber<FloatT extends number>(
+  jsonNumber: FloatT,
+  _options: Parameters<
+    $FromJsonFunction<FloatT, FloatT, $NumericSchema<FloatT>>
+  >[1],
+): Either<Error, FloatT> {
+  return Either.of(jsonNumber);
+}
+
+function $floatFromRdfResourceValues<FloatT extends number>(
+  values: Resource.Values,
+  options: Parameters<
+    $FromRdfResourceValuesFunction<FloatT, $NumericSchema<FloatT>>
+  >[1],
+): Either<Error, Resource.Values<FloatT>> {
+  return $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      options.schema.in
+        ? value.toFloat(options.schema.in)
+        : (value.toFloat() as Either<Error, FloatT>),
+    ),
+  );
 }
 
 export type $FromJsonFunction<JsonValueT, ValueT, ValueSchemaT> = [
@@ -479,6 +811,28 @@ function $identityValidationFunction<T>(
   return Either.of(value);
 }
 
+function $intFromJsonNumber<IntT extends number>(
+  jsonNumber: IntT,
+  _options: Parameters<$FromJsonFunction<IntT, IntT, $NumericSchema<IntT>>>[1],
+): Either<Error, IntT> {
+  return Either.of(jsonNumber);
+}
+
+function $intFromRdfResourceValues<IntT extends number>(
+  values: Resource.Values,
+  options: Parameters<
+    $FromRdfResourceValuesFunction<IntT, $NumericSchema<IntT>>
+  >[1],
+): Either<Error, Resource.Values<IntT>> {
+  return $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      options.schema.in
+        ? value.toInt(options.schema.in)
+        : (value.toInt() as Either<Error, IntT>),
+    ),
+  );
+}
+
 interface $IriFilter {
   readonly in?: readonly NamedNode[];
 }
@@ -487,7 +841,7 @@ function $iriFromJsonString(
   jsonString: string,
   options: Parameters<$FromJsonFunction<string, NamedNode, object>>[1],
 ): Either<Error, NamedNode> {
-  return $iriFromString(jsonString, options);
+  return expandIri(jsonString, { ...options, dataFactory: dataFactory });
 }
 
 function $iriFromRdfResourceValues<IriT extends string = string>(
@@ -503,70 +857,6 @@ function $iriFromRdfResourceValues<IriT extends string = string>(
         : (value.toIri() as Either<Error, NamedNode<IriT>>),
     ),
   );
-}
-
-export function $iriFromString(
-  string: string,
-  options?: { defaultNamespace?: $NamespaceBuilder; prefixMap?: PrefixMap },
-): Either<Error, NamedNode> {
-  if (string.trim().length === 0) {
-    return Left(new Error("empty/blank IRI"));
-  }
-
-  const defaultNamespace = options?.defaultNamespace;
-
-  const colonIndex = string.indexOf(":");
-  if (colonIndex === -1) {
-    // No : in the string.
-    if (defaultNamespace) {
-      return Right(defaultNamespace(string));
-    } else {
-      return Left(new Error(`ill-formed IRI: ${string}`));
-    }
-  }
-
-  const prefix = string.substring(0, colonIndex);
-  const path = string.substring(colonIndex + 1);
-  if (path.length === 0) {
-    return Left(new Error(`ill-formed IRI: ${string}`));
-  }
-
-  // Absolute IRIs with scheme:// always win over prefixes with the same name.
-  switch (prefix.toLowerCase()) {
-    case "file":
-    case "ftp":
-    case "http":
-    case "https":
-    case "git":
-    case "irc":
-    case "ldap":
-    case "postgres":
-    case "rtsp":
-    case "sftp":
-    case "smb":
-    case "ssh":
-    case "ws":
-    case "wss":
-      if (path.startsWith("//")) {
-        return Right(dataFactory.namedNode(string));
-      }
-      break;
-  }
-
-  const prefixMap = options?.prefixMap;
-  if (prefixMap) {
-    const prefixNamespace = prefixMap.get(prefix);
-    if (prefixNamespace !== undefined) {
-      return Right(dataFactory.namedNode(`${prefixNamespace.value}${path}`));
-    }
-  }
-
-  if (prefix.length === 0 && defaultNamespace) {
-    // a "" prefixMap entry takes precedence, above.
-    return Right(defaultNamespace(path));
-  }
-
-  return Right(dataFactory.namedNode(string));
 }
 
 interface $IriSchema<IriT extends string = string> {
@@ -703,6 +993,21 @@ export type $NamespaceBuilder<TermNames extends string = any> = Record<
 > &
   ((property?: TemplateStringsArray | TermNames) => NamedNode);
 
+interface $NumericFilter<T> {
+  readonly in?: readonly T[];
+  readonly maxExclusive?: T;
+  readonly maxInclusive?: T;
+  readonly minExclusive?: T;
+  readonly minInclusive?: T;
+}
+
+interface $NumericSchema<T> {
+  readonly datatype: NamedNode;
+  readonly hasValues?: readonly Literal[];
+  readonly in?: readonly T[];
+  readonly kind: "BigDecimal" | "BigInt" | "Float" | "Int";
+}
+
 export type $ObjectTypeGuardFunction<ObjectT extends $Object> = (
   object: $Object,
 ) => object is ObjectT;
@@ -716,6 +1021,8 @@ export function $parseIri(identifier: string): Either<Error, NamedNode> {
       : Left(new Error("expected identifier to be NamedNode")),
   ) as Either<Error, NamedNode>;
 }
+
+type $Primitive = bigint | boolean | number | string;
 
 export type $PropertyPath = RdfxResourcePropertyPath;
 
@@ -1092,6 +1399,32 @@ function $wrap_ToRdfResourceFunction<
   };
 }
 
+const $xsd_boolean = dataFactory.namedNode(
+  "http://www.w3.org/2001/XMLSchema#boolean",
+);
+
+const $xsd_date = dataFactory.namedNode(
+  "http://www.w3.org/2001/XMLSchema#date",
+);
+
+const $xsd_dateTime = dataFactory.namedNode(
+  "http://www.w3.org/2001/XMLSchema#dateTime",
+);
+
+const $xsd_decimal = dataFactory.namedNode(
+  "http://www.w3.org/2001/XMLSchema#decimal",
+);
+
+const $xsd_double = dataFactory.namedNode(
+  "http://www.w3.org/2001/XMLSchema#double",
+);
+
+const $xsd_int = dataFactory.namedNode("http://www.w3.org/2001/XMLSchema#int");
+
+const $xsd_integer = dataFactory.namedNode(
+  "http://www.w3.org/2001/XMLSchema#integer",
+);
+
 const $xsd_string = dataFactory.namedNode(
   "http://www.w3.org/2001/XMLSchema#string",
 );
@@ -1277,6 +1610,20 @@ export namespace $DefaultPartial {
 export type NodeShape1 = {
   readonly $identifier: () => NodeShape1.Identifier;
 
+  readonly booleanProperty: boolean;
+
+  readonly dateProperty: Date;
+
+  readonly dateTimeProperty: Date;
+
+  readonly decimalProperty: BigDecimal;
+
+  readonly doubleProperty: number;
+
+  readonly integerProperty: bigint;
+
+  readonly intProperty: number;
+
   readonly iriProperty: NamedNode;
 
   readonly langStringProperty: readonly Literal[];
@@ -1300,6 +1647,58 @@ export namespace NodeShape1 {
           schema: NodeShape1.schema.properties.$identifier.type,
         },
       ).chain((values) => values.head()),
+      booleanProperty: $shaclPropertyFromRdf<boolean, $BooleanSchema<boolean>>({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.booleanProperty,
+        typeFromRdfResourceValues: $booleanFromRdfResourceValues<boolean>,
+      }),
+      dateProperty: $shaclPropertyFromRdf<Date, $DateSchema>({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.dateProperty,
+        typeFromRdfResourceValues: $dateFromRdfResourceValues,
+      }),
+      dateTimeProperty: $shaclPropertyFromRdf<Date, $DateSchema>({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.dateTimeProperty,
+        typeFromRdfResourceValues: $dateTimeFromRdfResourceValues,
+      }),
+      decimalProperty: $shaclPropertyFromRdf<
+        BigDecimal,
+        $NumericSchema<BigDecimal>
+      >({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.decimalProperty,
+        typeFromRdfResourceValues: $bigDecimalFromRdfResourceValues,
+      }),
+      doubleProperty: $shaclPropertyFromRdf<number, $NumericSchema<number>>({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.doubleProperty,
+        typeFromRdfResourceValues: $floatFromRdfResourceValues<number>,
+      }),
+      integerProperty: $shaclPropertyFromRdf<bigint, $NumericSchema<bigint>>({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.integerProperty,
+        typeFromRdfResourceValues: $bigIntFromRdfResourceValues<bigint>,
+      }),
+      intProperty: $shaclPropertyFromRdf<number, $NumericSchema<number>>({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.intProperty,
+        typeFromRdfResourceValues: $intFromRdfResourceValues<number>,
+      }),
       iriProperty: $shaclPropertyFromRdf<NamedNode, $IriSchema<string>>({
         ...options,
         focusResource: resource,
@@ -1367,6 +1766,46 @@ export namespace NodeShape1 {
     NodeShape1
   > = (parameters) => {
     parameters.resource.add(
+      NodeShape1.schema.properties.booleanProperty.path,
+      [
+        $literalFactory.boolean(
+          parameters.object.booleanProperty,
+          $xsd_boolean,
+        ),
+      ],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.dateProperty.path,
+      [$literalFactory.date(parameters.object.dateProperty, $xsd_date)],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.dateTimeProperty.path,
+      [$literalFactory.date(parameters.object.dateTimeProperty, $xsd_dateTime)],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.decimalProperty.path,
+      [$bigDecimalLiteral(parameters.object.decimalProperty)],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.doubleProperty.path,
+      [$literalFactory.number(parameters.object.doubleProperty, $xsd_double)],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.integerProperty.path,
+      [$literalFactory.bigint(parameters.object.integerProperty, $xsd_integer)],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.intProperty.path,
+      [$literalFactory.number(parameters.object.intProperty, $xsd_int)],
+      parameters.graph,
+    );
+    parameters.resource.add(
       NodeShape1.schema.properties.iriProperty.path,
       [parameters.object.iriProperty],
       parameters.graph,
@@ -1413,6 +1852,19 @@ export namespace NodeShape1 {
         parameters.$defaultNamespace,
       ),
       $type: Right("NodeShape1" as const),
+      booleanProperty: Either.of(parameters.booleanProperty),
+      dateProperty: Either.of(parameters.dateProperty),
+      dateTimeProperty: Either.of(parameters.dateTimeProperty),
+      decimalProperty: $convertToBigDecimal(
+        parameters.decimalProperty,
+        parameters.$defaultNamespace,
+      ),
+      doubleProperty: Either.of(parameters.doubleProperty),
+      integerProperty: $convertToBigInt(
+        parameters.integerProperty,
+        parameters.$defaultNamespace,
+      ),
+      intProperty: Either.of(parameters.intProperty),
       iriProperty: $convertToIri(
         parameters.iriProperty,
         parameters.$defaultNamespace,
@@ -1442,6 +1894,13 @@ export namespace NodeShape1 {
       | (() => NodeShape1.Identifier)
       | (keyof $DefaultNamespaceT & string)
       | NamedNode;
+    readonly booleanProperty: boolean;
+    readonly dateProperty: Date;
+    readonly dateTimeProperty: Date;
+    readonly decimalProperty: BigDecimal | number | string;
+    readonly doubleProperty: number;
+    readonly integerProperty: bigint | number | string;
+    readonly intProperty: number;
     readonly iriProperty: (keyof $DefaultNamespaceT & string) | NamedNode;
     readonly langStringProperty: Literal | readonly Literal[];
     readonly nodeProperty: $Lazy<$DefaultPartial, NodeShape2> | NodeShape2;
@@ -1464,6 +1923,48 @@ export namespace NodeShape1 {
     if (
       filter.$identifier !== undefined &&
       !$filterIri(filter.$identifier, value.$identifier())
+    ) {
+      return false;
+    }
+    if (
+      filter.booleanProperty !== undefined &&
+      !$filterBoolean(filter.booleanProperty, value.booleanProperty)
+    ) {
+      return false;
+    }
+    if (
+      filter.dateProperty !== undefined &&
+      !$filterDate(filter.dateProperty, value.dateProperty)
+    ) {
+      return false;
+    }
+    if (
+      filter.dateTimeProperty !== undefined &&
+      !$filterDate(filter.dateTimeProperty, value.dateTimeProperty)
+    ) {
+      return false;
+    }
+    if (
+      filter.decimalProperty !== undefined &&
+      !$filterBigDecimal(filter.decimalProperty, value.decimalProperty)
+    ) {
+      return false;
+    }
+    if (
+      filter.doubleProperty !== undefined &&
+      !$filterNumeric<number>(filter.doubleProperty, value.doubleProperty)
+    ) {
+      return false;
+    }
+    if (
+      filter.integerProperty !== undefined &&
+      !$filterNumeric<bigint>(filter.integerProperty, value.integerProperty)
+    ) {
+      return false;
+    }
+    if (
+      filter.intProperty !== undefined &&
+      !$filterNumeric<number>(filter.intProperty, value.intProperty)
     ) {
       return false;
     }
@@ -1502,6 +2003,13 @@ export namespace NodeShape1 {
 
   export type Filter = {
     readonly $identifier?: $IriFilter;
+    readonly booleanProperty?: $BooleanFilter;
+    readonly dateProperty?: $DateFilter;
+    readonly dateTimeProperty?: $DateFilter;
+    readonly decimalProperty?: $NumericFilter<BigDecimal>;
+    readonly doubleProperty?: $NumericFilter<number>;
+    readonly integerProperty?: $NumericFilter<bigint>;
+    readonly intProperty?: $NumericFilter<number>;
     readonly iriProperty?: $IriFilter;
     readonly langStringProperty?: $CollectionFilter<$LiteralFilter>;
     readonly nodeProperty?: $DefaultPartial.Filter;
@@ -1517,6 +2025,46 @@ export namespace NodeShape1 {
       $identifier: $iriFromJsonString(jsonObject["@id"], {
         ...options,
         schema: NodeShape1.schema.properties.$identifier.type,
+      }),
+      booleanProperty: $booleanFromJsonBoolean<boolean>(
+        jsonObject["booleanProperty"],
+        {
+          ...options,
+          schema: NodeShape1.schema.properties.booleanProperty.type,
+        },
+      ),
+      dateProperty: $dateFromJsonString(jsonObject["dateProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.dateProperty.type,
+      }),
+      dateTimeProperty: $dateFromJsonString(jsonObject["dateTimeProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.dateTimeProperty.type,
+      }),
+      decimalProperty: $bigDecimalFromJsonString(
+        jsonObject["decimalProperty"],
+        {
+          ...options,
+          schema: NodeShape1.schema.properties.decimalProperty.type,
+        },
+      ),
+      doubleProperty: $floatFromJsonNumber<number>(
+        jsonObject["doubleProperty"],
+        {
+          ...options,
+          schema: NodeShape1.schema.properties.doubleProperty.type,
+        },
+      ),
+      integerProperty: $bigIntFromJsonString<string, bigint>(
+        jsonObject["integerProperty"],
+        {
+          ...options,
+          schema: NodeShape1.schema.properties.integerProperty.type,
+        },
+      ),
+      intProperty: $intFromJsonNumber<number>(jsonObject["intProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.intProperty.type,
       }),
       iriProperty: $iriFromJsonString(jsonObject["iriProperty"], {
         ...options,
@@ -1588,6 +2136,13 @@ export namespace NodeShape1 {
 
   export type Json = {
     "@id": string;
+    booleanProperty: boolean;
+    dateProperty: string;
+    dateTimeProperty: string;
+    decimalProperty: string;
+    doubleProperty: number;
+    integerProperty: string;
+    intProperty: number;
     iriProperty: string;
     langStringProperty: $LangStringJsonObject[];
     nodeProperty: $DefaultPartial.Json;
@@ -1606,6 +2161,13 @@ export namespace NodeShape1 {
     export function schema() {
       return z.object({
         "@id": z.string().min(1),
+        booleanProperty: z.boolean(),
+        dateProperty: $dateJsonSchema,
+        dateTimeProperty: $dateTimeJsonSchema,
+        decimalProperty: $bigDecimalJsonSchema,
+        doubleProperty: z.number(),
+        integerProperty: $bigIntJsonSchema,
+        intProperty: z.number(),
         iriProperty: z.string().min(1),
         langStringProperty: z.array($LangStringJsonObject.schema()).min(1),
         nodeProperty: $DefaultPartial.Json.schema(),
@@ -1620,6 +2182,41 @@ export namespace NodeShape1 {
       $identifier: {
         kind: "Identifier",
         type: { kind: "Iri" } as const,
+      } as const,
+      booleanProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/booleanProperty"),
+        type: { datatype: $xsd_boolean, kind: "Boolean" } as const,
+      } as const,
+      dateProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/dateProperty"),
+        type: { datatype: $xsd_date, kind: "Date" } as const,
+      } as const,
+      dateTimeProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/dateTimeProperty"),
+        type: { datatype: $xsd_dateTime, kind: "DateTime" } as const,
+      } as const,
+      decimalProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/decimalProperty"),
+        type: { datatype: $xsd_decimal, kind: "BigDecimal" } as const,
+      } as const,
+      doubleProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/doubleProperty"),
+        type: { datatype: $xsd_double, kind: "Float" } as const,
+      } as const,
+      integerProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/integerProperty"),
+        type: { datatype: $xsd_integer, kind: "BigInt" } as const,
+      } as const,
+      intProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/intProperty"),
+        type: { datatype: $xsd_int, kind: "Int" } as const,
       } as const,
       iriProperty: {
         kind: "Shacl",
