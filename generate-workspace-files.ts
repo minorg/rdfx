@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.61";
+const VERSION = "0.0.62";
 
 const shaclmateVersion = "4.0.100";
 const vitestVersion = "~4.1.5";
@@ -189,8 +189,10 @@ const workspaces = {
     curie: {
       dependencies: {
         external: [
+          "@rdfjs/namespace",
           "@rdfjs/prefix-map",
           "@rdfjs/types",
+          "@types/rdfjs__namespace",
           "@types/rdfjs__prefix-map",
           "purify-ts",
           "ts-invariant",

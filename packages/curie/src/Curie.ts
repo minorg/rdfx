@@ -1,7 +1,4 @@
-import type { default as PrefixMap } from "@rdfjs/prefix-map/PrefixMap.js";
 import type { BlankNode, NamedNode } from "@rdfjs/types";
-import { Maybe } from "purify-ts";
-import { invariant } from "ts-invariant";
 
 /**
  * A Compact URI (https://www.w3.org/TR/curie)
@@ -32,21 +29,6 @@ export class Curie implements NamedNode {
     }
 
     return this.value === other.value; // Allow a Curie to equal a NamedNode
-  }
-
-  static fromIri(
-    iri: NamedNode,
-    { prefixMap }: { prefixMap: PrefixMap },
-  ): Maybe<Curie> {
-    return Maybe.fromNullable(prefixMap.shrink(iri)?.value).map((value) => {
-      const split = value.split(":", 2);
-      invariant(split.length === 2);
-      return new Curie({
-        prefix: split[0],
-        reference: split[1],
-        value: iri.value,
-      });
-    });
   }
 
   toString(): string {
