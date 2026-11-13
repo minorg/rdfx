@@ -66,8 +66,8 @@ function $arrayFromJsonArray<ItemJsonValueT, ItemT, ItemSchemaT>(
   };
 }
 
-const $bigDecimalFromJsonString: $FromJsonFunction<
-  string,
+const $bigDecimalFromJsonValue: $FromJsonFunction<
+  number | string,
   BigDecimal,
   $NumericSchema<BigDecimal>
 > = (jsonValue) => Either.encase(() => new BigDecimal(jsonValue));
@@ -88,7 +88,7 @@ function $bigDecimalLiteral(value: BigDecimal): Literal {
 }
 
 function $bigIntFromJsonString<
-  JsonValueT extends string,
+  JsonValueT extends number | string,
   BigIntT extends bigint,
 >(
   jsonValue: JsonValueT,
@@ -2013,13 +2013,10 @@ export namespace NodeShape1 {
         ...options,
         schema: NodeShape1.schema.properties.dateTimeProperty.type,
       }),
-      decimalProperty: $bigDecimalFromJsonString(
-        jsonObject["decimalProperty"],
-        {
-          ...options,
-          schema: NodeShape1.schema.properties.decimalProperty.type,
-        },
-      ),
+      decimalProperty: $bigDecimalFromJsonValue(jsonObject["decimalProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.decimalProperty.type,
+      }),
       doubleProperty: $floatFromJsonNumber<number>(
         jsonObject["doubleProperty"],
         {
@@ -2027,7 +2024,7 @@ export namespace NodeShape1 {
           schema: NodeShape1.schema.properties.doubleProperty.type,
         },
       ),
-      integerProperty: $bigIntFromJsonString<string, bigint>(
+      integerProperty: $bigIntFromJsonString<number | string, bigint>(
         jsonObject["integerProperty"],
         {
           ...options,
@@ -2111,9 +2108,9 @@ export namespace NodeShape1 {
     booleanProperty: boolean;
     dateProperty: string;
     dateTimeProperty: string;
-    decimalProperty: string;
+    decimalProperty: number | string;
     doubleProperty: number;
-    integerProperty: string;
+    integerProperty: number | string;
     intProperty: number;
     iriProperty: string;
     langStringProperty: $LangStringJsonObject[];
@@ -2136,9 +2133,9 @@ export namespace NodeShape1 {
         booleanProperty: z.boolean(),
         dateProperty: z.iso.date(),
         dateTimeProperty: z.iso.datetime(),
-        decimalProperty: z.string(),
+        decimalProperty: z.number().or(z.string()),
         doubleProperty: z.number(),
-        integerProperty: z.string(),
+        integerProperty: z.number().or(z.string()),
         intProperty: z.number(),
         iriProperty: z.string().min(1),
         langStringProperty: z.array($LangStringJsonObject.schema()).min(1),

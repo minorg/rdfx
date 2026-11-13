@@ -14,6 +14,15 @@
         sh:minCount 1 ;
         sh:path :booleanProperty
     ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path :iriProperty
+    ], [
+        sh:datatype rdf:langString ;
+        sh:minCount 1 ;
+        sh:path :langStringProperty
+    ], [
         shaclmate:resolve :NodeShape2 ;
         sh:maxCount 1 ;
         sh:minCount 1 ;
@@ -53,15 +62,6 @@
         sh:maxCount 1 ;
         sh:minCount 1 ;
         sh:path :integerProperty
-    ], [
-        sh:maxCount 1 ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:IRI ;
-        sh:path :iriProperty
-    ], [
-        sh:datatype rdf:langString ;
-        sh:minCount 1 ;
-        sh:path :langStringProperty
     ] .
 
 :NodeShape2
