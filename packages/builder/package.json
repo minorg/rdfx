@@ -16,8 +16,8 @@
     "@rdfx/fs": "0.0.63",
     "@rdfx/logger": "0.0.63",
     "@rdfx/testing": "0.0.63",
-    "@shaclmate/compiler": "4.0.103",
-    "@shaclmate/validator": "4.0.103",
+    "@shaclmate/compiler": "4.0.104",
+    "@shaclmate/validator": "4.0.104",
     "@tpluscode/rdf-ns-builders": "~4.3.0"
   },
   "files": [
