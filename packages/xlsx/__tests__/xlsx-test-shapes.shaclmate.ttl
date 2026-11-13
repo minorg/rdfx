@@ -14,6 +14,26 @@
         sh:minCount 1 ;
         sh:path :booleanProperty
     ], [
+        shaclmate:resolve :NodeShape2 ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :nodeProperty
+    ], [
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :stringProperty
+    ], [
+        sh:datatype xsd:date ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :dateProperty
+    ], [
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :dateTimeProperty
+    ], [
         sh:datatype xsd:decimal ;
         sh:maxCount 1 ;
         sh:minCount 1 ;
@@ -42,16 +62,6 @@
         sh:datatype rdf:langString ;
         sh:minCount 1 ;
         sh:path :langStringProperty
-    ], [
-        shaclmate:resolve :NodeShape2 ;
-        sh:maxCount 1 ;
-        sh:minCount 1 ;
-        sh:path :nodeProperty
-    ], [
-        sh:datatype xsd:string ;
-        sh:maxCount 1 ;
-        sh:minCount 1 ;
-        sh:path :stringProperty
     ] .
 
 :NodeShape2

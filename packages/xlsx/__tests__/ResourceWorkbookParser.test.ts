@@ -11,8 +11,9 @@ import {
   $RdfjsDatasetObjectSet,
   NodeShape1,
   NodeShape2,
-} from "./xlsx-shapes.shaclmate.js";
+} from "./xlsx-test-shapes.shaclmate.js";
 import "@rdfx/testing";
+import { Decimal } from "decimal.js";
 import { Maybe } from "purify-ts";
 
 describe("ResourceWorkbookParser", async () => {
@@ -59,6 +60,23 @@ describe("ResourceWorkbookParser", async () => {
         .nodeShape1Sync(ex("nodeShape1Id1"))
         .unsafeCoerce();
       expect(nodeShape1Id1.$identifier()).toEqualRdfTerm(ex("nodeShape1Id1"));
+      expect(nodeShape1Id1.booleanProperty).toStrictEqual(true);
+      expect(nodeShape1Id1.dateProperty.getDate()).toStrictEqual(11);
+      expect(nodeShape1Id1.dateProperty.getMonth()).toStrictEqual(10);
+      expect(nodeShape1Id1.dateProperty.getFullYear()).toStrictEqual(2026);
+      expect(nodeShape1Id1.dateTimeProperty.getDate()).toStrictEqual(11);
+      expect(nodeShape1Id1.dateTimeProperty.getMonth()).toStrictEqual(10);
+      expect(nodeShape1Id1.dateTimeProperty.getFullYear()).toStrictEqual(2026);
+      expect(nodeShape1Id1.dateTimeProperty.getHours()).toStrictEqual(11);
+      expect(nodeShape1Id1.dateTimeProperty.getMinutes()).toStrictEqual(36);
+      expect(
+        nodeShape1Id1.decimalProperty.equals(new Decimal("42.3")),
+      ).toStrictEqual(true);
+      expect(nodeShape1Id1.intProperty).toStrictEqual(42);
+      expect(nodeShape1Id1.integerProperty).toStrictEqual(42n);
+      expect(nodeShape1Id1.iriProperty).toEqualRdfTerm(
+        dataFactory.namedNode("http://example.com/testIri1"),
+      );
       expect(nodeShape1Id1.langStringProperty).toHaveLength(2);
       expect(nodeShape1Id1.langStringProperty).toEqualRdfTermSet([
         dataFactory.literal("enLangString1", "en"),

@@ -360,6 +360,47 @@ function $convertToScalarSet<
   };
 }
 
+interface $DateFilter {
+  readonly in?: readonly Date[];
+  readonly maxExclusive?: Date;
+  readonly maxInclusive?: Date;
+  readonly minExclusive?: Date;
+  readonly minInclusive?: Date;
+}
+
+const $dateFromJsonString: $FromJsonFunction<string, Date, $DateSchema> = (
+  jsonValue,
+) => Either.encase(() => new Date(jsonValue));
+
+const $dateFromRdfResourceValues: $FromRdfResourceValuesFunction<
+  Date,
+  $DateSchema
+> = (values, options) =>
+  $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      options.schema.in ? value.toDate(options.schema.in) : value.toDate(),
+    ),
+  );
+
+interface $DateSchema {
+  readonly datatype: NamedNode;
+  readonly hasValues?: readonly Literal[];
+  readonly in?: readonly Date[];
+  readonly kind: "Date" | "DateTime";
+}
+
+const $dateTimeFromRdfResourceValues: $FromRdfResourceValuesFunction<
+  Date,
+  $DateSchema
+> = (values, options) =>
+  $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      options.schema.in
+        ? value.toDateTime(options.schema.in)
+        : value.toDateTime(),
+    ),
+  );
+
 function $filterArray<ItemT, ItemFilterT>(
   filterItem: (itemFilter: ItemFilterT, item: ItemT) => boolean,
 ) {
@@ -432,6 +473,45 @@ const $filterBoolean: $FilterFunction<$BooleanFilter, boolean> = (
   value,
 ) => {
   if (filter.value !== undefined && value !== filter.value) {
+    return false;
+  }
+
+  return true;
+};
+
+const $filterDate: $FilterFunction<$DateFilter, Date> = (filter, value) => {
+  if (
+    filter.in !== undefined &&
+    !filter.in.some((inValue) => inValue.getTime() === value.getTime())
+  ) {
+    return false;
+  }
+
+  if (
+    filter.maxExclusive !== undefined &&
+    value.getTime() >= filter.maxExclusive.getTime()
+  ) {
+    return false;
+  }
+
+  if (
+    filter.maxInclusive !== undefined &&
+    value.getTime() > filter.maxInclusive.getTime()
+  ) {
+    return false;
+  }
+
+  if (
+    filter.minExclusive !== undefined &&
+    value.getTime() <= filter.minExclusive.getTime()
+  ) {
+    return false;
+  }
+
+  if (
+    filter.minInclusive !== undefined &&
+    value.getTime() < filter.minInclusive.getTime()
+  ) {
     return false;
   }
 
@@ -1295,6 +1375,14 @@ const $xsd_boolean = dataFactory.namedNode(
   "http://www.w3.org/2001/XMLSchema#boolean",
 );
 
+const $xsd_date = dataFactory.namedNode(
+  "http://www.w3.org/2001/XMLSchema#date",
+);
+
+const $xsd_dateTime = dataFactory.namedNode(
+  "http://www.w3.org/2001/XMLSchema#dateTime",
+);
+
 const $xsd_decimal = dataFactory.namedNode(
   "http://www.w3.org/2001/XMLSchema#decimal",
 );
@@ -1496,6 +1584,10 @@ export type NodeShape1 = {
 
   readonly booleanProperty: boolean;
 
+  readonly dateProperty: Date;
+
+  readonly dateTimeProperty: Date;
+
   readonly decimalProperty: BigDecimal;
 
   readonly doubleProperty: number;
@@ -1533,6 +1625,20 @@ export namespace NodeShape1 {
         ignoreRdfType: true,
         propertySchema: NodeShape1.schema.properties.booleanProperty,
         typeFromRdfResourceValues: $booleanFromRdfResourceValues<boolean>,
+      }),
+      dateProperty: $shaclPropertyFromRdf<Date, $DateSchema>({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.dateProperty,
+        typeFromRdfResourceValues: $dateFromRdfResourceValues,
+      }),
+      dateTimeProperty: $shaclPropertyFromRdf<Date, $DateSchema>({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.dateTimeProperty,
+        typeFromRdfResourceValues: $dateTimeFromRdfResourceValues,
       }),
       decimalProperty: $shaclPropertyFromRdf<
         BigDecimal,
@@ -1642,6 +1748,16 @@ export namespace NodeShape1 {
       parameters.graph,
     );
     parameters.resource.add(
+      NodeShape1.schema.properties.dateProperty.path,
+      [$literalFactory.date(parameters.object.dateProperty, $xsd_date)],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.dateTimeProperty.path,
+      [$literalFactory.date(parameters.object.dateTimeProperty, $xsd_dateTime)],
+      parameters.graph,
+    );
+    parameters.resource.add(
       NodeShape1.schema.properties.decimalProperty.path,
       [$bigDecimalLiteral(parameters.object.decimalProperty)],
       parameters.graph,
@@ -1709,6 +1825,8 @@ export namespace NodeShape1 {
       ),
       $type: Right("NodeShape1" as const),
       booleanProperty: Either.of(parameters.booleanProperty),
+      dateProperty: Either.of(parameters.dateProperty),
+      dateTimeProperty: Either.of(parameters.dateTimeProperty),
       decimalProperty: $convertToBigDecimal(
         parameters.decimalProperty,
         parameters.$defaultNamespace,
@@ -1749,6 +1867,8 @@ export namespace NodeShape1 {
       | (keyof $DefaultNamespaceT & string)
       | NamedNode;
     readonly booleanProperty: boolean;
+    readonly dateProperty: Date;
+    readonly dateTimeProperty: Date;
     readonly decimalProperty: BigDecimal | number | string;
     readonly doubleProperty: number;
     readonly integerProperty: bigint | number | string;
@@ -1781,6 +1901,18 @@ export namespace NodeShape1 {
     if (
       filter.booleanProperty !== undefined &&
       !$filterBoolean(filter.booleanProperty, value.booleanProperty)
+    ) {
+      return false;
+    }
+    if (
+      filter.dateProperty !== undefined &&
+      !$filterDate(filter.dateProperty, value.dateProperty)
+    ) {
+      return false;
+    }
+    if (
+      filter.dateTimeProperty !== undefined &&
+      !$filterDate(filter.dateTimeProperty, value.dateTimeProperty)
     ) {
       return false;
     }
@@ -1844,6 +1976,8 @@ export namespace NodeShape1 {
   export type Filter = {
     readonly $identifier?: $IriFilter;
     readonly booleanProperty?: $BooleanFilter;
+    readonly dateProperty?: $DateFilter;
+    readonly dateTimeProperty?: $DateFilter;
     readonly decimalProperty?: $NumericFilter<BigDecimal>;
     readonly doubleProperty?: $NumericFilter<number>;
     readonly integerProperty?: $NumericFilter<bigint>;
@@ -1871,6 +2005,14 @@ export namespace NodeShape1 {
           schema: NodeShape1.schema.properties.booleanProperty.type,
         },
       ),
+      dateProperty: $dateFromJsonString(jsonObject["dateProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.dateProperty.type,
+      }),
+      dateTimeProperty: $dateFromJsonString(jsonObject["dateTimeProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.dateTimeProperty.type,
+      }),
       decimalProperty: $bigDecimalFromJsonString(
         jsonObject["decimalProperty"],
         {
@@ -1967,6 +2109,8 @@ export namespace NodeShape1 {
   export type Json = {
     "@id": string;
     booleanProperty: boolean;
+    dateProperty: string;
+    dateTimeProperty: string;
     decimalProperty: string;
     doubleProperty: number;
     integerProperty: string;
@@ -1990,6 +2134,8 @@ export namespace NodeShape1 {
       return z.object({
         "@id": z.string().min(1),
         booleanProperty: z.boolean(),
+        dateProperty: z.iso.date(),
+        dateTimeProperty: z.iso.datetime(),
         decimalProperty: z.string(),
         doubleProperty: z.number(),
         integerProperty: z.string(),
@@ -2013,6 +2159,16 @@ export namespace NodeShape1 {
         kind: "Shacl",
         path: dataFactory.namedNode("http://example.com/booleanProperty"),
         type: { datatype: $xsd_boolean, kind: "Boolean" } as const,
+      } as const,
+      dateProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/dateProperty"),
+        type: { datatype: $xsd_date, kind: "Date" } as const,
+      } as const,
+      dateTimeProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/dateTimeProperty"),
+        type: { datatype: $xsd_dateTime, kind: "DateTime" } as const,
       } as const,
       decimalProperty: {
         kind: "Shacl",
