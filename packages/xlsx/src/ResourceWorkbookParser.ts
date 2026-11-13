@@ -1,3 +1,5 @@
+import type { NamespaceBuilder } from "@rdfjs/namespace";
+import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Quad } from "@rdfjs/types";
 import { Either } from "purify-ts";
 import { AbstractParser } from "./AbstractParser.js";
@@ -24,7 +26,10 @@ export class ResourceWorkbookParser extends AbstractParser {
       resourceRecordParsersByWorksheetName;
   }
 
-  parse(workbook: Workbook): Either<Error, readonly Quad[]> {
+  parse(
+    workbook: Workbook,
+    options?: { defaultNamespace?: NamespaceBuilder; prefixMap?: PrefixMap },
+  ): Either<Error, readonly Quad[]> {
     let workbookQuads: Quad[] = [];
     for (const worksheet of workbook.worksheets) {
       const resourceRecordParser =
@@ -40,11 +45,9 @@ export class ResourceWorkbookParser extends AbstractParser {
       const worksheetDatasetEither = new ResourceWorksheetParser({
         dataFactory: this.dataFactory,
         datasetFactory: this.datasetFactory,
-        defaultNamespace: this.defaultNamespace,
         logger: this.logger,
-        prefixMap: this.prefixMap,
         resourceRecordParser,
-      }).parse(worksheet);
+      }).parse(worksheet, options);
       if (worksheetDatasetEither.isLeft()) {
         return worksheetDatasetEither;
       }

@@ -59,7 +59,10 @@ export class JsonResourceRecordParser<
    *
    * Takes dataFactory, et al. parameters here rather than in the constructor in order to simplify construction.
    */
-  parse(resourceRecord: ResourceRecord): Either<Error, readonly Quad[]> {
+  parse(
+    resourceRecord: ResourceRecord,
+    options?: Parameters<ResourceRecordParser["parse"]>[1],
+  ): Either<Error, readonly Quad[]> {
     return this.intermediateObjectFunctions.Json.parse(
       Object.fromEntries(
         Object.entries(resourceRecord).map(([key, value]) => {
@@ -72,8 +75,8 @@ export class JsonResourceRecordParser<
     ).chain((jsonObject) =>
       this.intermediateObjectFunctions
         .fromJson(jsonObject, {
-          defaultNamespace: this.defaultNamespace.extract(),
-          prefixMap: this.prefixMap.extract(),
+          defaultNamespace: options?.defaultNamespace,
+          prefixMap: options?.prefixMap,
         })
         .map((object) => [
           ...this.intermediateObjectFunctions.toRdfResource(object, {
