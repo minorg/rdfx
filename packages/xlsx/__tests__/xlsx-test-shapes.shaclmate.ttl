@@ -9,6 +9,31 @@
     a sh:NodeShape ;
     sh:nodeKind sh:IRI ;
     sh:property [
+        sh:datatype xsd:boolean ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :booleanProperty
+    ], [
+        sh:datatype xsd:decimal ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :decimalProperty
+    ], [
+        sh:datatype xsd:double ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :doubleProperty
+    ], [
+        sh:datatype xsd:int ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :intProperty
+    ], [
+        sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :integerProperty
+    ], [
         sh:maxCount 1 ;
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
