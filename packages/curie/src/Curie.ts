@@ -1,7 +1,4 @@
-import type { default as PrefixMap } from "@rdfjs/prefix-map/PrefixMap.js";
 import type { BlankNode, NamedNode } from "@rdfjs/types";
-import { Maybe } from "purify-ts";
-import { invariant } from "ts-invariant";
 
 /**
  * A Compact URI (https://www.w3.org/TR/curie)
