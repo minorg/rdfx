@@ -61,17 +61,20 @@ describe("ResourceWorkbookParser", async () => {
         .unsafeCoerce();
       expect(nodeShape1Id1.$identifier()).toEqualRdfTerm(ex("nodeShape1Id1"));
       expect(nodeShape1Id1.booleanProperty).toStrictEqual(true);
-      expect(nodeShape1Id1.dateProperty.getDate()).toStrictEqual(11);
-      expect(nodeShape1Id1.dateProperty.getMonth()).toStrictEqual(10);
-      expect(nodeShape1Id1.dateProperty.getFullYear()).toStrictEqual(2026);
-      expect(nodeShape1Id1.dateTimeProperty.getDate()).toStrictEqual(11);
-      expect(nodeShape1Id1.dateTimeProperty.getMonth()).toStrictEqual(10);
-      expect(nodeShape1Id1.dateTimeProperty.getFullYear()).toStrictEqual(2026);
-      expect(nodeShape1Id1.dateTimeProperty.getHours()).toStrictEqual(11);
-      expect(nodeShape1Id1.dateTimeProperty.getMinutes()).toStrictEqual(36);
+      expect(nodeShape1Id1.dateProperty.getUTCDate()).toStrictEqual(13);
+      expect(nodeShape1Id1.dateProperty.getUTCMonth()).toStrictEqual(10);
+      expect(nodeShape1Id1.dateProperty.getUTCFullYear()).toStrictEqual(2026);
+      expect(nodeShape1Id1.dateTimeProperty.getUTCDate()).toStrictEqual(13);
+      expect(nodeShape1Id1.dateTimeProperty.getUTCMonth()).toStrictEqual(10);
+      expect(nodeShape1Id1.dateTimeProperty.getUTCFullYear()).toStrictEqual(
+        2026,
+      );
+      expect(nodeShape1Id1.dateTimeProperty.getUTCHours()).toStrictEqual(15);
+      expect(nodeShape1Id1.dateTimeProperty.getUTCMinutes()).toStrictEqual(51);
       expect(
         nodeShape1Id1.decimalProperty.equals(new Decimal("42.3")),
       ).toStrictEqual(true);
+      expect(nodeShape1Id1.doubleProperty).toStrictEqual(42.3);
       expect(nodeShape1Id1.intProperty).toStrictEqual(42);
       expect(nodeShape1Id1.integerProperty).toStrictEqual(42n);
       expect(nodeShape1Id1.iriProperty).toEqualRdfTerm(

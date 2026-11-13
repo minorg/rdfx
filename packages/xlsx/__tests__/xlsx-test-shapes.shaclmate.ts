@@ -66,8 +66,8 @@ function $arrayFromJsonArray<ItemJsonValueT, ItemT, ItemSchemaT>(
   };
 }
 
-const $bigDecimalFromJsonValue: $FromJsonFunction<
-  number | string,
+const $bigDecimalFromJsonString: $FromJsonFunction<
+  string,
   BigDecimal,
   $NumericSchema<BigDecimal>
 > = (jsonValue) => Either.encase(() => new BigDecimal(jsonValue));
@@ -80,6 +80,21 @@ const $bigDecimalFromRdfResourceValues: $FromRdfResourceValuesFunction<
     values.chainMap((value) => value.toBigDecimal(options.schema.in)),
   );
 
+const $bigDecimalJsonSchema = z
+  .union([z.string(), z.number()])
+  .transform((v, ctx) => {
+    try {
+      const d = new BigDecimal(v);
+      if (!d.isFinite()) {
+        throw new Error("not finite");
+      }
+      return d.toFixed();
+    } catch {
+      ctx.issues.push({ code: "custom", message: "Invalid decimal", input: v });
+      return z.NEVER;
+    }
+  }) as unknown as z.ZodType<string, string>;
+
 /**
  * Create a Literal from a BigDecimal.
  */
@@ -88,7 +103,7 @@ function $bigDecimalLiteral(value: BigDecimal): Literal {
 }
 
 function $bigIntFromJsonString<
-  JsonValueT extends number | string,
+  JsonValueT extends string,
   BigIntT extends bigint,
 >(
   jsonValue: JsonValueT,
@@ -116,6 +131,13 @@ function $bigIntFromRdfResourceValues<BigIntT extends bigint>(
     ),
   );
 }
+
+const $bigIntJsonSchema = z
+  .union([z.string().regex(/^-?\d+$/), z.number().int()])
+  .transform((v) => BigInt(v).toString()) as unknown as z.ZodType<
+  string,
+  string
+>;
 
 const $blankNodeFromJsonString: $FromJsonFunction<
   string,
@@ -382,6 +404,10 @@ const $dateFromRdfResourceValues: $FromRdfResourceValuesFunction<
     ),
   );
 
+const $dateJsonSchema = z.coerce
+  .date()
+  .transform((v) => v.toISOString().slice(0, 10));
+
 interface $DateSchema {
   readonly datatype: NamedNode;
   readonly hasValues?: readonly Literal[];
@@ -400,6 +426,8 @@ const $dateTimeFromRdfResourceValues: $FromRdfResourceValuesFunction<
         : value.toDateTime(),
     ),
   );
+
+const $dateTimeJsonSchema = z.coerce.date().transform((v) => v.toISOString());
 
 function $filterArray<ItemT, ItemFilterT>(
   filterItem: (itemFilter: ItemFilterT, item: ItemT) => boolean,
@@ -2013,10 +2041,13 @@ export namespace NodeShape1 {
         ...options,
         schema: NodeShape1.schema.properties.dateTimeProperty.type,
       }),
-      decimalProperty: $bigDecimalFromJsonValue(jsonObject["decimalProperty"], {
-        ...options,
-        schema: NodeShape1.schema.properties.decimalProperty.type,
-      }),
+      decimalProperty: $bigDecimalFromJsonString(
+        jsonObject["decimalProperty"],
+        {
+          ...options,
+          schema: NodeShape1.schema.properties.decimalProperty.type,
+        },
+      ),
       doubleProperty: $floatFromJsonNumber<number>(
         jsonObject["doubleProperty"],
         {
@@ -2024,7 +2055,7 @@ export namespace NodeShape1 {
           schema: NodeShape1.schema.properties.doubleProperty.type,
         },
       ),
-      integerProperty: $bigIntFromJsonString<number | string, bigint>(
+      integerProperty: $bigIntFromJsonString<string, bigint>(
         jsonObject["integerProperty"],
         {
           ...options,
@@ -2108,9 +2139,9 @@ export namespace NodeShape1 {
     booleanProperty: boolean;
     dateProperty: string;
     dateTimeProperty: string;
-    decimalProperty: number | string;
+    decimalProperty: string;
     doubleProperty: number;
-    integerProperty: number | string;
+    integerProperty: string;
     intProperty: number;
     iriProperty: string;
     langStringProperty: $LangStringJsonObject[];
@@ -2131,11 +2162,11 @@ export namespace NodeShape1 {
       return z.object({
         "@id": z.string().min(1),
         booleanProperty: z.boolean(),
-        dateProperty: z.iso.date(),
-        dateTimeProperty: z.iso.datetime(),
-        decimalProperty: z.number().or(z.string()),
+        dateProperty: $dateJsonSchema,
+        dateTimeProperty: $dateTimeJsonSchema,
+        decimalProperty: $bigDecimalJsonSchema,
         doubleProperty: z.number(),
-        integerProperty: z.number().or(z.string()),
+        integerProperty: $bigIntJsonSchema,
         intProperty: z.number(),
         iriProperty: z.string().min(1),
         langStringProperty: z.array($LangStringJsonObject.schema()).min(1),
