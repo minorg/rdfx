@@ -89,7 +89,7 @@ export class ResourceWorkbookParser extends AbstractResourceParser {
         datasetFactory: this.datasetFactory,
         logger: this.logger,
         resourceRecordParser,
-      }).parse(worksheet, options);
+      }).parse(worksheet, { defaultNamespace, prefixMap });
       if (worksheetDatasetEither.isLeft()) {
         return worksheetDatasetEither;
       }
