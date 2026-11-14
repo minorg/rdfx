@@ -397,7 +397,7 @@ const workspaces = {
           "typescript-memoize",
           "xlsx",
         ],
-        internal: ["logger", "resource"],
+        internal: ["curie", "logger", "resource"],
       },
       devDependencies: {
         external: [

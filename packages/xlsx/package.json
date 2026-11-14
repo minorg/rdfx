@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@rdfx/curie": "0.0.63",
     "@rdfx/logger": "0.0.63",
     "@rdfx/resource": "0.0.63",
     "@rdfjs/namespace": "~2.0.1",
