@@ -92,4 +92,15 @@ export class Workbook {
   cell(address: CellAddress): Maybe<Cell> {
     return Maybe.fromNullable(this.cellsByAddress.get(address.string));
   }
+
+  worksheet(nameOrNumber: number | string): Maybe<Worksheet> {
+    switch (typeof nameOrNumber) {
+      case "number":
+        return Maybe.fromNullable(this.worksheets[nameOrNumber]);
+      case "string":
+        return Maybe.fromNullable(
+          this.worksheets.find((worksheet) => worksheet.name === nameOrNumber),
+        );
+    }
+  }
 }
