@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "@rdfx/curie": "0.0.63",
-    "@rdfx/logger": "0.0.63",
-    "@rdfx/resource": "0.0.63",
+    "@rdfx/curie": "0.0.64",
+    "@rdfx/logger": "0.0.64",
+    "@rdfx/resource": "0.0.64",
     "@rdfjs/namespace": "~2.0.1",
     "@rdfjs/prefix-map": "~0.1.2",
     "@rdfjs/types": "~2.0.1",
@@ -16,8 +16,8 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@rdfx/collection": "0.0.63",
-    "@rdfx/testing": "0.0.63",
+    "@rdfx/collection": "0.0.64",
+    "@rdfx/testing": "0.0.64",
     "@shaclmate/cli": "4.0.104",
     "@types/node": "^24",
     "decimal.js": "~10.6.0",
@@ -47,5 +47,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.63"
+  "version": "0.0.64"
 }
