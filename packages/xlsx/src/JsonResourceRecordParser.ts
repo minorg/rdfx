@@ -3,7 +3,7 @@ import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Quad } from "@rdfjs/types";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import type { Either } from "purify-ts";
-import { AbstractParser } from "./AbstractParser.js";
+import { AbstractResourceParser } from "./AbstractResourceParser.js";
 import type { ResourceRecord } from "./ResourceRecord.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 
@@ -35,7 +35,7 @@ export class JsonResourceRecordParser<
     IntermediateObjectT extends object,
     JsonObjectT extends object,
   >
-  extends AbstractParser
+  extends AbstractResourceParser
   implements ResourceRecordParser
 {
   private readonly intermediateObjectFunctions: IntermediateObjectFunctions<
@@ -48,7 +48,7 @@ export class JsonResourceRecordParser<
       IntermediateObjectT,
       JsonObjectT
     >,
-    superParameters: ConstructorParameters<typeof AbstractParser>[0],
+    superParameters: ConstructorParameters<typeof AbstractResourceParser>[0],
   ) {
     super(superParameters);
     this.intermediateObjectFunctions = intermediateObjectFunctions;
@@ -59,7 +59,10 @@ export class JsonResourceRecordParser<
    *
    * Takes dataFactory, et al. parameters here rather than in the constructor in order to simplify construction.
    */
-  parse(resourceRecord: ResourceRecord): Either<Error, readonly Quad[]> {
+  parse(
+    resourceRecord: ResourceRecord,
+    options?: Parameters<ResourceRecordParser["parse"]>[1],
+  ): Either<Error, readonly Quad[]> {
     return this.intermediateObjectFunctions.Json.parse(
       Object.fromEntries(
         Object.entries(resourceRecord).map(([key, value]) => {
@@ -72,8 +75,8 @@ export class JsonResourceRecordParser<
     ).chain((jsonObject) =>
       this.intermediateObjectFunctions
         .fromJson(jsonObject, {
-          defaultNamespace: this.defaultNamespace.extract(),
-          prefixMap: this.prefixMap.extract(),
+          defaultNamespace: options?.defaultNamespace,
+          prefixMap: options?.prefixMap,
         })
         .map((object) => [
           ...this.intermediateObjectFunctions.toRdfResource(object, {

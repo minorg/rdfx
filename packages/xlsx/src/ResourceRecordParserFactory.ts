@@ -1,6 +1,6 @@
-import type { AbstractParser } from "./AbstractParser.js";
+import type { AbstractResourceParser } from "./AbstractResourceParser.js";
 import type { ResourceRecordParser } from "./ResourceRecordParser.js";
 
 export type ResourceRecordParserFactory = (
-  parameters: ConstructorParameters<typeof AbstractParser>[0],
+  parameters: ConstructorParameters<typeof AbstractResourceParser>[0],
 ) => ResourceRecordParser;

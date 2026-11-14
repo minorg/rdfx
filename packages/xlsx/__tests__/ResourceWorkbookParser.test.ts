@@ -14,16 +14,13 @@ import {
 } from "./xlsx-test-shapes.shaclmate.js";
 import "@rdfx/testing";
 import { Decimal } from "decimal.js";
-import { Maybe } from "purify-ts";
 
 describe("ResourceWorkbookParser", async () => {
   const ex = namespace("http://example.com/");
   const sut = new ResourceWorkbookParser({
     dataFactory,
     datasetFactory,
-    defaultNamespace: Maybe.of(ex),
     logger,
-    prefixMap: Maybe.empty(),
     resourceRecordParsersByWorksheetName: {
       NodeShape1: (parameters) =>
         new JsonResourceRecordParser(NodeShape1, parameters),
@@ -69,8 +66,8 @@ describe("ResourceWorkbookParser", async () => {
       expect(nodeShape1Id1.dateTimeProperty.getUTCFullYear()).toStrictEqual(
         2026,
       );
-      expect(nodeShape1Id1.dateTimeProperty.getUTCHours()).toStrictEqual(15);
-      expect(nodeShape1Id1.dateTimeProperty.getUTCMinutes()).toStrictEqual(51);
+      expect(nodeShape1Id1.dateTimeProperty.getUTCHours()).toStrictEqual(18);
+      expect(nodeShape1Id1.dateTimeProperty.getUTCMinutes()).toStrictEqual(45);
       expect(
         nodeShape1Id1.decimalProperty.equals(new Decimal("42.3")),
       ).toStrictEqual(true);
@@ -78,7 +75,7 @@ describe("ResourceWorkbookParser", async () => {
       expect(nodeShape1Id1.intProperty).toStrictEqual(42);
       expect(nodeShape1Id1.integerProperty).toStrictEqual(42n);
       expect(nodeShape1Id1.iriProperty).toEqualRdfTerm(
-        dataFactory.namedNode("http://example.com/testIri1"),
+        dataFactory.namedNode("http://schema.org/test"),
       );
       expect(nodeShape1Id1.langStringProperty).toHaveLength(2);
       expect(nodeShape1Id1.langStringProperty).toEqualRdfTermSet([
