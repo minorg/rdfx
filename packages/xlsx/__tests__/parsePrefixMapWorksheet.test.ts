@@ -3,7 +3,6 @@ import { beforeAll, describe, it } from "vitest";
 import { logger } from "./logger.js";
 import { readTestWorkbook } from "./readTestWorkbook.js";
 import "@rdfx/testing";
-import { datasetFactory } from "@rdfx/collection";
 import { parsePrefixMapWorksheet } from "../src/parsePrefixMapWorksheet.js";
 import type { Worksheet } from "../src/Worksheet.js";
 
@@ -18,7 +17,6 @@ describe("parsePrefixMapWorksheet", async () => {
   it("parse", ({ expect }) => {
     const prefixMap = parsePrefixMapWorksheet(worksheet, {
       dataFactory,
-      datasetFactory,
       logger,
     }).unsafeCoerce();
     expect(prefixMap.size).toStrictEqual(3);

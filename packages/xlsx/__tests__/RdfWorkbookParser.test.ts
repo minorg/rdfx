@@ -35,7 +35,6 @@ describe("RdfWorkbookParser", async () => {
     beforeAll(() => {
       const quads = sut(workbook, {
         dataFactory,
-        datasetFactory,
         logger,
       }).unsafeCoerce();
       const dataset = datasetFactory.dataset(quads.concat());

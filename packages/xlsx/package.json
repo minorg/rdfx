@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@rdfx/collection": "0.0.64",
     "@rdfx/curie": "0.0.64",
     "@rdfx/logger": "0.0.64",
     "@rdfx/resource": "0.0.64",

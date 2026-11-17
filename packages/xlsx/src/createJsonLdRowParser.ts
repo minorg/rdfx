@@ -1,6 +1,7 @@
 import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Quad } from "@rdfjs/types";
+import { datasetFactory } from "@rdfx/collection";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import { type Either, Left } from "purify-ts";
 import { appendRecordValue } from "./appendRecordValue.js";
@@ -117,7 +118,7 @@ export function createJsonLdRowParser<
             ...intermediateObjectFunctions.toRdfResource(object, {
               resourceSet: new ResourceSet({
                 dataFactory: options.dataFactory,
-                dataset: options.datasetFactory.dataset(),
+                dataset: datasetFactory.dataset(),
               }),
             }).dataset,
           ]),
