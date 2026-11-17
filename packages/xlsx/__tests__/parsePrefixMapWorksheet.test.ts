@@ -3,14 +3,10 @@ import { beforeAll, describe, it } from "vitest";
 import { logger } from "./logger.js";
 import { readTestWorkbook } from "./readTestWorkbook.js";
 import "@rdfx/testing";
-import { PrefixMapWorksheetParser } from "../src/PrefixMapWorksheetParser.js";
+import { parsePrefixMapWorksheet } from "../src/parsePrefixMapWorksheet.js";
 import type { Worksheet } from "../src/Worksheet.js";
 
-describe("PrefixMapWorksheetParser", async () => {
-  const sut = new PrefixMapWorksheetParser({
-    dataFactory,
-    logger,
-  });
+describe("parsePrefixMapWorksheet", async () => {
   let worksheet: Worksheet;
 
   beforeAll(async () => {
@@ -19,7 +15,10 @@ describe("PrefixMapWorksheetParser", async () => {
   });
 
   it("parse", ({ expect }) => {
-    const prefixMap = sut.parse(worksheet).unsafeCoerce();
+    const prefixMap = parsePrefixMapWorksheet(worksheet, {
+      dataFactory,
+      logger,
+    }).unsafeCoerce();
     expect(prefixMap.size).toStrictEqual(3);
     expect(prefixMap.get("")?.value).toStrictEqual("http://example.com/");
     expect(prefixMap.get("ex")?.value).toStrictEqual("http://example.com/");

@@ -58,15 +58,15 @@ describe("Worksheet", async () => {
       expect(row.length).toBeGreaterThanOrEqual(4);
       expect(row.length).toBeLessThanOrEqual(5);
     }
-    expect(worksheet.rows[4].every((cell) => cell === undefined)).toStrictEqual(
-      true,
-    );
+    expect(
+      worksheet.rows[4].toArray().every((cell) => cell === undefined),
+    ).toStrictEqual(true);
     for (const row of worksheet.rows.slice(5)) {
-      expect(row[0]).toBeDefined();
-      expect(row[1]).toBeUndefined();
-      expect(row[2]).toBeUndefined();
-      expect(row[3]).toBeDefined();
-      expect(row[4]).toBeUndefined();
+      expect(row.at(0)).toBeDefined();
+      expect(row.at(1)).toBeUndefined();
+      expect(row.at(2)).toBeUndefined();
+      expect(row.at(3)).toBeDefined();
+      expect(row.at(4)).toBeUndefined();
     }
   });
 
