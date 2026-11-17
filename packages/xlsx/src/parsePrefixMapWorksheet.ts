@@ -4,7 +4,7 @@ import { validateAbsoluteIri } from "@rdfx/curie";
 import { Either } from "purify-ts";
 import type { WorksheetParser } from "./WorksheetParser.js";
 
-export const prefixMapWorksheetParser: WorksheetParser<PrefixMap> = (
+export const parsePrefixMapWorksheet: WorksheetParser<PrefixMap> = (
   worksheet,
   { dataFactory, logger },
 ) => {

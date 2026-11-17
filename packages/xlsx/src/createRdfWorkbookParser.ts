@@ -1,7 +1,7 @@
 import namespace from "@rdfjs/namespace";
 import type { Quad } from "@rdfjs/types";
 import { Either, Maybe } from "purify-ts";
-import { prefixMapWorksheetParser } from "./prefixMapWorksheetParser.js";
+import { parsePrefixMapWorksheet } from "./parsePrefixMapWorksheet.js";
 import type { WorkbookParser } from "./WorkbookParser.js";
 import type { Worksheet } from "./Worksheet.js";
 import type { WorksheetParser } from "./WorksheetParser.js";
@@ -25,7 +25,7 @@ export function createRdfWorkbookParser(
       const prefixMapWorksheet = workbook.worksheet("$PrefixMap").extract();
       if (prefixMapWorksheet) {
         if (rdfWorksheetParsersFunction(prefixMapWorksheet).isNothing()) {
-          prefixMapWorksheetParser(prefixMapWorksheet, options)
+          parsePrefixMapWorksheet(prefixMapWorksheet, options)
             .ifLeft((error) => {
               logger.error({ error }, "error parsing prefix map worksheet");
             })

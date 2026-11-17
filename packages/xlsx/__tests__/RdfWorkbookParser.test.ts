@@ -2,8 +2,6 @@ import namespace from "@rdfjs/namespace";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { beforeAll, describe, it } from "vitest";
-import { JsonResourceRecordParser } from "../src/JsonResourceRecordParser.js";
-import { ResourceWorkbookParser } from "../src/ResourceWorkbookParser.js";
 import type { Workbook } from "../src/Workbook.js";
 import { logger } from "./logger.js";
 import { readTestWorkbook } from "./readTestWorkbook.js";
@@ -14,19 +12,16 @@ import {
 } from "./xlsx-test-shapes.shaclmate.js";
 import "@rdfx/testing";
 import { Decimal } from "decimal.js";
+import { createJsonLdRowParser } from "../src/createJsonLdRowParser.js";
+import { createRdfWorkbookParser } from "../src/createRdfWorkbookParser.js";
+import { createRdfWorksheetParser } from "../src/createRdfWorksheetParser.js";
 
-describe("ResourceWorkbookParser", async () => {
+describe("RdfWorkbookParser", async () => {
   const ex = namespace("http://example.com/");
-  const sut = new ResourceWorkbookParser({
-    dataFactory,
-    datasetFactory,
-    logger,
-    resourceRecordParsersByWorksheetName: {
-      NodeShape1: (parameters) =>
-        new JsonResourceRecordParser(NodeShape1, parameters),
-      NodeShape2: (parameters) =>
-        new JsonResourceRecordParser(NodeShape2, parameters),
-    },
+
+  const sut = createRdfWorkbookParser({
+    NodeShape1: createRdfWorksheetParser(createJsonLdRowParser(NodeShape1)),
+    NodeShape2: createRdfWorksheetParser(createJsonLdRowParser(NodeShape2)),
   });
   let workbook: Workbook;
 
@@ -38,7 +33,11 @@ describe("ResourceWorkbookParser", async () => {
     let parsedObjectSet: $RdfjsDatasetObjectSet;
 
     beforeAll(() => {
-      const quads = sut.parse(workbook).unsafeCoerce();
+      const quads = sut(workbook, {
+        dataFactory,
+        datasetFactory,
+        logger,
+      }).unsafeCoerce();
       const dataset = datasetFactory.dataset(quads.concat());
       parsedObjectSet = new $RdfjsDatasetObjectSet(dataset);
     });

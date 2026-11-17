@@ -3,7 +3,7 @@ export * from "./CellAddress.js";
 export * from "./createJsonLdRowParser.js";
 export * from "./createRdfWorkbookParser.js";
 export * from "./createRdfWorksheetParser.js";
-export * from "./prefixMapWorksheetParser.js";
+export * from "./parsePrefixMapWorksheet.js";
 export * from "./Row.js";
 export * from "./RowParser.js";
 export * from "./Workbook.js";

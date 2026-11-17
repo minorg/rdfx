@@ -3,6 +3,7 @@ import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Quad } from "@rdfjs/types";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import { type Either, Left } from "purify-ts";
+import { appendRecordValue } from "./appendRecordValue.js";
 import type { RowParser } from "./RowParser.js";
 
 interface IntermediateObjectFunctions<
@@ -61,16 +62,14 @@ export function createJsonLdRowParser<
         }
       }
 
-      const jsonLdValues: (
-        | boolean
-        | { "@language": string; "@value": string }
-        | number
-        | string
-      )[] = [];
       for (const cell of Array.isArray(cells) ? cells : [cells]) {
         const cellHyperlink = cell.hyperlink.extract();
         if (cellHyperlink) {
-          jsonLdValues.push(cellHyperlink.target);
+          appendRecordValue(
+            jsonLdObject,
+            jsonLdObjectKey,
+            cellHyperlink.target,
+          );
           continue;
         }
         const cellValue = cell.value.extract();
@@ -80,28 +79,30 @@ export function createJsonLdRowParser<
         switch (typeof cellValue) {
           case "boolean":
           case "number":
-            jsonLdValues.push(cellValue);
+            appendRecordValue(jsonLdObject, jsonLdObjectKey, cellValue);
             break;
           case "object":
             if (cellValue instanceof Date) {
-              jsonLdValues.push(cellValue.toISOString());
+              appendRecordValue(
+                jsonLdObject,
+                jsonLdObjectKey,
+                cellValue.toISOString(),
+              );
               break;
             }
             throw new RangeError("unexpected object cell value");
           case "string": {
             if (language) {
-              jsonLdValues.push({ "@language": language, "@value": cellValue });
+              appendRecordValue(jsonLdObject, jsonLdObjectKey, {
+                "@language": language,
+                "@value": cellValue,
+              });
             } else {
-              jsonLdValues.push(cellValue);
+              appendRecordValue(jsonLdObject, jsonLdObjectKey, cellValue);
             }
             break;
           }
         }
-      }
-      if (jsonLdValues.length > 0) {
-        jsonLdObject[jsonLdObjectKey] = Array.isArray(cells)
-          ? jsonLdValues
-          : jsonLdValues[0];
       }
     }
 
