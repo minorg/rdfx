@@ -5,8 +5,10 @@ import { Maybe } from "purify-ts";
 import { invariant } from "ts-invariant";
 import { Memoize } from "typescript-memoize";
 import * as xlsx from "xlsx";
+
 import { Cell } from "./Cell.js";
 import { CellAddress } from "./CellAddress.js";
+import { Row } from "./Row.js";
 import type { Workbook } from "./Workbook.js";
 
 export class Worksheet {
@@ -127,6 +129,14 @@ export class Worksheet {
   }
 
   /**
+   * All rows following the header row.
+   */
+  @Memoize()
+  get dataRows(): readonly Row[] {
+    return this.rows.slice(1);
+  }
+
+  /**
    * Get defined names from the perspective of this worksheet.
    *
    * The result will include:
@@ -188,27 +198,79 @@ export class Worksheet {
   }
 
   /**
-   * Dense array of rows with undefined's for empty cells.
-   *
-   * Includes any row that has a populated cell (i.e., within the !ref range of the worksheet).
+   * Header row, an array of strings.
    */
   @Memoize()
-  get rows(): readonly Worksheet.Row[] {
+  get headerRow(): Maybe<readonly (string | undefined)[]> {
+    if (this.rows.length === 0) {
+      return Maybe.empty();
+    }
+
+    const headerRow: (string | undefined)[] = [];
+    for (const [columnI, cell] of this.rows[0].toArray().entries()) {
+      const logContext = {
+        column: columnI,
+        worksheet: { name: this.name },
+        row: 0,
+      };
+
+      if (cell === undefined) {
+        this.logger.warn(logContext, "header cell is empty");
+        headerRow.push(undefined);
+        continue;
+      }
+
+      const cellValue = cell.value.extract();
+      if (cellValue === undefined) {
+        this.logger.warn(logContext, "header cell has no value");
+        headerRow.push(undefined);
+        continue;
+      }
+
+      if (typeof cellValue !== "string") {
+        this.logger.warn(
+          logContext,
+          "header cell has %s value",
+          typeof cellValue,
+        );
+        headerRow.push(undefined);
+        continue;
+      }
+
+      const stringCellValue = cellValue.trim();
+      if (stringCellValue.length === 0) {
+        this.logger.warn(logContext, "header cell has empty/blank value");
+        continue;
+      }
+
+      headerRow.push(stringCellValue);
+    }
+
+    return Maybe.of(headerRow);
+  }
+
+  /**
+   * Array of rows, including any row that has a populated cell (i.e., within the !ref range of the worksheet).
+   */
+  @Memoize()
+  get rows(): readonly Row[] {
     const worksheetRange = xlsx.utils.decode_range(
       this.delegate["!ref"] || "A1",
     );
-    const rows: Worksheet.Row[] = [];
+    const rows: Row[] = [];
     for (let r = worksheetRange.s.r; r <= worksheetRange.e.r; ++r) {
-      const row: (Cell | undefined)[] = [];
+      const cells: (Cell | undefined)[] = [];
       for (let c = worksheetRange.s.c; c <= worksheetRange.e.c; ++c) {
-        row.push(
+        cells.push(
           this.cellsByAddress.get(
             CellAddress.parse(xlsx.utils.encode_cell({ c, r }), this.name)
               .string,
           ),
         );
       }
-      rows.push(row);
+      rows.push(
+        new Row({ cells, index: r, logger: this.logger, worksheet: this }),
+      );
     }
     return rows;
   }
@@ -239,8 +301,4 @@ export class Worksheet {
   toString(): string {
     return `Worksheet(name=${this.name})`;
   }
-}
-
-export namespace Worksheet {
-  export type Row = readonly (Cell | undefined)[];
 }
