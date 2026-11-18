@@ -18,7 +18,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/index.js",
-  "name": "@rdfx/curie",
+  "name": "@rdfx/iri",
   "packageManager": "npm@11.11.0",
   "repository": {
     "type": "git",
@@ -30,7 +30,7 @@
     "depcheck": "depcheck --ignores=\"@tsconfig/*,vitest,vitest-fetch-mock\" .",
     "dev": "tsc -w --preserveWatchOutput",
     "dev:tests": "tsc -p __tests__ -w --preserveWatchOutput",
-    "test": "cd ../.. && vitest run packages/curie/__tests__"
+    "test": "cd ../.. && vitest run packages/iri/__tests__"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

@@ -84,12 +84,12 @@ const externalDependencies = {
 type PackageName =
   | "builder"
   | "collection"
-  | "curie"
   | "data-factory"
   | "format"
   | "fs"
   | "git"
   | "graph-store"
+  | "iri"
   | "literal"
   | "logger"
   | "parser"
@@ -187,22 +187,6 @@ const workspaces = {
         ],
       },
     },
-    curie: {
-      dependencies: {
-        external: [
-          "@rdfjs/namespace",
-          "@rdfjs/prefix-map",
-          "@rdfjs/types",
-          "@types/rdfjs__namespace",
-          "@types/rdfjs__prefix-map",
-          "purify-ts",
-          "ts-invariant",
-        ],
-      },
-      devDependencies: {
-        internal: ["data-factory"],
-      },
-    },
     "data-factory": {
       dependencies: {
         external: ["@rdfjs/types"],
@@ -245,6 +229,22 @@ const workspaces = {
           ...tsconfigDefault.compilerOptions,
           types: ["node"],
         },
+      },
+    },
+    iri: {
+      dependencies: {
+        external: [
+          "@rdfjs/namespace",
+          "@rdfjs/prefix-map",
+          "@rdfjs/types",
+          "@types/rdfjs__namespace",
+          "@types/rdfjs__prefix-map",
+          "purify-ts",
+          "ts-invariant",
+        ],
+      },
+      devDependencies: {
+        internal: ["data-factory"],
       },
     },
     logger: {
