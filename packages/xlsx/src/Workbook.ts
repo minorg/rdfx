@@ -5,6 +5,7 @@ import { Either, Maybe } from "purify-ts";
 import { invariant } from "ts-invariant";
 import { Memoize } from "typescript-memoize";
 import * as xlsx from "xlsx";
+
 import type { Cell } from "./Cell.js";
 import type { CellAddress } from "./CellAddress.js";
 import { Worksheet } from "./Worksheet.js";
@@ -12,9 +13,10 @@ import { Worksheet } from "./Worksheet.js";
 export class Workbook {
   private readonly delegate: xlsx.WorkBook;
   private readonly depParser = new DepParser();
-  private readonly logger: Logger;
 
-  private constructor({
+  readonly logger: Logger;
+
+  constructor({
     delegate,
     logger,
   }: { delegate: xlsx.WorkBook; logger: Logger }) {
@@ -93,6 +95,15 @@ export class Workbook {
     return Maybe.fromNullable(this.cellsByAddress.get(address.string));
   }
 
+  toUint8Array(bookType: xlsx.BookType): Uint8Array {
+    return new Uint8Array(
+      xlsx.write(this.delegate, {
+        bookType: bookType,
+        type: "array",
+      }),
+    );
+  }
+
   worksheet(nameOrNumber: number | string): Maybe<Worksheet> {
     switch (typeof nameOrNumber) {
       case "number":
@@ -103,4 +114,28 @@ export class Workbook {
         );
     }
   }
+}
+
+export namespace Workbook {
+  export class Builder {
+    private readonly delegate: xlsx.WorkBook = xlsx.utils.book_new();
+
+    addWorksheet(worksheetBuilder: Worksheet.Builder): this {
+      xlsx.utils.book_append_sheet(
+        this.delegate,
+        worksheetBuilder.build(),
+        worksheetBuilder.name,
+      );
+      return this;
+    }
+
+    build(options?: { logger: Logger }): Workbook {
+      return new Workbook({
+        delegate: this.delegate,
+        logger: options?.logger ?? nopLogger,
+      });
+    }
+  }
+
+  export namespace Builder {}
 }

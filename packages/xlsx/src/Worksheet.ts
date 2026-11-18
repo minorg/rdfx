@@ -302,3 +302,143 @@ export class Worksheet {
     return `Worksheet(name=${this.name})`;
   }
 }
+
+export namespace Worksheet {
+  export class Builder {
+    private headerRow: string[] | undefined;
+    private dataRows: (xlsx.CellObject | undefined)[][] = [];
+    readonly name: string;
+
+    constructor({ name }: { name: string }) {
+      this.name = name;
+    }
+
+    addRows(...rows: readonly Builder.Row[]): this {
+      for (const row of rows) {
+        if (Array.isArray(row)) {
+          this.dataRows.push(
+            row.map((cell) =>
+              cell !== undefined ? this.cellToCellObject(cell) : undefined,
+            ),
+          );
+        } else {
+          if (!this.headerRow) {
+            this.headerRow = [];
+          }
+
+          const dataRow: (xlsx.CellObject | undefined)[] = [];
+          for (const [header, cells] of Object.entries(row)) {
+            const cellsArray = Array.isArray(cells) ? cells : [cells];
+
+            let headerRowIndex: number | undefined;
+            for (const cell of cellsArray) {
+              headerRowIndex = this.headerRow.indexOf(
+                header,
+                headerRowIndex === undefined ? 0 : headerRowIndex + 1,
+              );
+              if (headerRowIndex === -1) {
+                headerRowIndex = this.headerRow.length;
+                this.headerRow.push(header);
+              }
+              while (dataRow.length <= headerRowIndex) {
+                dataRow.push(undefined);
+              }
+              dataRow[headerRowIndex] = this.cellToCellObject(cell);
+            }
+          }
+          this.dataRows.push(dataRow);
+        }
+      }
+
+      return this;
+    }
+
+    build(): xlsx.WorkSheet {
+      let aoa: (xlsx.CellObject | string | undefined)[][];
+      const headerRow = this.headerRow;
+      if (headerRow) {
+        aoa = [headerRow];
+        aoa = aoa.concat(
+          this.dataRows.map((dataRow) => {
+            // Even out the rows
+            while (dataRow.length < headerRow.length) {
+              dataRow.push(undefined);
+            }
+            return dataRow;
+          }),
+        );
+      } else {
+        aoa = this.dataRows;
+      }
+      return xlsx.utils.aoa_to_sheet(aoa);
+    }
+
+    private cellToCellObject(cell: Builder.Cell): xlsx.CellObject {
+      let formula: Maybe<string>;
+      let hyperlink: Maybe<Cell.Hyperlink> | undefined;
+      let value: Cell.Value | undefined;
+
+      if (
+        typeof cell === "object" &&
+        !(cell instanceof Date) &&
+        !(cell instanceof Cell.Error)
+      ) {
+        formula = cell.formula;
+        hyperlink = cell.hyperlink;
+        value = cell.value.extract();
+      } else {
+        formula = Maybe.empty();
+        hyperlink = Maybe.empty();
+        value = cell;
+      }
+
+      let t: xlsx.CellObject["t"];
+      switch (typeof value) {
+        case "boolean":
+          t = "b";
+          break;
+        case "object":
+          invariant(value instanceof Date);
+          t = "d";
+          break;
+        case "number":
+          t = "n";
+          break;
+        case "string":
+          t = "s";
+          break;
+        case "undefined":
+          t = "z";
+          break;
+        default:
+          throw new RangeError(typeof value);
+      }
+
+      return {
+        f: formula.extract(),
+        l: hyperlink
+          .map((hyperlink) => ({
+            Target: hyperlink.target,
+            Tooltip: hyperlink.tooltip.extract(),
+          }))
+          .extract(),
+        t,
+        v: value,
+      };
+    }
+  }
+
+  export namespace Builder {
+    export type Cell =
+      | {
+          readonly formula: Maybe<string>;
+          readonly hyperlink: Maybe<Cell.Hyperlink>;
+          readonly value: Maybe<Cell.Value>;
+        }
+      | Cell.Value;
+
+    export type Row =
+      | readonly (Cell | undefined)[]
+      | Record<string, Cell | readonly Cell[]>;
+  }
+}

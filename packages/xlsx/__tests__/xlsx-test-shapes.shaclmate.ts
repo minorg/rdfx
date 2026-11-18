@@ -66,6 +66,12 @@ function $arrayFromJsonArray<ItemJsonValueT, ItemT, ItemSchemaT>(
   };
 }
 
+function $arrayToJsonArray<ItemT, ItemJsonValueT>(
+  itemToJsonValue: $ToJsonFunction<ItemT, ItemJsonValueT>,
+): $ToJsonFunction<readonly ItemT[], ItemJsonValueT[]> {
+  return (array) => array.map(itemToJsonValue);
+}
+
 const $bigDecimalFromJsonString: $FromJsonFunction<
   string,
   BigDecimal,
@@ -101,6 +107,10 @@ const $bigDecimalJsonSchema = z
 function $bigDecimalLiteral(value: BigDecimal): Literal {
   return dataFactory.literal(value.toFixed(), $xsd_decimal);
 }
+
+const $bigDecimalToJsonString: $ToJsonFunction<BigDecimal, string> = (
+  bigDecimal,
+) => bigDecimal.toFixed();
 
 function $bigIntFromJsonString<
   JsonValueT extends string,
@@ -138,6 +148,9 @@ const $bigIntJsonSchema = z
   string,
   string
 >;
+
+const $bigIntToJsonString: $ToJsonFunction<bigint, string> = (bigInt) =>
+  bigInt.toString();
 
 const $blankNodeFromJsonString: $FromJsonFunction<
   string,
@@ -428,6 +441,12 @@ const $dateTimeFromRdfResourceValues: $FromRdfResourceValuesFunction<
   );
 
 const $dateTimeJsonSchema = z.coerce.date().transform((v) => v.toISOString());
+
+const $dateTimeToJsonString: $ToJsonFunction<Date, string> = (date) =>
+  date.toISOString();
+
+const $dateToJsonString: $ToJsonFunction<Date, string> = (date) =>
+  $toIsoDateString(date);
 
 function $filterArray<ItemT, ItemFilterT>(
   filterItem: (itemFilter: ItemFilterT, item: ItemT) => boolean,
@@ -865,6 +884,12 @@ interface $IriSchema<IriT extends string = string> {
   readonly kind: "Iri";
 }
 
+function $iriToJsonString<IriT extends string = string>(
+  iri: NamedNode<IriT>,
+): IriT {
+  return iri.value;
+}
+
 const $langStringFromJsonObject: $FromJsonFunction<
   $LangStringJsonObject,
   Literal,
@@ -895,6 +920,14 @@ namespace $LangStringJsonObject {
 type $LangStringSchema = Omit<$LiteralSchema, "kind"> & {
   readonly kind: "LangString";
 };
+
+const $langStringToJsonObject: $ToJsonFunction<
+  Literal,
+  $LangStringJsonObject
+> = (literal) => ({
+  "@language": literal.language,
+  "@value": literal.value,
+});
 
 /**
  * Type of lazy properties that return a single required value. This is a class instead of an interface so it can be instanceof'd elsewhere.
@@ -1023,6 +1056,12 @@ export function $parseIri(identifier: string): Either<Error, NamedNode> {
 }
 
 type $Primitive = bigint | boolean | number | string;
+
+function $primitiveToJsonValue<PrimitiveT extends boolean | number | string>(
+  primitive: PrimitiveT,
+): PrimitiveT {
+  return primitive;
+}
 
 export type $PropertyPath = RdfxResourcePropertyPath;
 
@@ -1280,6 +1319,12 @@ const $termLikeFromRdfResourceValues: $FromRdfResourceValuesFunction<
   return chain;
 };
 
+export function $toIsoDateString(date: Date): string {
+  return date.toISOString().replace(/T.*$/, "");
+}
+
+export type $ToJsonFunction<T, JsonT> = (value: T) => JsonT;
+
 export type $ToRdfResourceFunction<
   IdentifierT extends Resource.Identifier,
   ObjectT extends object,
@@ -1473,7 +1518,10 @@ export namespace $DefaultPartial {
       ),
       $type: Right("DefaultPartial" as const),
     }).map((object) =>
-      $monkeyPatchObject(object, { $toString: $DefaultPartial.$toString }),
+      $monkeyPatchObject(object, {
+        toJson: $DefaultPartial.toJson,
+        $toString: $DefaultPartial.$toString,
+      }),
     );
 
   export type CreateParameters<
@@ -1583,6 +1631,19 @@ export namespace $DefaultPartial {
   } as const;
 
   export type Schema = typeof schema;
+
+  export const toJson: $ToJsonFunction<
+    $DefaultPartial,
+    $DefaultPartial.Json
+  > = (_defaultPartial) =>
+    JSON.parse(
+      JSON.stringify({
+        "@id":
+          _defaultPartial.$identifier().termType === "BlankNode"
+            ? `_:${_defaultPartial.$identifier().value}`
+            : _defaultPartial.$identifier().value,
+      }),
+    );
 
   export const toRdfResource: $ToRdfResourceFunction<
     $DefaultPartial.Identifier,
@@ -1883,7 +1944,10 @@ export namespace NodeShape1 {
       )(parameters.nodeProperty, parameters.$defaultNamespace),
       stringProperty: Either.of(parameters.stringProperty),
     }).map((object) =>
-      $monkeyPatchObject(object, { $toString: NodeShape1.$toString }),
+      $monkeyPatchObject(object, {
+        toJson: NodeShape1.toJson,
+        $toString: NodeShape1.$toString,
+      }),
     );
 
   export type CreateParameters<
@@ -2254,6 +2318,36 @@ export namespace NodeShape1 {
 
   export type Schema = typeof schema;
 
+  export const toJson: $ToJsonFunction<NodeShape1, NodeShape1.Json> = (
+    _nodeShape1,
+  ) =>
+    JSON.parse(
+      JSON.stringify({
+        "@id": _nodeShape1.$identifier().value,
+        booleanProperty: $primitiveToJsonValue<boolean>(
+          _nodeShape1.booleanProperty,
+        ),
+        dateProperty: $dateToJsonString(_nodeShape1.dateProperty),
+        dateTimeProperty: $dateTimeToJsonString(_nodeShape1.dateTimeProperty),
+        decimalProperty: $bigDecimalToJsonString(_nodeShape1.decimalProperty),
+        doubleProperty: $primitiveToJsonValue<number>(
+          _nodeShape1.doubleProperty,
+        ),
+        integerProperty: $bigIntToJsonString(_nodeShape1.integerProperty),
+        intProperty: $primitiveToJsonValue<number>(_nodeShape1.intProperty),
+        iriProperty: $iriToJsonString<string>(_nodeShape1.iriProperty),
+        langStringProperty: $arrayToJsonArray($langStringToJsonObject)(
+          _nodeShape1.langStringProperty,
+        ),
+        nodeProperty: ((value) => $DefaultPartial.toJson(value.partial))(
+          _nodeShape1.nodeProperty,
+        ),
+        stringProperty: $primitiveToJsonValue<string>(
+          _nodeShape1.stringProperty,
+        ),
+      }),
+    );
+
   export const toRdfResource: $ToRdfResourceFunction<
     NodeShape1.Identifier,
     NodeShape1
@@ -2348,7 +2442,10 @@ export namespace NodeShape2 {
         ),
       ),
     }).map((object) =>
-      $monkeyPatchObject(object, { $toString: NodeShape2.$toString }),
+      $monkeyPatchObject(object, {
+        toJson: NodeShape2.toJson,
+        $toString: NodeShape2.$toString,
+      }),
     );
 
   export type CreateParameters<
@@ -2481,6 +2578,19 @@ export namespace NodeShape2 {
 
   export type Schema = typeof schema;
 
+  export const toJson: $ToJsonFunction<NodeShape2, NodeShape2.Json> = (
+    _nodeShape2,
+  ) =>
+    JSON.parse(
+      JSON.stringify({
+        "@id":
+          _nodeShape2.$identifier().termType === "BlankNode"
+            ? `_:${_nodeShape2.$identifier().value}`
+            : _nodeShape2.$identifier().value,
+        label: $arrayToJsonArray($langStringToJsonObject)(_nodeShape2.label),
+      }),
+    );
+
   export const toRdfResource: $ToRdfResourceFunction<
     NodeShape2.Identifier,
     NodeShape2
@@ -2510,6 +2620,23 @@ export type $Object =
   | NodeShape2.Discriminated;
 
 export namespace $Object {
+  export function toJson(object: $Object) {
+    switch (object.$type) {
+      case "DefaultPartial":
+        return {
+          ...$DefaultPartial.toJson(object),
+          $type: "DefaultPartial" as const,
+        };
+      case "NodeShape1":
+        return { ...NodeShape1.toJson(object), $type: "NodeShape1" as const };
+      case "NodeShape2":
+        return { ...NodeShape2.toJson(object), $type: "NodeShape2" as const };
+      default:
+        object satisfies never;
+        throw new Error("should never reach this point");
+    }
+  }
+
   export const toRdfResource: $ToRdfResourceFunction<
     Resource.Identifier,
     $Object
