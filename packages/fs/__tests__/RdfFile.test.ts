@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { datasetFactory, PrefixMap } from "@rdfx/collection";
+import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { describe, expect, it } from "vitest";
 import { RdfFile } from "../src/RdfFile.js";
@@ -12,6 +12,7 @@ import {
   type UncompressedRdfFormat,
   uncompressedRdfFormats,
 } from "@rdfx/format";
+import { PrefixMap } from "@rdfx/iri";
 import { iterableToStream } from "@rdfx/stream";
 
 describe("RdfFile", () => {

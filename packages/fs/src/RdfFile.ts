@@ -1,6 +1,6 @@
 import type { DatasetCore, NamedNode, Stream } from "@rdfjs/types";
-import type { PrefixMap } from "@rdfx/collection";
 import { RdfFormat, uncompressedRdfFormatsByMimeType } from "@rdfx/format";
+import type { PrefixMap } from "@rdfx/iri";
 import { type Logger, nopLogger } from "@rdfx/logger";
 import type serializers from "@rdfx/serializer";
 import { Either, EitherAsync, Left } from "purify-ts";

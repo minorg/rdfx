@@ -17,8 +17,7 @@
     "@types/rdfjs__sink-map": "~2.0.5",
     "@types/readable-stream": "~4.0.23",
     "n3": "~1.26.0",
-    "purify-ts": "~2.1.4",
-    "readable-stream": "^4.7.0"
+    "purify-ts": "~2.1.4"
   },
   "devDependencies": {},
   "files": [

@@ -1,6 +1,7 @@
 import path from "node:path";
-import { datasetFactory, PrefixMap } from "@rdfx/collection";
+import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
+import { PrefixMap } from "@rdfx/iri";
 import { describe, it } from "vitest";
 import { RdfDirectory } from "../src/RdfDirectory.js";
 import { testDataDirectoryPath } from "./paths.js";

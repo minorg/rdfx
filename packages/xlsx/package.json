@@ -14,6 +14,9 @@
   },
   "devDependencies": {
     "@rdfx/collection": "0.0.66",
+    "@rdfx/data-factory": "0.0.66",
+    "@rdfx/literal": "0.0.66",
+    "@rdfx/string": "0.0.66",
     "@rdfx/testing": "0.0.66",
     "@shaclmate/cli": "4.0.104",
     "@types/node": "^24",
