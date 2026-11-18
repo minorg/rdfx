@@ -3,43 +3,15 @@ import { appendRecordValue } from "./appendRecordValue.js";
 import type { Cell } from "./Cell.js";
 import type { Worksheet } from "./Worksheet.js";
 
-type ShaclmateItemType =
-  | "BigDecimal"
-  | "BigInt"
-  | "Boolean"
-  | "Date"
-  | "DateTime"
-  | "Float"
-  | "Identifier"
-  | "Int"
-  | "Iri"
-  | "LangString"
-  | "Lazy"
-  | "String";
-
 interface IntermediateObjectFunctions<
   IntermediateObjectT extends object,
   JsonObjectT extends object,
 > {
-  schema: {
-    kind: "Object";
-    properties: Record<
-      string,
-      {
-        type:
-          | {
-              kind: ShaclmateItemType;
-            }
-          | {
-              itemType: { kind: ShaclmateItemType };
-              kind: "List" | "Set";
-            };
-      }
-    >;
-  };
-
   toJson: (object: IntermediateObjectT) => JsonObjectT;
 }
+
+const DATE_ISO_STRING_REGEX =
+  /^(?:\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|02-(?:0[1-9]|1\d|2[0-8]))|(?:\d\d(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29)(?:T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d\.\d{3}Z)?$/;
 
 export function createJsonLdRowSerializer<
   IntermediateObjectT extends object,
@@ -66,21 +38,6 @@ export function createJsonLdRowSerializer<
       for (const value of values) {
         if (value == null) {
           continue;
-        }
-
-        let valueType: ShaclmateItemType | undefined;
-        const propertySchema =
-          intermediateObjectFunctions.schema.properties[key];
-        if (propertySchema) {
-          switch (propertySchema.type.kind) {
-            case "List":
-            case "Set":
-              valueType = propertySchema.type.itemType.kind;
-              break;
-            default:
-              valueType = propertySchema.type.kind;
-              break;
-          }
         }
 
         switch (typeof value) {
@@ -115,16 +72,12 @@ export function createJsonLdRowSerializer<
             break;
           }
           case "string": {
-            if (valueType) {
-              switch (valueType) {
-                case "Date":
-                case "DateTime":
-                  appendRecordValue(row, key, new Date(value));
-                  break;
-                default:
-                  appendRecordValue(row, key, value);
-                  break;
-              }
+            if (DATE_ISO_STRING_REGEX.test(value)) {
+              // If the string exactly matches the format of Date.toISOString() or Date.toISOString().slice(0, 10) (date only)
+              // then convert it to a Date.
+              appendRecordValue(row, key, new Date(value));
+            } else {
+              appendRecordValue(row, key, value);
             }
             break;
           }
