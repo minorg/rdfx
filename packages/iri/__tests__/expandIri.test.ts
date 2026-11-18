@@ -2,7 +2,7 @@ import namespace from "@rdfjs/namespace";
 import dataFactory from "@rdfx/data-factory";
 import { describe, it } from "vitest";
 import "@rdfx/testing";
-import { PrefixMap } from "@rdfjs/prefix-map/PrefixMap.js";
+import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import { expandIri } from "../src/expandIri.js";
 
 describe("expandIri", () => {

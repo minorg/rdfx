@@ -1,4 +1,4 @@
-import { default as PrefixMap } from "@rdfjs/prefix-map/PrefixMap.js";
+import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import dataFactory from "@rdfx/data-factory";
 
 export const testPrefixMap = new PrefixMap(
