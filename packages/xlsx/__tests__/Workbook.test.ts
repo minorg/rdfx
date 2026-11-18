@@ -74,6 +74,13 @@ describe("Workbook", async () => {
     );
   });
 
+  it("toUint8Array", ({ expect }) => {
+    const uint8 = sut.toUint8Array("xlsx");
+    expect(uint8).not.toHaveLength(0);
+    const newWorkbook = Workbook.read(uint8).unsafeCoerce();
+    expect(newWorkbook.worksheets.length).toStrictEqual(sut.worksheets.length);
+  });
+
   it("worksheet", ({ expect }) => {
     expect(sut.worksheet(0).extract()?.name).toStrictEqual("Data");
     expect(sut.worksheet("Config").extract()).toBeDefined();
