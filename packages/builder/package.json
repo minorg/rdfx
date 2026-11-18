@@ -10,6 +10,7 @@
     "change-case": "~5.4.4",
     "purify-ts": "~2.1.4"
   },
+  "description": "Builder pattern implementations for creating RDF in TypeScript for common shapes such as SHACL-SHACL and SKOS",
   "devDependencies": {
     "@rdfx/collection": "0.0.68",
     "@rdfx/fs": "0.0.68",

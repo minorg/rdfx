@@ -4,6 +4,7 @@
     "@rdfjs/types": "~2.0.1",
     "purify-ts": "~2.1.4"
   },
+  "description": "Utilities for converting between strings and RDF/JS terms",
   "devDependencies": {
     "@types/rdfjs__to-ntriples": "~3.0.0"
   },

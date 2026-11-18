@@ -12,6 +12,7 @@
     "typescript-memoize": "~1.1.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
+  "description": "Read and write RDF from and to spreadsheets",
   "devDependencies": {
     "@rdfx/collection": "0.0.68",
     "@rdfx/data-factory": "0.0.68",

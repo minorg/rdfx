@@ -10,6 +10,7 @@
     "purify-ts": "~2.1.4",
     "tinybase": "~9.4.0"
   },
+  "description": "TinyBase-backed @rdfx/graph-store implementation",
   "devDependencies": {
     "@rdfx/collection": "0.0.68",
     "@rdfx/data-factory": "0.0.68"

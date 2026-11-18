@@ -4,6 +4,7 @@
     "@types/n3": "~1.26.0",
     "n3": "~1.26.0"
   },
+  "description": "SPARQL 1.1 client",
   "devDependencies": {
     "@rdfx/testing": "0.0.68",
     "oxigraph": "0.5.8"

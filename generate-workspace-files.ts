@@ -166,6 +166,8 @@ const workspaces = {
           "string",
         ],
       },
+      description:
+        "Builder pattern implementations for creating RDF in TypeScript for common shapes such as SHACL-SHACL and SKOS",
       devDependencies: {
         external: [
           "@shaclmate/compiler",
@@ -186,17 +188,22 @@ const workspaces = {
           "@types/rdfjs__term-set",
         ],
       },
+      description: "Collections for RDF/JS terms, such as term maps and sets",
     },
     "data-factory": {
       dependencies: {
         external: ["@rdfjs/types"],
         internal: ["string"],
       },
+      description:
+        "RDF/JS DataFactory implementation with .toJSON and .toString methods",
     },
     format: {
       dependencies: {
         external: ["mime", "purify-ts"],
       },
+      description:
+        "Metadata about RDF formats such as Turtle and utilities for inferring formats from file names",
       devDependencies: {
         internal: ["testing"],
       },
@@ -223,6 +230,7 @@ const workspaces = {
           "string",
         ],
       },
+      description: "Read and write RDF from and to the file system",
       devDependencies: {
         internal: ["testing"],
       },
@@ -233,6 +241,29 @@ const workspaces = {
           types: ["node"],
         },
       },
+    },
+    git: {
+      dependencies: {
+        external: [
+          "@rdfjs/types",
+          "isomorphic-git",
+          "purify-ts",
+          "typescript-memoize",
+        ],
+        internal: ["data-factory", "fs", "graph-store", "logger"],
+      },
+      description: "Git-backed versioned @rdfx/graph-store implementations",
+    },
+    "graph-store": {
+      dependencies: {
+        external: ["@rdfjs/types", "purify-ts"],
+        internal: ["logger", "stream"],
+      },
+      devDependencies: {
+        internal: ["collection", "data-factory", "testing"],
+      },
+      description:
+        "Graph store abstraction modeled on the SPARQL 1.1 Graph Store HTTP Protocol",
     },
     iri: {
       dependencies: {
@@ -250,31 +281,7 @@ const workspaces = {
       devDependencies: {
         internal: ["data-factory", "testing"],
       },
-    },
-    logger: {
-      devDependencies: {
-        external: ["pino"],
-      },
-    },
-    git: {
-      dependencies: {
-        external: [
-          "@rdfjs/types",
-          "isomorphic-git",
-          "purify-ts",
-          "typescript-memoize",
-        ],
-        internal: ["data-factory", "fs", "graph-store", "logger"],
-      },
-    },
-    "graph-store": {
-      dependencies: {
-        external: ["@rdfjs/types", "purify-ts"],
-        internal: ["logger", "stream"],
-      },
-      devDependencies: {
-        internal: ["collection", "data-factory", "testing"],
-      },
+      description: "Utilities for working with IRIs",
     },
     literal: {
       dependencies: {
@@ -284,6 +291,14 @@ const workspaces = {
         external: ["@tpluscode/rdf-ns-builders"],
         internal: ["data-factory", "testing"],
       },
+      description:
+        "Decoder and factory between RDF/JS Literals and TypeScript types",
+    },
+    logger: {
+      devDependencies: {
+        external: ["pino"],
+      },
+      description: "Logger abstraction / facade over common logging libraries",
     },
     parser: {
       dependencies: {
@@ -302,12 +317,14 @@ const workspaces = {
         ],
         internal: ["format", "stream"],
       },
+      description: "Parsers for RDF/JS streams",
     },
     resource: {
       dependencies: {
         external: ["@rdfjs/types", "decimal.js", "purify-ts"],
         internal: ["collection", "literal", "string"],
       },
+      description: "Resource abstraction over RDF/JS datasets",
       devDependencies: {
         external: ["@tpluscode/rdf-ns-builders", "housemd", "ts-invariant"],
         internal: ["data-factory", "testing"],
@@ -334,11 +351,13 @@ const workspaces = {
         ],
         internal: ["format", "iri", "stream"],
       },
+      description: "Serializers to RDF/JS streams",
     },
     "sparql-client": {
       dependencies: {
         external: ["@rdfjs/types", "@types/n3", "n3"],
       },
+      description: "SPARQL 1.1 client",
       devDependencies: {
         external: ["oxigraph"],
         internal: ["testing"],
@@ -353,6 +372,7 @@ const workspaces = {
           "purify-ts",
         ],
       },
+      description: "Utilities for working with RDF/JS streams",
     },
     string: {
       dependencies: {
@@ -362,6 +382,7 @@ const workspaces = {
         external: ["@types/rdfjs__to-ntriples"],
         // internal: ["data-factory"], // Don't declare a circular dependency
       },
+      description: "Utilities for converting between strings and RDF/JS terms",
     },
     testing: {
       dependencies: {
@@ -374,6 +395,7 @@ const workspaces = {
           "vitest",
         ],
       },
+      description: "Testing utilities for @rdfx libraries",
     },
     tinybase: {
       dependencies: {
@@ -383,6 +405,7 @@ const workspaces = {
       devDependencies: {
         internal: ["collection", "data-factory"],
       },
+      description: "TinyBase-backed @rdfx/graph-store implementation",
     },
     xlsx: {
       bundleDependencies: {
@@ -400,6 +423,7 @@ const workspaces = {
         ],
         internal: ["collection", "iri", "logger", "resource"],
       },
+      description: "Read and write RDF from and to spreadsheets",
       devDependencies: {
         external: [
           "@shaclmate/cli",

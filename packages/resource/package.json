@@ -7,6 +7,7 @@
     "decimal.js": "~10.6.0",
     "purify-ts": "~2.1.4"
   },
+  "description": "Resource abstraction over RDF/JS datasets",
   "devDependencies": {
     "@rdfx/data-factory": "0.0.68",
     "@rdfx/testing": "0.0.68",

@@ -16,6 +16,7 @@
     "typescript-memoize": "~1.1.1",
     "unbzip2-stream": "~1.4.3"
   },
+  "description": "Read and write RDF from and to the file system",
   "devDependencies": {
     "@rdfx/testing": "0.0.68"
   },

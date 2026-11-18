@@ -7,6 +7,7 @@
     "@types/rdfjs__term-map": "~2.0.10",
     "@types/rdfjs__term-set": "~2.0.9"
   },
+  "description": "Collections for RDF/JS terms, such as term maps and sets",
   "devDependencies": {},
   "files": [
     "LICENSE",

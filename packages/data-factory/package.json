@@ -3,6 +3,7 @@
     "@rdfx/string": "0.0.68",
     "@rdfjs/types": "~2.0.1"
   },
+  "description": "RDF/JS DataFactory implementation with .toJSON and .toString methods",
   "devDependencies": {},
   "files": [
     "LICENSE",

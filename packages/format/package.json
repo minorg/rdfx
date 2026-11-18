@@ -3,6 +3,7 @@
     "mime": "~4.1.0",
     "purify-ts": "~2.1.4"
   },
+  "description": "Metadata about RDF formats such as Turtle and utilities for inferring formats from file names",
   "devDependencies": {
     "@rdfx/testing": "0.0.68"
   },

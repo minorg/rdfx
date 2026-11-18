@@ -19,6 +19,7 @@
     "n3": "~1.26.0",
     "purify-ts": "~2.1.4"
   },
+  "description": "Serializers to RDF/JS streams",
   "devDependencies": {},
   "files": [
     "LICENSE",

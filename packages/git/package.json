@@ -9,6 +9,7 @@
     "purify-ts": "~2.1.4",
     "typescript-memoize": "~1.1.1"
   },
+  "description": "Git-backed versioned @rdfx/graph-store implementations",
   "devDependencies": {},
   "files": [
     "LICENSE",

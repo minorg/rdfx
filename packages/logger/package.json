@@ -1,5 +1,6 @@
 {
   "dependencies": {},
+  "description": "Logger abstraction / facade over common logging libraries",
   "devDependencies": {
     "pino": "~10.3.1"
   },

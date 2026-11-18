@@ -5,6 +5,7 @@
     "@rdfjs/types": "~2.0.1",
     "purify-ts": "~2.1.4"
   },
+  "description": "Graph store abstraction modeled on the SPARQL 1.1 Graph Store HTTP Protocol",
   "devDependencies": {
     "@rdfx/collection": "0.0.68",
     "@rdfx/data-factory": "0.0.68",

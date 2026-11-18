@@ -10,7 +10,7 @@ TypeScript libraries for working with [RDF](https://www.w3.org/RDF/).
 * [`@rdfx/collection`](packages/collection): collections for [RDF/JS terms](https://rdf.js.org/data-model-spec/#term-interface), such as term maps and sets
 * [`@rdfx/data-factory`](packages/data-factory): [RDF/JS DataFactory](https://rdf.js.org/data-model-spec/#datafactory-interface) implementation
 * [`@rdfx/format`](packages/format): metadata about RDF formats such as [Turtle](https://www.w3.org/TR/turtle/) and utilities for inferring formats from file names
-* [`@rdfx/fs`](packages/fs): utilities for reading RDF data from the file system
+* [`@rdfx/fs`](packages/fs): read and write RDF from and to the file system
 * [`@rdfx/git`](packages/git): git-backed versioned `GraphStore` implementations
 * [`@rdfx/graph-store`](packages/graph-store): `GraphStore` abstraction modeled on the [SPARQL 1.1 Graph Store HTTP Protocol](https://www.w3.org/TR/sparql11-http-rdf-update/)
 * [`@rdfx/iri`](packages/iri): utilities for working with [IRIs](https://en.wikipedia.org/wiki/Internationalized_Resource_Identifier)
