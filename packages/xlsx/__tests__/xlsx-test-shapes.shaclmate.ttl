@@ -14,6 +14,16 @@
         sh:minCount 1 ;
         sh:path :booleanProperty
     ], [
+        sh:datatype xsd:date ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :dateProperty
+    ], [
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:path :dateTimeProperty
+    ], [
         sh:datatype xsd:decimal ;
         sh:maxCount 1 ;
         sh:minCount 1 ;
@@ -52,16 +62,6 @@
         sh:maxCount 1 ;
         sh:minCount 1 ;
         sh:path :stringProperty
-    ], [
-        sh:datatype xsd:date ;
-        sh:maxCount 1 ;
-        sh:minCount 1 ;
-        sh:path :dateProperty
-    ], [
-        sh:datatype xsd:dateTime ;
-        sh:maxCount 1 ;
-        sh:minCount 1 ;
-        sh:path :dateTimeProperty
     ] .
 
 :NodeShape2

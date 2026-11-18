@@ -8,7 +8,7 @@ import type {
 } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
-import { expandIri, type PrefixMap } from "@rdfx/iri";
+import { expandIri, type NamespaceBuilder, type PrefixMap } from "@rdfx/iri";
 import { LiteralFactory } from "@rdfx/literal";
 import {
   PropertyPath as RdfxResourcePropertyPath,
@@ -241,7 +241,7 @@ function $constrainPrimitive<
 type $ConversionFunction<
   SourceT,
   TargetT,
-  DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+  DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
 > = (
   source: SourceT,
   defaultNamespace?: DefaultNamespaceT,
@@ -258,7 +258,7 @@ const $convertToBigInt: $ConversionFunction<
 > = (value) => Either.encase(() => BigInt(value));
 
 function $convertToIdentifierProperty<
-  DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+  DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
 >(
   identifier:
     | (() => BlankNode | NamedNode)
@@ -288,7 +288,7 @@ function $convertToIdentifierProperty<
 }
 
 function $convertToIri<
-  DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+  DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
 >(
   value: NamedNode | (keyof DefaultNamespaceT & string),
   defaultNamespace?: DefaultNamespaceT,
@@ -302,7 +302,7 @@ function $convertToIri<
 }
 
 function $convertToIriIdentifierProperty<
-  DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+  DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
 >(
   identifier:
     | (() => NamedNode)
@@ -364,7 +364,7 @@ function $convertToLazy<PartialT, ResolvedT>(
 }
 
 function $convertToScalarSet<
-  DefaultNamespaceT extends $NamespaceBuilder,
+  DefaultNamespaceT extends NamespaceBuilder,
   ItemSourceT,
   ItemTargetT,
 >(
@@ -723,7 +723,7 @@ export type $FromJsonFunction<JsonValueT, ValueT, ValueSchemaT> = [
       jsonValue: JsonValueT,
       options?: {
         context?: unknown;
-        defaultNamespace?: $NamespaceBuilder;
+        defaultNamespace?: NamespaceBuilder;
         objectSet?: $ObjectSet;
         prefixMap?: PrefixMap;
         schema?: unknown;
@@ -733,7 +733,7 @@ export type $FromJsonFunction<JsonValueT, ValueT, ValueSchemaT> = [
       jsonValue: JsonValueT,
       options: {
         context?: unknown;
-        defaultNamespace?: $NamespaceBuilder;
+        defaultNamespace?: NamespaceBuilder;
         objectSet?: $ObjectSet;
         prefixMap?: PrefixMap;
         schema: ValueSchemaT;
@@ -1016,15 +1016,6 @@ function $monkeyPatchObject<T extends object>(
 
   return obj;
 }
-
-/**
- * NamespaceBuilder type excerpted from @rdfjs/namespace (MIT license) in lieu of a type import.
- */
-export type $NamespaceBuilder<TermNames extends string = any> = Record<
-  TermNames,
-  NamedNode
-> &
-  ((property?: TemplateStringsArray | TermNames) => NamedNode);
 
 interface $NumericFilter<T> {
   readonly in?: readonly T[];
@@ -1507,7 +1498,7 @@ export namespace $DefaultPartial {
     `$DefaultPartial(${JSON.stringify($DefaultPartial.toStringRecord(_defaultPartial))})`;
 
   export const create: <
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
     parameters?: $DefaultPartial.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, $DefaultPartial.Discriminated> = (parameters = {}) =>
@@ -1525,7 +1516,7 @@ export namespace $DefaultPartial {
     );
 
   export type CreateParameters<
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   > = {
     readonly $defaultNamespace?: $DefaultNamespaceT;
     readonly $identifier?:
@@ -1536,7 +1527,7 @@ export namespace $DefaultPartial {
   };
 
   export const createUnsafe: <
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
     parameters?: $DefaultPartial.CreateParameters<$DefaultNamespaceT>,
   ) => $DefaultPartial.Discriminated = (parameters) =>
@@ -1611,12 +1602,18 @@ export namespace $DefaultPartial {
 
     export function schema() {
       return z.union([
-        z.object({ "@id": z.string().min(1) }),
+        z.object({
+          "@id": z
+            .string()
+            .min(1)
+            .default(() => `_:${dataFactory.blankNode().value}`),
+        }),
         z
           .string()
           .min(1)
+          .default(() => `_:${dataFactory.blankNode().value}`)
           .transform((id) => ({ "@id": id })),
-      ]) satisfies z.ZodType<Json, Json | string>;
+      ]) as unknown as z.ZodType<Json, Json | string>;
     }
   }
 
@@ -1903,7 +1900,7 @@ export namespace NodeShape1 {
   ) => `NodeShape1(${JSON.stringify(NodeShape1.toStringRecord(_nodeShape1))})`;
 
   export const create: <
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
     parameters: NodeShape1.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, NodeShape1.Discriminated> = (parameters) =>
@@ -1951,7 +1948,7 @@ export namespace NodeShape1 {
     );
 
   export type CreateParameters<
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   > = {
     readonly $defaultNamespace?: $DefaultNamespaceT;
     readonly $identifier:
@@ -1972,7 +1969,7 @@ export namespace NodeShape1 {
   };
 
   export const createUnsafe: <
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
     parameters: NodeShape1.CreateParameters<$DefaultNamespaceT>,
   ) => NodeShape1.Discriminated = (parameters) =>
@@ -2422,7 +2419,7 @@ export namespace NodeShape2 {
   ) => `NodeShape2(${JSON.stringify(NodeShape2.toStringRecord(_nodeShape2))})`;
 
   export const create: <
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
     parameters: NodeShape2.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, NodeShape2.Discriminated> = (parameters) =>
@@ -2449,7 +2446,7 @@ export namespace NodeShape2 {
     );
 
   export type CreateParameters<
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   > = {
     readonly $defaultNamespace?: $DefaultNamespaceT;
     readonly $identifier?:
@@ -2461,7 +2458,7 @@ export namespace NodeShape2 {
   };
 
   export const createUnsafe: <
-    $DefaultNamespaceT extends $NamespaceBuilder = $NamespaceBuilder,
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
     parameters: NodeShape2.CreateParameters<$DefaultNamespaceT>,
   ) => NodeShape2.Discriminated = (parameters) =>
@@ -2551,7 +2548,10 @@ export namespace NodeShape2 {
 
     export function schema() {
       return z.object({
-        "@id": z.string().min(1),
+        "@id": z
+          .string()
+          .min(1)
+          .default(() => `_:${dataFactory.blankNode().value}`),
         label: z.array($LangStringJsonObject.schema()).min(1),
       }) satisfies z.ZodType<Json>;
     }
@@ -2673,7 +2673,7 @@ export interface $ObjectSet {
   nodeShape1(
     identifier: NodeShape1.Identifier,
     options?: { preferredLanguages?: readonly string[] },
-  ): Promise<Either<Error, NodeShape1>>;
+  ): Promise<Either<Error, NodeShape1.Discriminated>>;
 
   nodeShape1Count(
     query?: Pick<
@@ -2688,12 +2688,12 @@ export interface $ObjectSet {
 
   nodeShape1s(
     query?: $ObjectSet.Query<NodeShape1.Filter, NodeShape1.Identifier>,
-  ): Promise<Either<Error, readonly NodeShape1[]>>;
+  ): Promise<Either<Error, readonly NodeShape1.Discriminated[]>>;
 
   nodeShape2(
     identifier: NodeShape2.Identifier,
     options?: { preferredLanguages?: readonly string[] },
-  ): Promise<Either<Error, NodeShape2>>;
+  ): Promise<Either<Error, NodeShape2.Discriminated>>;
 
   nodeShape2Count(
     query?: Pick<
@@ -2708,7 +2708,7 @@ export interface $ObjectSet {
 
   nodeShape2s(
     query?: $ObjectSet.Query<NodeShape2.Filter, NodeShape2.Identifier>,
-  ): Promise<Either<Error, readonly NodeShape2[]>>;
+  ): Promise<Either<Error, readonly NodeShape2.Discriminated[]>>;
 }
 
 export namespace $ObjectSet {
@@ -2754,14 +2754,14 @@ export class $RdfjsDatasetObjectSet implements $ObjectSet {
   async nodeShape1(
     identifier: NodeShape1.Identifier,
     options?: { preferredLanguages?: readonly string[] },
-  ): Promise<Either<Error, NodeShape1>> {
+  ): Promise<Either<Error, NodeShape1.Discriminated>> {
     return this.nodeShape1Sync(identifier, options);
   }
 
   nodeShape1Sync(
     identifier: NodeShape1.Identifier,
     options?: { preferredLanguages?: readonly string[] },
-  ): Either<Error, NodeShape1> {
+  ): Either<Error, NodeShape1.Discriminated> {
     return this.nodeShape1sSync({
       identifiers: [identifier],
       preferredLanguages: options?.preferredLanguages,
@@ -2802,15 +2802,15 @@ export class $RdfjsDatasetObjectSet implements $ObjectSet {
 
   async nodeShape1s(
     query?: $ObjectSet.Query<NodeShape1.Filter, NodeShape1.Identifier>,
-  ): Promise<Either<Error, readonly NodeShape1[]>> {
+  ): Promise<Either<Error, readonly NodeShape1.Discriminated[]>> {
     return this.nodeShape1sSync(query);
   }
 
   nodeShape1sSync(
     query?: $ObjectSet.Query<NodeShape1.Filter, NodeShape1.Identifier>,
-  ): Either<Error, readonly NodeShape1[]> {
+  ): Either<Error, readonly NodeShape1.Discriminated[]> {
     return this.#objectsSync<
-      NodeShape1,
+      NodeShape1.Discriminated,
       NodeShape1.Filter,
       NodeShape1.Identifier
     >(
@@ -2826,14 +2826,14 @@ export class $RdfjsDatasetObjectSet implements $ObjectSet {
   async nodeShape2(
     identifier: NodeShape2.Identifier,
     options?: { preferredLanguages?: readonly string[] },
-  ): Promise<Either<Error, NodeShape2>> {
+  ): Promise<Either<Error, NodeShape2.Discriminated>> {
     return this.nodeShape2Sync(identifier, options);
   }
 
   nodeShape2Sync(
     identifier: NodeShape2.Identifier,
     options?: { preferredLanguages?: readonly string[] },
-  ): Either<Error, NodeShape2> {
+  ): Either<Error, NodeShape2.Discriminated> {
     return this.nodeShape2sSync({
       identifiers: [identifier],
       preferredLanguages: options?.preferredLanguages,
@@ -2874,15 +2874,15 @@ export class $RdfjsDatasetObjectSet implements $ObjectSet {
 
   async nodeShape2s(
     query?: $ObjectSet.Query<NodeShape2.Filter, NodeShape2.Identifier>,
-  ): Promise<Either<Error, readonly NodeShape2[]>> {
+  ): Promise<Either<Error, readonly NodeShape2.Discriminated[]>> {
     return this.nodeShape2sSync(query);
   }
 
   nodeShape2sSync(
     query?: $ObjectSet.Query<NodeShape2.Filter, NodeShape2.Identifier>,
-  ): Either<Error, readonly NodeShape2[]> {
+  ): Either<Error, readonly NodeShape2.Discriminated[]> {
     return this.#objectsSync<
-      NodeShape2,
+      NodeShape2.Discriminated,
       NodeShape2.Filter,
       NodeShape2.Identifier
     >(
@@ -2896,7 +2896,10 @@ export class $RdfjsDatasetObjectSet implements $ObjectSet {
   }
 
   #objectsSync<
-    ObjectT extends { readonly $identifier: () => ObjectIdentifierT },
+    ObjectT extends {
+      readonly $identifier: () => ObjectIdentifierT;
+      $type: string;
+    },
     ObjectFilterT,
     ObjectIdentifierT extends BlankNode | NamedNode,
   >(

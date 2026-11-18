@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "@rdfx/collection": "0.0.67",
-    "@rdfx/iri": "0.0.67",
-    "@rdfx/logger": "0.0.67",
-    "@rdfx/resource": "0.0.67",
+    "@rdfx/collection": "0.0.68",
+    "@rdfx/iri": "0.0.68",
+    "@rdfx/logger": "0.0.68",
+    "@rdfx/resource": "0.0.68",
     "@rdfjs/types": "~2.0.1",
     "fast-formula-parser": "1.0.19",
     "js-sha256": "~0.11.1",
@@ -13,12 +13,12 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@rdfx/collection": "0.0.67",
-    "@rdfx/data-factory": "0.0.67",
-    "@rdfx/literal": "0.0.67",
-    "@rdfx/string": "0.0.67",
-    "@rdfx/testing": "0.0.67",
-    "@shaclmate/cli": "4.0.104",
+    "@rdfx/collection": "0.0.68",
+    "@rdfx/data-factory": "0.0.68",
+    "@rdfx/literal": "0.0.68",
+    "@rdfx/string": "0.0.68",
+    "@rdfx/testing": "0.0.68",
+    "@shaclmate/cli": "4.0.108",
     "@types/node": "^24",
     "decimal.js": "~10.6.0",
     "libreoffice-convert": "~1.8.1",
@@ -47,5 +47,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.67"
+  "version": "0.0.68"
 }

@@ -4,7 +4,7 @@
     "purify-ts": "~2.1.4"
   },
   "devDependencies": {
-    "@rdfx/testing": "0.0.67"
+    "@rdfx/testing": "0.0.68"
   },
   "files": [
     "LICENSE",
@@ -29,5 +29,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.67"
+  "version": "0.0.68"
 }
