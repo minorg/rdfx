@@ -155,14 +155,15 @@ const workspaces = {
   packages: {
     builder: {
       dependencies: {
-        external: [
-          "@rdfjs/namespace",
-          "@rdfjs/types",
-          "@types/rdfjs__namespace",
-          "change-case",
-          "purify-ts",
+        external: ["@rdfjs/types", "change-case", "purify-ts"],
+        internal: [
+          "data-factory",
+          "iri",
+          "literal",
+          "logger",
+          "resource",
+          "string",
         ],
-        internal: ["data-factory", "literal", "logger", "resource", "string"],
       },
       devDependencies: {
         external: [
@@ -385,11 +386,7 @@ const workspaces = {
       },
       dependencies: {
         external: [
-          "@rdfjs/namespace",
-          "@rdfjs/prefix-map",
           "@rdfjs/types",
-          "@types/rdfjs__namespace",
-          "@types/rdfjs__prefix-map",
           "fast-formula-parser",
           "js-sha256",
           "purify-ts",
@@ -397,7 +394,7 @@ const workspaces = {
           "typescript-memoize",
           "xlsx",
         ],
-        internal: ["collection", "curie", "logger", "resource"],
+        internal: ["collection", "iri", "logger", "resource"],
       },
       devDependencies: {
         external: [
