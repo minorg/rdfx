@@ -18,7 +18,7 @@
     "@rdfx/literal": "0.0.67",
     "@rdfx/string": "0.0.67",
     "@rdfx/testing": "0.0.67",
-    "@shaclmate/cli": "4.0.104",
+    "@shaclmate/cli": "4.0.108",
     "@types/node": "^24",
     "decimal.js": "~10.6.0",
     "libreoffice-convert": "~1.8.1",
