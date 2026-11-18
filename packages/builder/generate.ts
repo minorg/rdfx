@@ -5,9 +5,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import url from "node:url";
 import { promisify } from "node:util";
-import { datasetFactory, PrefixMap } from "@rdfx/collection";
+import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { RdfDirectory, RdfFile } from "@rdfx/fs";
+import { PrefixMap } from "@rdfx/iri";
 import { ConsoleLogger, type Logger } from "@rdfx/logger";
 import { Compiler, ShapesGraph, TsGenerator } from "@shaclmate/compiler";
 
