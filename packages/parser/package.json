@@ -1,14 +1,18 @@
 {
   "dependencies": {
-    "@rdfx/format": "0.0.66",
-    "@rdfx/stream": "0.0.66",
+    "@rdfx/format": "0.0.67",
+    "@rdfx/stream": "0.0.67",
     "@rdfjs/parser-jsonld": "~2.1.3",
     "@rdfjs/parser-n3": "~2.1.0",
     "@rdfjs/sink-map": "~2.0.1",
     "@rdfjs/types": "~2.0.1",
+    "@types/n3": "~1.26.0",
     "@types/rdfjs__parser-jsonld": "~2.1.7",
     "@types/rdfjs__parser-n3": "~2.0.6",
-    "purify-ts": "~2.1.4"
+    "@types/readable-stream": "~4.0.23",
+    "n3": "~1.26.0",
+    "purify-ts": "~2.1.4",
+    "readable-stream": "^4.7.0"
   },
   "devDependencies": {},
   "files": [
@@ -35,5 +39,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.66"
+  "version": "0.0.67"
 }

@@ -1,7 +1,6 @@
-import type { NamespaceBuilder } from "@rdfjs/namespace";
-import namespace from "@rdfjs/namespace";
 import type { BlankNode, NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
+import { type NamespaceBuilder, namespace } from "@rdfx/iri";
 import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
 import type { IdentifierLike } from "./IdentifierLike.js";
 import type { IriLike } from "./IriLike.js";

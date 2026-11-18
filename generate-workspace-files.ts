@@ -5,7 +5,7 @@ import path from "node:path";
 import url from "node:url";
 import type { CompilerOptions } from "typescript";
 
-const VERSION = "0.0.66";
+const VERSION = "0.0.67";
 
 const shaclmateVersion = "4.0.104";
 const vitestVersion = "~4.1.5";
@@ -84,12 +84,12 @@ const externalDependencies = {
 type PackageName =
   | "builder"
   | "collection"
-  | "curie"
   | "data-factory"
   | "format"
   | "fs"
   | "git"
   | "graph-store"
+  | "iri"
   | "literal"
   | "logger"
   | "parser"
@@ -155,14 +155,15 @@ const workspaces = {
   packages: {
     builder: {
       dependencies: {
-        external: [
-          "@rdfjs/namespace",
-          "@rdfjs/types",
-          "@types/rdfjs__namespace",
-          "change-case",
-          "purify-ts",
+        external: ["@rdfjs/types", "change-case", "purify-ts"],
+        internal: [
+          "data-factory",
+          "iri",
+          "literal",
+          "logger",
+          "resource",
+          "string",
         ],
-        internal: ["data-factory", "literal", "logger", "resource", "string"],
       },
       devDependencies: {
         external: [
@@ -177,30 +178,12 @@ const workspaces = {
       dependencies: {
         external: [
           "@rdfjs/dataset",
-          "@rdfjs/prefix-map",
           "@rdfjs/term-map",
           "@rdfjs/term-set",
           "@types/rdfjs__dataset",
-          "@types/rdfjs__prefix-map",
           "@types/rdfjs__term-map",
           "@types/rdfjs__term-set",
         ],
-      },
-    },
-    curie: {
-      dependencies: {
-        external: [
-          "@rdfjs/namespace",
-          "@rdfjs/prefix-map",
-          "@rdfjs/types",
-          "@types/rdfjs__namespace",
-          "@types/rdfjs__prefix-map",
-          "purify-ts",
-          "ts-invariant",
-        ],
-      },
-      devDependencies: {
-        internal: ["data-factory"],
       },
     },
     "data-factory": {
@@ -211,7 +194,10 @@ const workspaces = {
     },
     format: {
       dependencies: {
-        external: ["mime"],
+        external: ["mime", "purify-ts"],
+      },
+      devDependencies: {
+        internal: ["testing"],
       },
     },
     fs: {
@@ -245,6 +231,22 @@ const workspaces = {
           ...tsconfigDefault.compilerOptions,
           types: ["node"],
         },
+      },
+    },
+    iri: {
+      dependencies: {
+        external: [
+          "@rdfjs/namespace",
+          "@rdfjs/prefix-map",
+          "@rdfjs/types",
+          "@types/rdfjs__namespace",
+          "@types/rdfjs__prefix-map",
+          "purify-ts",
+          "ts-invariant",
+        ],
+      },
+      devDependencies: {
+        internal: ["data-factory", "testing"],
       },
     },
     logger: {
@@ -288,9 +290,13 @@ const workspaces = {
           "@rdfjs/parser-n3",
           "@rdfjs/sink-map",
           "@rdfjs/types",
+          "@types/n3",
           "@types/rdfjs__parser-jsonld",
           "@types/rdfjs__parser-n3",
+          "@types/readable-stream",
+          "n3",
           "purify-ts",
+          "readable-stream",
         ],
         internal: ["format", "stream"],
       },
@@ -308,7 +314,6 @@ const workspaces = {
     serializer: {
       dependencies: {
         external: [
-          "@rdfjs/prefix-map",
           "@rdfjs/serializer-jsonld-ext",
           "@rdfjs/serializer-ntriples",
           "@rdfjs/serializer-rdfjs",
@@ -316,18 +321,16 @@ const workspaces = {
           "@rdfjs/sink-map",
           "@rdfjs/types",
           "@types/n3",
-          "@types/readable-stream",
-          "@types/rdfjs__prefix-map",
           "@types/rdfjs__serializer-jsonld-ext",
           "@types/rdfjs__serializer-ntriples",
           "@types/rdfjs__serializer-rdfjs",
           "@types/rdfjs__serializer-turtle",
           "@types/rdfjs__sink-map",
+          "@types/readable-stream",
           "n3",
           "purify-ts",
-          "readable-stream",
         ],
-        internal: ["format", "stream"],
+        internal: ["format", "iri", "stream"],
       },
     },
     "sparql-client": {
@@ -385,11 +388,7 @@ const workspaces = {
       },
       dependencies: {
         external: [
-          "@rdfjs/namespace",
-          "@rdfjs/prefix-map",
           "@rdfjs/types",
-          "@types/rdfjs__namespace",
-          "@types/rdfjs__prefix-map",
           "fast-formula-parser",
           "js-sha256",
           "purify-ts",
@@ -397,7 +396,7 @@ const workspaces = {
           "typescript-memoize",
           "xlsx",
         ],
-        internal: ["collection", "curie", "logger", "resource"],
+        internal: ["collection", "iri", "logger", "resource"],
       },
       devDependencies: {
         external: [
@@ -407,7 +406,13 @@ const workspaces = {
           "libreoffice-convert",
           "zod",
         ],
-        internal: ["collection", "testing"],
+        internal: [
+          "collection",
+          "data-factory",
+          "literal",
+          "string",
+          "testing",
+        ],
       },
     },
   } satisfies Record<PackageName, Workspace>,

@@ -1,6 +1,6 @@
-import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type { BlankNode, Literal, NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
+import type { NamespaceBuilder } from "@rdfx/iri";
 import { LiteralFactory } from "@rdfx/literal";
 import type { PropertyPath } from "@rdfx/resource";
 import { sh as _namespace, owl, rdfs } from "@tpluscode/rdf-ns-builders";

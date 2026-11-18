@@ -1,5 +1,5 @@
-import namespace from "@rdfjs/namespace";
 import type { Quad } from "@rdfjs/types";
+import { namespace } from "@rdfx/iri";
 import { Either, Maybe } from "purify-ts";
 import { parsePrefixMapWorksheet } from "./parsePrefixMapWorksheet.js";
 import type { WorkbookParser } from "./WorkbookParser.js";

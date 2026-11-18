@@ -1,4 +1,3 @@
-import namespace from "@rdfjs/namespace";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
 import { beforeAll, describe, it } from "vitest";
@@ -11,6 +10,7 @@ import {
   NodeShape2,
 } from "./xlsx-test-shapes.shaclmate.js";
 import "@rdfx/testing";
+import { namespace } from "@rdfx/iri";
 import { Decimal } from "decimal.js";
 import { createJsonLdRowParser } from "../src/createJsonLdRowParser.js";
 import { createRdfWorkbookParser } from "../src/createRdfWorkbookParser.js";

@@ -1,11 +1,12 @@
 import type { DatasetCore, Stream } from "@rdfjs/types";
-import { datasetFactory, type PrefixMap } from "@rdfx/collection";
+import { datasetFactory } from "@rdfx/collection";
 import { RdfFormat } from "@rdfx/format";
 import {
   type GraphIdentifier,
   type GraphStore,
   RdfjsDatasetGraphStore,
 } from "@rdfx/graph-store";
+import type { PrefixMap } from "@rdfx/iri";
 import { type Logger, nopLogger } from "@rdfx/logger";
 import { iterableToStream } from "@rdfx/stream";
 import { Either, EitherAsync, Left, type Maybe } from "purify-ts";

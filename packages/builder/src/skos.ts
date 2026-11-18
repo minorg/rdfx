@@ -1,6 +1,6 @@
-import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
+import type { NamespaceBuilder } from "@rdfx/iri";
 import { skos as _namespace } from "@tpluscode/rdf-ns-builders";
 import { sentenceCase } from "change-case";
 import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";

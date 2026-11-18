@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { DatasetCore, Quad, Stream } from "@rdfjs/types";
-import type { PrefixMap } from "@rdfx/collection";
+import type { PrefixMap } from "@rdfx/iri";
 import { type Logger, nopLogger } from "@rdfx/logger";
 import { iterableToStream } from "@rdfx/stream";
 import { type Either, EitherAsync } from "purify-ts";

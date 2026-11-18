@@ -1,4 +1,3 @@
-import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import JsonLdSerializer, {
   type SerializerOptions as JsonLdSerializerOptions,
 } from "@rdfjs/serializer-jsonld-ext";
@@ -10,6 +9,7 @@ import TurtleSerializer, {
   type SerializerOptions as TurtleSerializerOptions,
 } from "@rdfjs/serializer-turtle";
 import SinkMap from "@rdfjs/sink-map";
+import type { PrefixMap } from "@rdfx/iri";
 import N3Serializer, {
   type SerializerOptions as N3SerializerOptions,
 } from "./N3Serializer.js";
