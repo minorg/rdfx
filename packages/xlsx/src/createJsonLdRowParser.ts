@@ -1,7 +1,6 @@
-import type { NamespaceBuilder } from "@rdfjs/namespace";
-import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Quad } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
+import type { NamespaceBuilder, PrefixMap } from "@rdfx/iri";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import { type Either, Left } from "purify-ts";
 import { appendRecordValue } from "./appendRecordValue.js";

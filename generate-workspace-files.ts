@@ -178,11 +178,9 @@ const workspaces = {
       dependencies: {
         external: [
           "@rdfjs/dataset",
-          "@rdfjs/prefix-map",
           "@rdfjs/term-map",
           "@rdfjs/term-set",
           "@types/rdfjs__dataset",
-          "@types/rdfjs__prefix-map",
           "@types/rdfjs__term-map",
           "@types/rdfjs__term-set",
         ],
@@ -309,7 +307,6 @@ const workspaces = {
     serializer: {
       dependencies: {
         external: [
-          "@rdfjs/prefix-map",
           "@rdfjs/serializer-jsonld-ext",
           "@rdfjs/serializer-ntriples",
           "@rdfjs/serializer-rdfjs",
@@ -318,7 +315,6 @@ const workspaces = {
           "@rdfjs/types",
           "@types/n3",
           "@types/readable-stream",
-          "@types/rdfjs__prefix-map",
           "@types/rdfjs__serializer-jsonld-ext",
           "@types/rdfjs__serializer-ntriples",
           "@types/rdfjs__serializer-rdfjs",
@@ -328,7 +324,7 @@ const workspaces = {
           "purify-ts",
           "readable-stream",
         ],
-        internal: ["format", "stream"],
+        internal: ["format", "iri", "stream"],
       },
     },
     "sparql-client": {

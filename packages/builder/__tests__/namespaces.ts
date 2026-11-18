@@ -1,6 +1,6 @@
-import namespace, { type NamespaceBuilder } from "@rdfjs/namespace";
 import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
+import { type NamespaceBuilder, namespace } from "@rdfx/iri";
 
 interface ExCbox {
   "": NamedNode<"http://example.com/cbox/">;

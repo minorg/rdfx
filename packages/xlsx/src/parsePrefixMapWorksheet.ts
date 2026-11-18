@@ -1,6 +1,4 @@
-import type { PrefixMapInit } from "@rdfjs/prefix-map/PrefixMap.js";
-import PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
-import { validateAbsoluteIri } from "@rdfx/curie";
+import { PrefixMap, type PrefixMapInit, validateAbsoluteIri } from "@rdfx/iri";
 import { Either } from "purify-ts";
 import type { WorksheetParser } from "./WorksheetParser.js";
 

@@ -1,5 +1,5 @@
-import type { NamespaceBuilder } from "@rdfjs/namespace";
 import type { BlankNode, NamedNode } from "@rdfjs/types";
+import type { NamespaceBuilder } from "@rdfx/iri";
 import type { IdentifierLike } from "./IdentifierLike.js";
 import type { IriLike } from "./IriLike.js";
 

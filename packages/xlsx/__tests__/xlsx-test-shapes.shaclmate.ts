@@ -6,9 +6,9 @@ import type {
   Quad_Graph,
   Variable,
 } from "@rdfjs/types";
-import { datasetFactory, type PrefixMap } from "@rdfx/collection";
-import { expandIri } from "@rdfx/curie";
+import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
+import { expandIri, type PrefixMap } from "@rdfx/iri";
 import { LiteralFactory } from "@rdfx/literal";
 import {
   PropertyPath as RdfxResourcePropertyPath,

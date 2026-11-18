@@ -1,5 +1,5 @@
-import type PrefixMap from "@rdfjs/prefix-map/PrefixMap.js";
 import type { Sink, Stream } from "@rdfjs/types";
+import type { PrefixMap } from "@rdfx/iri";
 import { type MimeFormat, type Prefixes, StreamWriter } from "n3";
 import type { Readable } from "readable-stream";
 
