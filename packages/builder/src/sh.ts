@@ -173,7 +173,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
   type NodeShapePropertyArray = readonly (
     | NamedNode
     | DefaultNamespaceKey
-    | sh_PropertyShape
+    | sh_PropertyShape.Discriminated
   )[];
 
   type NodeShapePropertiesRecordValue = Omit<
@@ -207,7 +207,7 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
           | NodeShapePropertyArray;
         readonly shaclmateName?: string;
       },
-    ): sh_NodeShape => {
+    ): ReturnType<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>> => {
       const nodeShapeIdentifier = toIdentifier($identifier);
 
       let {
@@ -220,7 +220,9 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         ...otherParameters
       } = parameters ?? {};
 
-      let properties: (NamedNode | sh_PropertyShape)[] | undefined;
+      let properties:
+        | (NamedNode | sh_PropertyShape.Discriminated)[]
+        | undefined;
       if (propertiesParameter) {
         if (Array.isArray(propertiesParameter)) {
           properties = (propertiesParameter as NodeShapePropertyArray).map(

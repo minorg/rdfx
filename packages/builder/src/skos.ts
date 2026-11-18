@@ -19,13 +19,13 @@ export interface ConvertibleConceptParameters<
 type ConvertibleRelatedConcepts<ConceptIriString> =
   | ConceptIriString
   | NamedNode
-  | skos_Concept
-  | readonly (ConceptIriString | NamedNode | skos_Concept)[];
+  | skos_Concept.Discriminated
+  | readonly (ConceptIriString | NamedNode | skos_Concept.Discriminated)[];
 
 function convertRelatedConcepts<ConceptIriString extends string>(
   relatedConcepts: ConvertibleRelatedConcepts<ConceptIriString> | undefined,
   toIri: (conceptIriString: ConceptIriString) => NamedNode,
-): readonly (NamedNode | skos_Concept)[] {
+): readonly (NamedNode | skos_Concept.Discriminated)[] {
   if (!relatedConcepts) {
     return [];
   }
@@ -36,13 +36,13 @@ function convertRelatedConcepts<ConceptIriString extends string>(
       : [relatedConcepts]) as readonly (
       | ConceptIriString
       | NamedNode
-      | skos_Concept
+      | skos_Concept.Discriminated
     )[]
   ).map((relatedConcept) => {
     if (typeof relatedConcept === "string") {
       return toIri(relatedConcept);
     }
-    return relatedConcept as NamedNode | skos_Concept;
+    return relatedConcept as NamedNode | skos_Concept.Discriminated;
   });
 }
 
@@ -58,7 +58,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
       DefaultNamespaceKey,
       DefaultNamespaceT
     >,
-  ): skos_Concept {
+  ): skos_Concept.Discriminated {
     let {
       broader: broaderParameter,
       prefLabel,
@@ -100,7 +100,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
   return {
     namespace: _namespace as NamespaceBuilder<keyof typeof _namespace>,
 
-    Concept: Concept,
+    Concept,
 
     ConceptScheme: <
       ConceptsRecordT extends
@@ -115,7 +115,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
       > & {
         readonly concepts?: ConceptsRecordT;
       },
-    ): skos_ConceptScheme => {
+    ): skos_ConceptScheme.Discriminated => {
       let {
         concepts: conceptsRecord,
         prefLabel,
@@ -139,7 +139,7 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
           `${conceptSchemeIdentifier.value}_${conceptsRecordKey}`,
         );
 
-      const concepts: skos_Concept[] = [];
+      const concepts: skos_Concept.Discriminated[] = [];
       for (const [conceptsRecordKey, conceptsRecordValue] of Object.entries(
         conceptsRecord ?? {},
       ) as [ConceptsRecordKey, ConceptsRecordValue][]) {
