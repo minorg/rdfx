@@ -76,6 +76,7 @@ const externalDependencies = {
   "typescript-memoize": "~1.1.1",
   "unbzip2-stream": "~1.4.3",
   xlsx: "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+  "validate-iri": "1.0.1",
   vitest: vitestVersion,
   "vitest-fetch-mock": "~0.4.5",
   zod: "~4.1.12",
@@ -243,6 +244,7 @@ const workspaces = {
           "@types/rdfjs__prefix-map",
           "purify-ts",
           "ts-invariant",
+          "validate-iri",
         ],
       },
       devDependencies: {
