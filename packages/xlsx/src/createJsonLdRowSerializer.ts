@@ -1,14 +1,21 @@
+import { invariant } from "ts-invariant";
 import { appendRecordValue } from "./appendRecordValue.js";
 import type { Cell } from "./Cell.js";
 import type { Worksheet } from "./Worksheet.js";
 
 type ShaclmateItemType =
+  | "BigDecimal"
+  | "BigInt"
   | "Boolean"
   | "Date"
   | "DateTime"
+  | "Float"
   | "Identifier"
+  | "Int"
   | "Iri"
-  | "LangString";
+  | "LangString"
+  | "Lazy"
+  | "String";
 
 interface IntermediateObjectFunctions<
   IntermediateObjectT extends object,
@@ -48,7 +55,8 @@ export function createJsonLdRowSerializer<
     const row: Record<string, Cell.Value | Cell.Value[]> = {};
     for (const [key, valueOrValues] of Object.entries(jsonLdObject)) {
       if (key.startsWith("@")) {
-        row[key] = valueOrValues;
+        invariant(typeof valueOrValues === "string", typeof valueOrValues);
+        appendRecordValue(row, key, valueOrValues);
         continue;
       }
 
@@ -59,6 +67,22 @@ export function createJsonLdRowSerializer<
         if (value == null) {
           continue;
         }
+
+        let valueType: ShaclmateItemType | undefined;
+        const propertySchema =
+          intermediateObjectFunctions.schema.properties[key];
+        if (propertySchema) {
+          switch (propertySchema.type.kind) {
+            case "List":
+            case "Set":
+              valueType = propertySchema.type.itemType.kind;
+              break;
+            default:
+              valueType = propertySchema.type.kind;
+              break;
+          }
+        }
+
         switch (typeof value) {
           case "boolean":
           case "number":
@@ -82,7 +106,7 @@ export function createJsonLdRowSerializer<
               typeof value["@id"] === "string" &&
               Object.keys(value).length === 1
             ) {
-              appendRecordValue(row, "@id", value["@id"]);
+              appendRecordValue(row, key, value["@id"]);
             } else {
               throw new RangeError(
                 `unsupported object type: ${JSON.stringify(value)}`,
@@ -91,20 +115,7 @@ export function createJsonLdRowSerializer<
             break;
           }
           case "string": {
-            const propertySchema =
-              intermediateObjectFunctions.schema.properties[key];
-            if (propertySchema) {
-              let valueType: ShaclmateItemType;
-              switch (propertySchema.type.kind) {
-                case "List":
-                case "Set":
-                  valueType = propertySchema.type.itemType.kind;
-                  break;
-                default:
-                  valueType = propertySchema.type.kind;
-                  break;
-              }
-
+            if (valueType) {
               switch (valueType) {
                 case "Date":
                 case "DateTime":

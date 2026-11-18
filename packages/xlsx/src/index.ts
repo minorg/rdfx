@@ -1,6 +1,7 @@
 export * from "./Cell.js";
 export * from "./CellAddress.js";
 export * from "./createJsonLdRowParser.js";
+export * from "./createJsonLdRowSerializer.js";
 export * from "./createRdfWorkbookParser.js";
 export * from "./createRdfWorksheetParser.js";
 export * from "./parsePrefixMapWorksheet.js";
