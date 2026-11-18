@@ -6,7 +6,8 @@
     "@types/rdfjs__namespace": "~2.0.10",
     "@types/rdfjs__prefix-map": "~0.1.5",
     "purify-ts": "~2.1.4",
-    "ts-invariant": "~0.10.3"
+    "ts-invariant": "~0.10.3",
+    "validate-iri": "1.0.1"
   },
   "devDependencies": {
     "@rdfx/data-factory": "0.0.67",

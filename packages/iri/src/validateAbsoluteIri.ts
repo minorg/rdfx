@@ -1,18 +1,12 @@
 import { type Either, Left, Right } from "purify-ts";
+import { type IriValidationStrategy, validateIri } from "validate-iri";
 
 // RFC 3987 scheme: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) ":"
 const SCHEME = /^[A-Za-z][A-Za-z0-9+.-]*:/;
 
-// Characters never allowed in an IRI reference:
-// C0 controls, space, DEL, C1 controls, and < > " { } | \ ^ `
-// biome-ignore lint/suspicious/noControlCharactersInRegex: Want the null
-const FORBIDDEN = /[\u0000-\u0020\u007F-\u009F<>"{}|\\^`]/;
-
-// A "%" must start a valid percent-encoded octet.
-const BAD_PERCENT_ENCODING = /%(?![0-9A-Fa-f]{2})/;
-
 export function validateAbsoluteIri(
   absoluteIri: string,
+  strategy?: IriValidationStrategy,
 ): Either<Error, string> {
   if (!SCHEME.test(absoluteIri)) {
     return Left(
@@ -30,26 +24,9 @@ export function validateAbsoluteIri(
     );
   }
 
-  const forbidden = FORBIDDEN.exec(absoluteIri);
-  if (forbidden) {
-    const codePoint = forbidden[0]
-      .codePointAt(0)!
-      .toString(16)
-      .padStart(4, "0");
-    return Left(
-      new Error(`illegal character U+${codePoint} in IRI: ${absoluteIri}`),
-    );
+  const error = validateIri(absoluteIri, strategy);
+  if (error !== undefined) {
+    return Left(error);
   }
-
-  if (!absoluteIri.isWellFormed()) {
-    return Left(
-      new Error(`ill-formed UTF-16 (lone surrogate) in IRI: ${absoluteIri}`),
-    );
-  }
-
-  if (BAD_PERCENT_ENCODING.test(absoluteIri)) {
-    return Left(new Error(`malformed percent-encoding in IRI: ${absoluteIri}`));
-  }
-
   return Right(absoluteIri);
 }
