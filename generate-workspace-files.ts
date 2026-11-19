@@ -7,7 +7,7 @@ import type { CompilerOptions } from "typescript";
 
 const VERSION = "0.0.68";
 
-const shaclmateVersion = "4.0.108";
+const shaclmateVersion = "4.0.109";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
@@ -427,6 +427,7 @@ const workspaces = {
       devDependencies: {
         external: [
           "@shaclmate/cli",
+          "@tpluscode/rdf-ns-builders",
           "@types/node",
           "decimal.js",
           "libreoffice-convert",
