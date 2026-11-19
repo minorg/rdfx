@@ -1,15 +1,15 @@
 {
   "dependencies": {
-    "@rdfx/logger": "0.0.68",
-    "@rdfx/stream": "0.0.68",
+    "@rdfx/logger": "0.0.69",
+    "@rdfx/stream": "0.0.69",
     "@rdfjs/types": "~2.0.1",
     "purify-ts": "~2.1.4"
   },
   "description": "Graph store abstraction modeled on the SPARQL 1.1 Graph Store HTTP Protocol",
   "devDependencies": {
-    "@rdfx/collection": "0.0.68",
-    "@rdfx/data-factory": "0.0.68",
-    "@rdfx/testing": "0.0.68"
+    "@rdfx/collection": "0.0.69",
+    "@rdfx/data-factory": "0.0.69",
+    "@rdfx/testing": "0.0.69"
   },
   "files": [
     "LICENSE",
@@ -34,5 +34,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.68"
+  "version": "0.0.69"
 }
