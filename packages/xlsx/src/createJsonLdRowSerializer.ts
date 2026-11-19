@@ -1,3 +1,7 @@
+import type { DataFactory } from "@rdfjs/types";
+import { LiteralDecoder, literalDatatypeDefinitions } from "@rdfx/literal";
+import type { Logger } from "@rdfx/logger";
+import type { Either } from "purify-ts";
 import { invariant } from "ts-invariant";
 import { appendRecordValue } from "./appendRecordValue.js";
 import type { Cell } from "./Cell.js";
@@ -21,8 +25,11 @@ export function createJsonLdRowSerializer<
     IntermediateObjectT,
     JsonObjectT
   >,
-): (object: IntermediateObjectT) => Worksheet.Builder.Row {
-  return (object) => {
+): (
+  object: IntermediateObjectT,
+  parameters: { dataFactory: DataFactory; logger: Logger },
+) => Worksheet.Builder.Row {
+  return (object, { dataFactory, logger }) => {
     const jsonLdObject = intermediateObjectFunctions.toJson(object);
     const row: Record<string, Cell.Value | Cell.Value[]> = {};
     for (const [key, valueOrValues] of Object.entries(jsonLdObject)) {
@@ -46,18 +53,93 @@ export function createJsonLdRowSerializer<
             appendRecordValue(row, key, value);
             break;
           case "object": {
-            if (
-              "@language" in value &&
-              typeof value["@language"] === "string" &&
-              "@value" in value &&
-              typeof value["@value"] === "string"
-            ) {
-              // rdf:langString
-              appendRecordValue(
-                row,
-                `${key}@${value["@language"]}`,
-                value["@value"],
-              );
+            if ("@value" in value && typeof value["@value"] === "string") {
+              if (
+                "@language" in value &&
+                typeof value["@language"] === "string"
+              ) {
+                // rdf:langString
+                appendRecordValue(
+                  row,
+                  `${key}@${value["@language"]}`,
+                  value["@value"],
+                );
+              } else if (
+                "@type" in value &&
+                typeof value["@type"] === "string"
+              ) {
+                const literalDatatypeDefinition =
+                  literalDatatypeDefinitions[value["@type"]];
+                if (literalDatatypeDefinition) {
+                  const literal = dataFactory.literal(
+                    value["@value"],
+                    dataFactory.namedNode(value["@type"]),
+                  );
+
+                  let decodedLiteralEither: Either<
+                    Error,
+                    boolean | Date | string | number
+                  >;
+                  switch (literalDatatypeDefinition.kind) {
+                    case "bigdecimal":
+                      decodedLiteralEither =
+                        LiteralDecoder.decodeBigDecimalLiteral(literal).map(
+                          (_) => _.toFixed(),
+                        );
+                      break;
+                    case "bigint":
+                      decodedLiteralEither = LiteralDecoder.decodeBigIntLiteral(
+                        literal,
+                      ).map((_) => _.toString());
+                      break;
+                    case "boolean":
+                      decodedLiteralEither =
+                        LiteralDecoder.decodeBooleanLiteral(literal);
+                      break;
+                    case "date":
+                      decodedLiteralEither =
+                        LiteralDecoder.decodeDateLiteral(literal);
+                      break;
+                    case "datetime":
+                      decodedLiteralEither =
+                        LiteralDecoder.decodeDateTimeLiteral(literal);
+                      break;
+                    case "float":
+                    case "int":
+                      decodedLiteralEither =
+                        LiteralDecoder.decodeNumberLiteral(literal);
+                      break;
+                    case "string":
+                      decodedLiteralEither =
+                        LiteralDecoder.decodeStringLiteral(literal);
+                      break;
+                    default:
+                      literalDatatypeDefinition satisfies never;
+                      throw new Error("should never reach this point");
+                  }
+
+                  decodedLiteralEither
+                    .ifLeft((error) => {
+                      logger.warn(
+                        { error, value },
+                        "unable to decode JSON-LD literal into an .xlsx-safe type, falling back to string",
+                      );
+                      appendRecordValue(row, key, literal.value);
+                    })
+                    .ifRight((value) => {
+                      appendRecordValue(row, key, value);
+                    });
+                } else {
+                  logger.warn(
+                    { value },
+                    "unrecognized JSON-LD literal @type while trying to decode literal into an .xlsx-safe type, falling back to string",
+                  );
+                  appendRecordValue(row, key, value["@value"]);
+                }
+              } else {
+                // xsd:string
+                appendRecordValue(row, key, value["@value"]);
+              }
             } else if (
               "@id" in value &&
               typeof value["@id"] === "string" &&
@@ -65,9 +147,7 @@ export function createJsonLdRowSerializer<
             ) {
               appendRecordValue(row, key, value["@id"]);
             } else {
-              throw new RangeError(
-                `unsupported object type: ${JSON.stringify(value)}`,
-              );
+              logger.warn({ value }, "unsupported object type");
             }
             break;
           }
@@ -82,7 +162,8 @@ export function createJsonLdRowSerializer<
             break;
           }
           default:
-            throw new RangeError(`unsupported value type: ${typeof value}`);
+            logger.warn({ value }, "unsupported value type");
+            break;
         }
       }
     }

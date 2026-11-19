@@ -1,6 +1,8 @@
 import dataFactory from "@rdfx/data-factory";
+import { xsd } from "@tpluscode/rdf-ns-builders";
 import { describe, it } from "vitest";
 import { createJsonLdRowSerializer } from "../src/createJsonLdRowSerializer.js";
+import { logger } from "./logger.js";
 import {
   $DefaultPartial,
   $Lazy,
@@ -20,20 +22,25 @@ describe("createJsonLdRowSerializer", () => {
       integerProperty: "42",
       intProperty: 42,
       iriProperty: "http://example.com/iriProperty",
-      langStringProperty: [
+      langStringSetProperty: [
         dataFactory.literal("entest", "en"),
         dataFactory.literal("frtest", "fr"),
       ],
+      literalSetProperty: [dataFactory.literal("4.23e1", xsd.double)],
       nodeProperty: $Lazy.fromPartial<$DefaultPartial, NodeShape2>(
         $DefaultPartial.createUnsafe({
           $identifier: dataFactory.namedNode("http://example.com/nodeProperty"),
         }),
       ),
       stringProperty: "string",
+      termSetProperty: [dataFactory.literal("true", xsd.boolean)],
     });
-    const row: any = createJsonLdRowSerializer(NodeShape1)(object);
+    const row: any = createJsonLdRowSerializer(NodeShape1)(object, {
+      dataFactory,
+      logger,
+    });
     expect(Array.isArray(row)).toStrictEqual(false);
-    expect(Object.keys(row)).toHaveLength(13);
+    expect(Object.keys(row)).toHaveLength(15);
     expect(row["@id"]).toStrictEqual("http://example.com/test");
     expect(row["booleanProperty"]).toStrictEqual(object.booleanProperty);
     expect(row["dateProperty"]).toBeInstanceOf(Date);
@@ -50,12 +57,14 @@ describe("createJsonLdRowSerializer", () => {
     );
     expect(row["intProperty"]).toStrictEqual(object.intProperty);
     expect(row["iriProperty"]).toStrictEqual(object.iriProperty.value);
-    expect(row["langStringProperty@en"]).toStrictEqual("entest");
-    expect(row["langStringProperty@fr"]).toStrictEqual("frtest");
+    expect(row["langStringSetProperty@en"]).toStrictEqual("entest");
+    expect(row["langStringSetProperty@fr"]).toStrictEqual("frtest");
     expect(row["nodeProperty"]).toStrictEqual(
       "http://example.com/nodeProperty",
     );
     expect(row["stringProperty"]).toStrictEqual("string");
+    expect(row["literalSetProperty"]).toStrictEqual(42.3);
+    expect(row["termSetProperty"]).toStrictEqual(true);
   });
 
   it("NodeShape2", ({ expect }) => {
@@ -66,6 +75,10 @@ describe("createJsonLdRowSerializer", () => {
           dataFactory.literal("frtest", "fr"),
         ],
       }),
+      {
+        dataFactory,
+        logger,
+      },
     );
     expect(Array.isArray(row)).toStrictEqual(false);
     expect(Object.keys(row)).toHaveLength(3);
