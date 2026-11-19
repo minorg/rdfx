@@ -11,6 +11,7 @@ import {
 } from "./xlsx-test-shapes.shaclmate.js";
 import "@rdfx/testing";
 import { namespace } from "@rdfx/iri";
+import { xsd } from "@tpluscode/rdf-ns-builders";
 import { Decimal } from "decimal.js";
 import { createJsonLdRowParser } from "../src/createJsonLdRowParser.js";
 import { createRdfWorkbookParser } from "../src/createRdfWorkbookParser.js";
@@ -75,11 +76,15 @@ describe("RdfWorkbookParser", async () => {
       expect(nodeShape1Id1.iriProperty).toEqualRdfTerm(
         dataFactory.namedNode("http://schema.org/test"),
       );
-      expect(nodeShape1Id1.langStringProperty).toHaveLength(2);
-      expect(nodeShape1Id1.langStringProperty).toEqualRdfTermSet([
+      expect(nodeShape1Id1.langStringSetProperty).toHaveLength(2);
+      expect(nodeShape1Id1.langStringSetProperty).toEqualRdfTermSet([
         dataFactory.literal("enLangString1", "en"),
         dataFactory.literal("frLangString1", "fr"),
       ]);
+      expect(nodeShape1Id1.literalSetProperty).toHaveLength(1);
+      expect(nodeShape1Id1.literalSetProperty[0]).toEqualRdfTerm(
+        dataFactory.literal("4.23e1", xsd.double),
+      );
       expect(nodeShape1Id1.nodeProperty.partial.$identifier()).toEqualRdfTerm(
         ex("nodeShape2Id1"),
       );
@@ -91,6 +96,10 @@ describe("RdfWorkbookParser", async () => {
         dataFactory.literal("frlabel1", "fr"),
       ]);
       expect(nodeShape1Id1.stringProperty).toStrictEqual("string1");
+      expect(nodeShape1Id1.termSetProperty).toHaveLength(1);
+      expect(nodeShape1Id1.termSetProperty[0]).toEqualRdfTerm(
+        dataFactory.literal("true", xsd.boolean),
+      );
     });
   });
 });

@@ -8,7 +8,12 @@ import type {
 } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
-import { expandIri, type NamespaceBuilder, type PrefixMap } from "@rdfx/iri";
+import {
+  expandIri,
+  type NamespaceBuilder,
+  type PrefixMap,
+  validateAbsoluteIri,
+} from "@rdfx/iri";
 import { LiteralFactory } from "@rdfx/literal";
 import {
   PropertyPath as RdfxResourcePropertyPath,
@@ -152,11 +157,28 @@ const $bigIntJsonSchema = z
 const $bigIntToJsonString: $ToJsonFunction<bigint, string> = (bigInt) =>
   bigInt.toString();
 
+const $blankNodeFromJsonObject: $FromJsonFunction<
+  $IdentifierJsonObject,
+  BlankNode,
+  undefined
+> = (jsonObject) => $blankNodeFromJsonString(jsonObject["@id"]);
+
 const $blankNodeFromJsonString: $FromJsonFunction<
   string,
   BlankNode,
   undefined
 > = (jsonValue) => Right(dataFactory.blankNode(jsonValue.substring(2)));
+
+const $blankNodeToJsonObject: $ToJsonFunction<
+  BlankNode,
+  $IdentifierJsonObject
+> = (blankNode) => ({
+  "@id": $blankNodeToJsonString(blankNode),
+});
+
+const $blankNodeToJsonString: $ToJsonFunction<BlankNode, string> = (
+  blankNode,
+) => `_:${blankNode.value}`;
 
 interface $BooleanFilter {
   readonly value?: boolean;
@@ -362,6 +384,20 @@ function $convertToLazy<PartialT, ResolvedT>(
     );
   };
 }
+
+const $convertToLiteral: $ConversionFunction<
+  bigint | boolean | Date | number | string | Literal,
+  Literal
+> = (value) => {
+  if (typeof value === "object") {
+    if (value instanceof Date) {
+      return Either.of($literalFactory.date(value));
+    }
+    return Either.of(value);
+  }
+
+  return Either.of($literalFactory.primitive(value));
+};
 
 function $convertToScalarSet<
   DefaultNamespaceT extends NamespaceBuilder,
@@ -793,6 +829,14 @@ const $identifierFromRdfResourceValues: $FromRdfResourceValuesFunction<
     values.chainMap((value) => value.toIdentifier()),
   );
 
+interface $IdentifierJsonObject<IdT extends string = string> {
+  "@id": IdT;
+}
+
+namespace $IdentifierJsonObject {
+  export const schema = z.object({ "@id": z.string().min(1) });
+}
+
 interface $IdentifierSchema {
   readonly hasValues?: readonly NamedNode[];
   readonly kind: "Identifier";
@@ -821,6 +865,13 @@ class $IdentifierSet {
         return this.namedNodeValues.has(identifier.value);
     }
   }
+}
+
+function $identityConversionFunction<T>(
+  value: T,
+  _defaultNamespace?: NamespaceBuilder,
+): Either<Error, T> {
+  return Either.of(value);
 }
 
 function $identityValidationFunction<T>(
@@ -856,6 +907,15 @@ interface $IriFilter {
   readonly in?: readonly NamedNode[];
 }
 
+function $iriFromJsonObject(
+  jsonObject: $IdentifierJsonObject,
+  options: Parameters<
+    $FromJsonFunction<$IdentifierJsonObject, NamedNode, $IriSchema>
+  >[1],
+): Either<Error, NamedNode> {
+  return $iriFromJsonString(jsonObject["@id"], options);
+}
+
 function $iriFromJsonString(
   jsonString: string,
   options: Parameters<$FromJsonFunction<string, NamedNode, object>>[1],
@@ -882,6 +942,12 @@ interface $IriSchema<IriT extends string = string> {
   readonly hasValues?: readonly NamedNode[];
   readonly in?: readonly NamedNode<IriT>[];
   readonly kind: "Iri";
+}
+
+function $iriToJsonObject<IriT extends string = string>(
+  iri: NamedNode<IriT>,
+): $IdentifierJsonObject<IriT> {
+  return { "@id": $iriToJsonString(iri) };
 }
 
 function $iriToJsonString<IriT extends string = string>(
@@ -913,8 +979,10 @@ interface $LangStringJsonObject {
 }
 
 namespace $LangStringJsonObject {
-  export const schema = () =>
-    z.object({ "@language": z.string().min(1), "@value": z.string().min(1) });
+  export const schema = z.object({
+    "@language": z.string().min(1),
+    "@value": z.string().min(1),
+  });
 }
 
 type $LangStringSchema = Omit<$LiteralSchema, "kind"> & {
@@ -975,12 +1043,77 @@ const $literalFactory = new LiteralFactory({ dataFactory: dataFactory });
 
 type $LiteralFilter = Omit<$TermFilter<Literal>, "typeIn">;
 
+const $literalFromJsonObject: $FromJsonFunction<
+  $LiteralJsonObject,
+  Literal,
+  undefined
+> = (jsonObject) =>
+  Right(
+    dataFactory.literal(
+      jsonObject["@value"],
+      jsonObject["@language"] !== undefined
+        ? jsonObject["@language"]
+        : jsonObject["@type"] !== undefined
+          ? dataFactory.namedNode(jsonObject["@type"]!)
+          : undefined,
+    ),
+  );
+
+const $literalFromRdfResourceValues: $FromRdfResourceValuesFunction<
+  Literal,
+  $LiteralSchema
+> = (values, options) =>
+  $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) => value.toLiteral(options.schema.in)),
+  );
+
+interface $LiteralJsonObject {
+  "@language"?: string;
+  "@type"?: string;
+  "@value": string;
+}
+
+namespace $LiteralJsonObject {
+  export const schema = z.object({
+    "@language": z.string().min(1).optional(),
+    "@type": z.string().min(1).optional(),
+    "@value": z.string().min(1),
+  });
+}
+
+const $literalJsonValueSchema = z
+  .union([z.boolean(), z.number(), $LiteralJsonObject.schema, z.string()])
+  .transform((v): $LiteralJsonObject => {
+    if (typeof v === "object") {
+      return v;
+    }
+
+    const literal = $literalFactory.primitive(v);
+    return { "@type": literal.datatype.value, "@value": literal.value };
+  }) as unknown as z.ZodType<
+  $LiteralJsonObject,
+  boolean | number | $LiteralJsonObject | string
+>;
+
 interface $LiteralSchema {
   readonly hasValues?: readonly Literal[];
   readonly in?: readonly Literal[];
   readonly kind: "Literal";
   readonly languageIn?: readonly string[];
 }
+
+const $literalToJsonObject: $ToJsonFunction<Literal, $LiteralJsonObject> = (
+  literal,
+) => {
+  const jsonObject: $LiteralJsonObject = { "@value": literal.value };
+  if (literal.language.length > 0) {
+    jsonObject["@language"] = literal.language;
+  }
+  if (literal.datatype.value !== "http://www.w3.org/2001/XMLSchema#string") {
+    jsonObject["@type"] = literal.datatype.value;
+  }
+  return jsonObject;
+};
 
 async function $missingResolver<ResolvedT>(): Promise<
   Either<Error, ResolvedT>
@@ -1232,6 +1365,125 @@ interface $TermFilter<TermT extends BlankNode | Literal | NamedNode> {
   readonly typeIn?: readonly TermT["termType"][];
 }
 
+function $termFromJsonObject<TermT extends BlankNode | Literal | NamedNode>(
+  jsonObject: $TermJsonObject,
+  options: Parameters<
+    $FromJsonFunction<$TermJsonObject, TermT, $TermSchema<TermT>>
+  >[1],
+): Either<Error, TermT> {
+  const { schema } = options;
+
+  for (const termType of schema.types) {
+    switch (termType) {
+      case "BlankNode": {
+        if ("@id" in jsonObject && jsonObject["@id"].startsWith("_:")) {
+          return $blankNodeFromJsonObject(jsonObject) as Either<Error, TermT>;
+        }
+        break;
+      }
+      case "Literal": {
+        if ("@value" in jsonObject) {
+          return $literalFromJsonObject(jsonObject) as Either<Error, TermT>;
+        }
+        break;
+      }
+      case "NamedNode": {
+        if ("@id" in jsonObject && !jsonObject["@id"].startsWith("_:")) {
+          return $iriFromJsonObject(jsonObject, {
+            ...options,
+            schema: { kind: "Iri" },
+          }) as Either<Error, TermT>;
+        }
+        break;
+      }
+    }
+  }
+
+  return Left(new Error("unable to deserialize term from JSON"));
+}
+
+function $termFromRdfResourceValues<
+  TermT extends BlankNode | Literal | NamedNode,
+>(
+  values: Resource.Values,
+  options: Parameters<
+    $FromRdfResourceValuesFunction<TermT, $TermSchema<TermT>>
+  >[1],
+): Either<Error, Resource.Values<TermT>> {
+  const { focusResource, propertyPath, schema } = options;
+  return $termLikeFromRdfResourceValues(values, options).chain((values) =>
+    values.chainMap((value) =>
+      value.toTerm().chain((term) => {
+        if (
+          schema.in &&
+          schema.in.length > 0 &&
+          !schema.in.some((in_) => in_.equals(term))
+        ) {
+          return Left(
+            new Resource.MistypedValueError({
+              actualValue: term,
+              expectedValueType: "Term in",
+              focusResource,
+              propertyPath,
+            }),
+          );
+        }
+
+        if (!schema.types.some((type) => term.termType === type)) {
+          return Left(
+            new Resource.MistypedValueError({
+              actualValue: term,
+              expectedValueType: "BlankNode | Literal | NamedNode",
+              focusResource,
+              propertyPath,
+            }),
+          );
+        }
+
+        return Right(term as TermT);
+      }),
+    ),
+  );
+}
+
+type $TermJsonObject = $IdentifierJsonObject | $LiteralJsonObject;
+
+namespace $TermJsonObject {
+  export const schema = z.union([
+    $IdentifierJsonObject.schema,
+    $LiteralJsonObject.schema,
+  ]);
+}
+
+const $termJsonValueSchema = z
+  .union([z.boolean(), z.number(), $TermJsonObject.schema, z.string()])
+  .transform((v): $TermJsonObject => {
+    if (typeof v === "object") {
+      return v;
+    }
+
+    switch (typeof v) {
+      case "boolean":
+      case "number": {
+        const literal = $literalFactory.primitive(v);
+        return { "@type": literal.datatype.value, "@value": literal.value };
+      }
+      case "string": {
+        if (validateAbsoluteIri(v).isRight()) {
+          return { "@id": v };
+        }
+        // Otherwise assume the string is a literal
+        return { "@value": v };
+      }
+      default:
+        v satisfies never;
+        throw new Error("should never reach this point");
+    }
+  }) as unknown as z.ZodType<
+  $TermJsonObject,
+  boolean | number | $TermJsonObject | string
+>;
+
 const $termLikeFromRdfResourceValues: $FromRdfResourceValuesFunction<
   Resource.Value,
   {
@@ -1308,6 +1560,27 @@ const $termLikeFromRdfResourceValues: $FromRdfResourceValuesFunction<
   }
 
   return chain;
+};
+
+interface $TermSchema<TermT extends BlankNode | Literal | NamedNode> {
+  readonly hasValues?: readonly Exclude<TermT, BlankNode>[];
+  readonly in?: readonly Exclude<TermT, BlankNode>[];
+  readonly kind: "Term";
+  readonly types: readonly TermT["termType"][];
+}
+
+const $termToJsonObject: $ToJsonFunction<
+  BlankNode | Literal | NamedNode,
+  $TermJsonObject
+> = (term) => {
+  switch (term.termType) {
+    case "BlankNode":
+      return $blankNodeToJsonObject(term);
+    case "NamedNode":
+      return $iriToJsonObject(term);
+    case "Literal":
+      return $literalToJsonObject(term);
+  }
 };
 
 export function $toIsoDateString(date: Date): string {
@@ -1684,11 +1957,15 @@ export type NodeShape1 = {
 
   readonly iriProperty: NamedNode;
 
-  readonly langStringProperty: readonly Literal[];
+  readonly langStringSetProperty: readonly Literal[];
+
+  readonly literalSetProperty: readonly Literal[];
 
   readonly nodeProperty: $Lazy<$DefaultPartial, NodeShape2>;
 
   readonly stringProperty: string;
+
+  readonly termSetProperty: readonly (BlankNode | NamedNode | Literal)[];
 };
 
 export namespace NodeShape1 {
@@ -1764,18 +2041,31 @@ export namespace NodeShape1 {
         propertySchema: NodeShape1.schema.properties.iriProperty,
         typeFromRdfResourceValues: $iriFromRdfResourceValues<string>,
       }),
-      langStringProperty: $shaclPropertyFromRdf<
+      langStringSetProperty: $shaclPropertyFromRdf<
         readonly Literal[],
         $CollectionSchema<$LangStringSchema>
       >({
         ...options,
         focusResource: resource,
         ignoreRdfType: true,
-        propertySchema: NodeShape1.schema.properties.langStringProperty,
+        propertySchema: NodeShape1.schema.properties.langStringSetProperty,
         typeFromRdfResourceValues: $setFromRdfResourceValues<
           Literal,
           $LangStringSchema
         >($langStringFromRdfResourceValues),
+      }),
+      literalSetProperty: $shaclPropertyFromRdf<
+        readonly Literal[],
+        $CollectionSchema<$LiteralSchema>
+      >({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.literalSetProperty,
+        typeFromRdfResourceValues: $setFromRdfResourceValues<
+          Literal,
+          $LiteralSchema
+        >($literalFromRdfResourceValues),
       }),
       nodeProperty: $shaclPropertyFromRdf<
         $Lazy<$DefaultPartial, NodeShape2>,
@@ -1816,6 +2106,19 @@ export namespace NodeShape1 {
         ignoreRdfType: true,
         propertySchema: NodeShape1.schema.properties.stringProperty,
         typeFromRdfResourceValues: $stringFromRdfResourceValues<string>,
+      }),
+      termSetProperty: $shaclPropertyFromRdf<
+        readonly (BlankNode | NamedNode | Literal)[],
+        $CollectionSchema<$TermSchema<BlankNode | NamedNode | Literal>>
+      >({
+        ...options,
+        focusResource: resource,
+        ignoreRdfType: true,
+        propertySchema: NodeShape1.schema.properties.termSetProperty,
+        typeFromRdfResourceValues: $setFromRdfResourceValues<
+          BlankNode | NamedNode | Literal,
+          $TermSchema<BlankNode | NamedNode | Literal>
+        >($termFromRdfResourceValues<BlankNode | NamedNode | Literal>),
       }),
     }).chain((properties) => NodeShape1.create(properties));
 
@@ -1869,8 +2172,13 @@ export namespace NodeShape1 {
       parameters.graph,
     );
     parameters.resource.add(
-      NodeShape1.schema.properties.langStringProperty.path,
-      parameters.object.langStringProperty.flatMap((item) => [item]),
+      NodeShape1.schema.properties.langStringSetProperty.path,
+      parameters.object.langStringSetProperty.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.literalSetProperty.path,
+      parameters.object.literalSetProperty.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -1890,6 +2198,11 @@ export namespace NodeShape1 {
     parameters.resource.add(
       NodeShape1.schema.properties.stringProperty.path,
       [$literalFactory.string(parameters.object.stringProperty)],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      NodeShape1.schema.properties.termSetProperty.path,
+      parameters.object.termSetProperty.flatMap((item) => [item]),
       parameters.graph,
     );
     return parameters.resource;
@@ -1927,12 +2240,21 @@ export namespace NodeShape1 {
         parameters.iriProperty,
         parameters.$defaultNamespace,
       ),
-      langStringProperty: $convertToScalarSet($convertToLangString)(
-        parameters.langStringProperty,
+      langStringSetProperty: $convertToScalarSet($convertToLangString)(
+        parameters.langStringSetProperty,
         parameters.$defaultNamespace,
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          NodeShape1.schema.properties.langStringProperty.type,
+          NodeShape1.schema.properties.langStringSetProperty.type,
+          value,
+        ),
+      ),
+      literalSetProperty: $convertToScalarSet($convertToLiteral)(
+        parameters.literalSetProperty,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          NodeShape1.schema.properties.literalSetProperty.type,
           value,
         ),
       ),
@@ -1940,6 +2262,15 @@ export namespace NodeShape1 {
         $DefaultPartial.createUnsafe,
       )(parameters.nodeProperty, parameters.$defaultNamespace),
       stringProperty: Either.of(parameters.stringProperty),
+      termSetProperty: $convertToScalarSet($identityConversionFunction)(
+        parameters.termSetProperty,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          NodeShape1.schema.properties.termSetProperty.type,
+          value,
+        ),
+      ),
     }).map((object) =>
       $monkeyPatchObject(object, {
         toJson: NodeShape1.toJson,
@@ -1963,9 +2294,20 @@ export namespace NodeShape1 {
     readonly integerProperty: bigint | number | string;
     readonly intProperty: number;
     readonly iriProperty: (keyof $DefaultNamespaceT & string) | NamedNode;
-    readonly langStringProperty: Literal | readonly Literal[];
+    readonly langStringSetProperty: Literal | readonly Literal[];
+    readonly literalSetProperty:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly nodeProperty: $Lazy<$DefaultPartial, NodeShape2> | NodeShape2;
     readonly stringProperty: string;
+    readonly termSetProperty:
+      | (BlankNode | NamedNode | Literal)
+      | readonly (BlankNode | NamedNode | Literal)[];
   };
 
   export const createUnsafe: <
@@ -2036,10 +2378,19 @@ export namespace NodeShape1 {
       return false;
     }
     if (
-      filter.langStringProperty !== undefined &&
+      filter.langStringSetProperty !== undefined &&
       !$filterArray<Literal, $LiteralFilter>($filterLiteral)(
-        filter.langStringProperty,
-        value.langStringProperty,
+        filter.langStringSetProperty,
+        value.langStringSetProperty,
+      )
+    ) {
+      return false;
+    }
+    if (
+      filter.literalSetProperty !== undefined &&
+      !$filterArray<Literal, $LiteralFilter>($filterLiteral)(
+        filter.literalSetProperty,
+        value.literalSetProperty,
       )
     ) {
       return false;
@@ -2059,6 +2410,15 @@ export namespace NodeShape1 {
     ) {
       return false;
     }
+    if (
+      filter.termSetProperty !== undefined &&
+      !$filterArray<
+        BlankNode | NamedNode | Literal,
+        $TermFilter<BlankNode | NamedNode | Literal>
+      >($filterTerm)(filter.termSetProperty, value.termSetProperty)
+    ) {
+      return false;
+    }
     return true;
   };
 
@@ -2072,9 +2432,13 @@ export namespace NodeShape1 {
     readonly integerProperty?: $NumericFilter<bigint>;
     readonly intProperty?: $NumericFilter<number>;
     readonly iriProperty?: $IriFilter;
-    readonly langStringProperty?: $CollectionFilter<$LiteralFilter>;
+    readonly langStringSetProperty?: $CollectionFilter<$LiteralFilter>;
+    readonly literalSetProperty?: $CollectionFilter<$LiteralFilter>;
     readonly nodeProperty?: $DefaultPartial.Filter;
     readonly stringProperty?: $StringFilter;
+    readonly termSetProperty?: $CollectionFilter<
+      $TermFilter<BlankNode | NamedNode | Literal>
+    >;
   };
 
   export const fromJson: $FromJsonFunction<
@@ -2131,11 +2495,18 @@ export namespace NodeShape1 {
         ...options,
         schema: NodeShape1.schema.properties.iriProperty.type,
       }),
-      langStringProperty: $arrayFromJsonArray($langStringFromJsonObject)(
-        jsonObject["langStringProperty"],
+      langStringSetProperty: $arrayFromJsonArray($langStringFromJsonObject)(
+        jsonObject["langStringSetProperty"],
         {
           ...options,
-          schema: NodeShape1.schema.properties.langStringProperty.type,
+          schema: NodeShape1.schema.properties.langStringSetProperty.type,
+        },
+      ),
+      literalSetProperty: $arrayFromJsonArray($literalFromJsonObject)(
+        jsonObject["literalSetProperty"],
+        {
+          ...options,
+          schema: NodeShape1.schema.properties.literalSetProperty.type,
         },
       ),
       nodeProperty: ((jsonValue, fromJsonValueOptions) =>
@@ -2170,6 +2541,12 @@ export namespace NodeShape1 {
           schema: NodeShape1.schema.properties.stringProperty.type,
         },
       ),
+      termSetProperty: $arrayFromJsonArray(
+        $termFromJsonObject<BlankNode | NamedNode | Literal>,
+      )(jsonObject["termSetProperty"], {
+        ...options,
+        schema: NodeShape1.schema.properties.termSetProperty.type,
+      }),
     }).chain(NodeShape1.create);
 
   export const fromRdfResource: $FromRdfResourceFunction<NodeShape1.Discriminated> =
@@ -2205,9 +2582,11 @@ export namespace NodeShape1 {
     integerProperty: string;
     intProperty: number;
     iriProperty: string;
-    langStringProperty: $LangStringJsonObject[];
+    langStringSetProperty: $LangStringJsonObject[];
+    literalSetProperty: $LiteralJsonObject[];
     nodeProperty: $DefaultPartial.Json;
     stringProperty: string;
+    termSetProperty: $TermJsonObject[];
   };
 
   export namespace Json {
@@ -2230,9 +2609,20 @@ export namespace NodeShape1 {
         integerProperty: $bigIntJsonSchema,
         intProperty: z.number(),
         iriProperty: z.string().min(1),
-        langStringProperty: z.array($LangStringJsonObject.schema()).min(1),
+        langStringSetProperty: z.preprocess(
+          (v) => (v === undefined ? v : Array.isArray(v) ? v : [v]),
+          z.array($LangStringJsonObject.schema).min(1),
+        ),
+        literalSetProperty: z.preprocess(
+          (v) => (v === undefined ? v : Array.isArray(v) ? v : [v]),
+          z.array($literalJsonValueSchema).min(1),
+        ),
         nodeProperty: $DefaultPartial.Json.schema(),
         stringProperty: z.string(),
+        termSetProperty: z.preprocess(
+          (v) => (v === undefined ? v : Array.isArray(v) ? v : [v]),
+          z.array($termJsonValueSchema).min(1),
+        ),
       }) satisfies z.ZodType<Json>;
     }
   }
@@ -2284,11 +2674,20 @@ export namespace NodeShape1 {
         path: dataFactory.namedNode("http://example.com/iriProperty"),
         type: { kind: "Iri" } as const,
       } as const,
-      langStringProperty: {
+      langStringSetProperty: {
         kind: "Shacl",
-        path: dataFactory.namedNode("http://example.com/langStringProperty"),
+        path: dataFactory.namedNode("http://example.com/langStringSetProperty"),
         type: {
           itemType: { kind: "LangString" } as const,
+          kind: "Set",
+          minCount: 1,
+        } as const,
+      } as const,
+      literalSetProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/literalSetProperty"),
+        type: {
+          itemType: { kind: "Literal" } as const,
           kind: "Set",
           minCount: 1,
         } as const,
@@ -2309,6 +2708,18 @@ export namespace NodeShape1 {
         kind: "Shacl",
         path: dataFactory.namedNode("http://example.com/stringProperty"),
         type: { datatype: $xsd_string, kind: "String" } as const,
+      } as const,
+      termSetProperty: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://example.com/termSetProperty"),
+        type: {
+          itemType: {
+            kind: "Term",
+            types: ["BlankNode", "NamedNode", "Literal"],
+          } as const,
+          kind: "Set",
+          minCount: 1,
+        } as const,
       } as const,
     },
   } as const;
@@ -2333,14 +2744,20 @@ export namespace NodeShape1 {
         integerProperty: $bigIntToJsonString(_nodeShape1.integerProperty),
         intProperty: $primitiveToJsonValue<number>(_nodeShape1.intProperty),
         iriProperty: $iriToJsonString<string>(_nodeShape1.iriProperty),
-        langStringProperty: $arrayToJsonArray($langStringToJsonObject)(
-          _nodeShape1.langStringProperty,
+        langStringSetProperty: $arrayToJsonArray($langStringToJsonObject)(
+          _nodeShape1.langStringSetProperty,
+        ),
+        literalSetProperty: $arrayToJsonArray($literalToJsonObject)(
+          _nodeShape1.literalSetProperty,
         ),
         nodeProperty: ((value) => $DefaultPartial.toJson(value.partial))(
           _nodeShape1.nodeProperty,
         ),
         stringProperty: $primitiveToJsonValue<string>(
           _nodeShape1.stringProperty,
+        ),
+        termSetProperty: $arrayToJsonArray($termToJsonObject)(
+          _nodeShape1.termSetProperty,
         ),
       }),
     );
@@ -2552,7 +2969,10 @@ export namespace NodeShape2 {
           .string()
           .min(1)
           .default(() => `_:${dataFactory.blankNode().value}`),
-        label: z.array($LangStringJsonObject.schema()).min(1),
+        label: z.preprocess(
+          (v) => (v === undefined ? v : Array.isArray(v) ? v : [v]),
+          z.array($LangStringJsonObject.schema).min(1),
+        ),
       }) satisfies z.ZodType<Json>;
     }
   }
