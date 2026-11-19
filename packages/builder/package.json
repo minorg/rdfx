@@ -1,21 +1,21 @@
 {
   "dependencies": {
-    "@rdfx/data-factory": "0.0.69",
-    "@rdfx/iri": "0.0.69",
-    "@rdfx/literal": "0.0.69",
-    "@rdfx/logger": "0.0.69",
-    "@rdfx/resource": "0.0.69",
-    "@rdfx/string": "0.0.69",
+    "@rdfx/data-factory": "0.0.70",
+    "@rdfx/iri": "0.0.70",
+    "@rdfx/literal": "0.0.70",
+    "@rdfx/logger": "0.0.70",
+    "@rdfx/resource": "0.0.70",
+    "@rdfx/string": "0.0.70",
     "@rdfjs/types": "~2.0.1",
     "change-case": "~5.4.4",
     "purify-ts": "~2.1.4"
   },
   "description": "Builder pattern implementations for creating RDF in TypeScript for common shapes such as SHACL-SHACL and SKOS",
   "devDependencies": {
-    "@rdfx/collection": "0.0.69",
-    "@rdfx/fs": "0.0.69",
-    "@rdfx/logger": "0.0.69",
-    "@rdfx/testing": "0.0.69",
+    "@rdfx/collection": "0.0.70",
+    "@rdfx/fs": "0.0.70",
+    "@rdfx/logger": "0.0.70",
+    "@rdfx/testing": "0.0.70",
     "@shaclmate/compiler": "4.0.109",
     "@shaclmate/validator": "4.0.109",
     "@tpluscode/rdf-ns-builders": "~4.3.0"
@@ -43,5 +43,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.69"
+  "version": "0.0.70"
 }
