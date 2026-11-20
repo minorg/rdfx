@@ -822,17 +822,17 @@ export type rdf_Property = {
 
   readonly comment: readonly Literal[];
 
-  readonly domain: readonly NamedNode[];
+  readonly domain: readonly (NamedNode | rdfs_Class.Discriminated)[];
 
   readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
 
   readonly label: readonly Literal[];
 
-  readonly range: readonly NamedNode[];
+  readonly range: readonly (NamedNode | rdfs_Class.Discriminated)[];
 
   readonly seeAlso: readonly (NamedNode | Literal)[];
 
-  readonly subPropertyOf: readonly NamedNode[];
+  readonly subPropertyOf: readonly (NamedNode | rdf_Property.Discriminated)[];
 
   readonly type: readonly NamedNode[];
 };
@@ -856,7 +856,29 @@ export namespace rdf_Property {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.domain.path,
-      parameters.object.domain.flatMap((item) => [item]),
+      parameters.object.domain.flatMap((item) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
+            return [value];
+          }
+          if (value["termType"] === "rdfs_Class") {
+            return rdfs_Class.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: rdf_Property.schema.properties.domain.path,
+        }),
+      ),
       parameters.graph,
     );
     parameters.resource.add(
@@ -893,7 +915,29 @@ export namespace rdf_Property {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.range.path,
-      parameters.object.range.flatMap((item) => [item]),
+      parameters.object.range.flatMap((item) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
+            return [value];
+          }
+          if (value["termType"] === "rdfs_Class") {
+            return rdfs_Class.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: rdf_Property.schema.properties.range.path,
+        }),
+      ),
       parameters.graph,
     );
     parameters.resource.add(
@@ -903,7 +947,29 @@ export namespace rdf_Property {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.subPropertyOf.path,
-      parameters.object.subPropertyOf.flatMap((item) => [item]),
+      parameters.object.subPropertyOf.flatMap((item) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
+            return [value];
+          }
+          if (value["termType"] === "rdf_Property") {
+            return rdf_Property.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: rdf_Property.schema.properties.subPropertyOf.path,
+        }),
+      ),
       parameters.graph,
     );
     parameters.resource.add(
@@ -939,10 +1005,25 @@ export namespace rdf_Property {
           value,
         ),
       ),
-      domain: $convertToScalarSet($convertToIri)(
-        parameters.domain,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      domain: $convertToScalarSet(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | rdfs_Class.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | rdfs_Class.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.domain, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.domain.type,
           value,
@@ -981,10 +1062,25 @@ export namespace rdf_Property {
           value,
         ),
       ),
-      range: $convertToScalarSet($convertToIri)(
-        parameters.range,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      range: $convertToScalarSet(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | rdfs_Class.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | rdfs_Class.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.range, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.range.type,
           value,
@@ -999,10 +1095,25 @@ export namespace rdf_Property {
           value,
         ),
       ),
-      subPropertyOf: $convertToScalarSet($convertToIri)(
-        parameters.subPropertyOf,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      subPropertyOf: $convertToScalarSet(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | rdf_Property.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | rdf_Property.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.subPropertyOf, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.subPropertyOf.type,
           value,
@@ -1039,9 +1150,14 @@ export namespace rdf_Property {
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly domain?:
-      | (keyof $DefaultNamespaceT & string)
       | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+      | rdfs_Class.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | rdfs_Class.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly isDefinedBy?:
       | NamedNode
       | owl_Ontology.Discriminated
@@ -1056,14 +1172,24 @@ export namespace rdf_Property {
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly range?:
-      | (keyof $DefaultNamespaceT & string)
       | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+      | rdfs_Class.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | rdfs_Class.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
     readonly subPropertyOf?:
-      | (keyof $DefaultNamespaceT & string)
       | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+      | rdf_Property.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | rdf_Property.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -1111,7 +1237,26 @@ export namespace rdf_Property {
       domain: {
         kind: "Shacl",
         path: $rdfs_domain,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  rdfs_Class: {
+                    discriminantValues: ["rdfs_Class"],
+                    type: rdfs_Class.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Set",
+          } as const;
+        },
       } as const,
       isDefinedBy: {
         kind: "Shacl",
@@ -1145,7 +1290,26 @@ export namespace rdf_Property {
       range: {
         kind: "Shacl",
         path: $rdfs_range,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  rdfs_Class: {
+                    discriminantValues: ["rdfs_Class"],
+                    type: rdfs_Class.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Set",
+          } as const;
+        },
       } as const,
       seeAlso: {
         kind: "Shacl",
@@ -1158,7 +1322,26 @@ export namespace rdf_Property {
       subPropertyOf: {
         kind: "Shacl",
         path: $rdfs_subPropertyOf,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  rdf_Property: {
+                    discriminantValues: ["rdf_Property"],
+                    type: rdf_Property.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Set",
+          } as const;
+        },
       } as const,
       type: {
         kind: "Shacl",
@@ -1461,7 +1644,7 @@ export type rdfs_Class = {
 
   readonly seeAlso: readonly (NamedNode | Literal)[];
 
-  readonly subClassOf: readonly NamedNode[];
+  readonly subClassOf: readonly (NamedNode | rdfs_Class.Discriminated)[];
 
   readonly type: readonly NamedNode[];
 };
@@ -1522,7 +1705,29 @@ export namespace rdfs_Class {
     );
     parameters.resource.add(
       rdfs_Class.schema.properties.subClassOf.path,
-      parameters.object.subClassOf.flatMap((item) => [item]),
+      parameters.object.subClassOf.flatMap((item) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
+            return [value];
+          }
+          if (value["termType"] === "rdfs_Class") {
+            return rdfs_Class.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: rdfs_Class.schema.properties.subClassOf.path,
+        }),
+      ),
       parameters.graph,
     );
     parameters.resource.add(
@@ -1600,10 +1805,25 @@ export namespace rdfs_Class {
           value,
         ),
       ),
-      subClassOf: $convertToScalarSet($convertToIri)(
-        parameters.subClassOf,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      subClassOf: $convertToScalarSet(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | rdfs_Class.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | rdfs_Class.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.subClassOf, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdfs_Class.schema.properties.subClassOf.type,
           value,
@@ -1654,9 +1874,14 @@ export namespace rdfs_Class {
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
     readonly subClassOf?:
-      | (keyof $DefaultNamespaceT & string)
       | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+      | rdfs_Class.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | rdfs_Class.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -1739,7 +1964,26 @@ export namespace rdfs_Class {
       subClassOf: {
         kind: "Shacl",
         path: $rdfs_subClassOf,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  rdfs_Class: {
+                    discriminantValues: ["rdfs_Class"],
+                    type: rdfs_Class.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Set",
+          } as const;
+        },
       } as const,
       type: {
         kind: "Shacl",
@@ -1863,7 +2107,7 @@ export type sh_NodeShape = {
 
   readonly shaclmateName: Maybe<string>;
 
-  readonly subClassOf: readonly NamedNode[];
+  readonly subClassOf: readonly (NamedNode | rdfs_Class.Discriminated)[];
 
   readonly targetClasses: readonly NamedNode[];
 
@@ -2472,7 +2716,29 @@ export namespace sh_NodeShape {
     );
     parameters.resource.add(
       rdfs_Class.schema.properties.subClassOf.path,
-      parameters.object.subClassOf.flatMap((item) => [item]),
+      parameters.object.subClassOf.flatMap((item) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
+            return [value];
+          }
+          if (value["termType"] === "rdfs_Class") {
+            return rdfs_Class.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: rdfs_Class.schema.properties.subClassOf.path,
+        }),
+      ),
       parameters.graph,
     );
     parameters.resource.add(
@@ -3003,10 +3269,25 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      subClassOf: $convertToScalarSet($convertToIri)(
-        parameters.subClassOf,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      subClassOf: $convertToScalarSet(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | rdfs_Class.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | rdfs_Class.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.subClassOf, parameters.$defaultNamespace).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdfs_Class.schema.properties.subClassOf.type,
           value,
@@ -3260,9 +3541,14 @@ export namespace sh_NodeShape {
     readonly severity?: sh_Severity["value"] | sh_Severity | Maybe<sh_Severity>;
     readonly shaclmateName?: string | Maybe<string>;
     readonly subClassOf?:
-      | (keyof $DefaultNamespaceT & string)
       | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+      | rdfs_Class.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | rdfs_Class.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
     readonly targetClasses?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -3743,7 +4029,26 @@ export namespace sh_NodeShape {
       subClassOf: {
         kind: "Shacl",
         path: $rdfs_subClassOf,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  rdfs_Class: {
+                    discriminantValues: ["rdfs_Class"],
+                    type: rdfs_Class.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Set",
+          } as const;
+        },
       } as const,
       targetClasses: {
         kind: "Shacl",
