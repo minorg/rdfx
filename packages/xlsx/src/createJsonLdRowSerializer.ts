@@ -32,12 +32,12 @@ const jsonLdNodeObjectSchema = z
   .strict();
 
 /**
- * Collapse an array of one element to that element. Otherwise return the array unchanged.
+ * Convert an array of one element to that element. Otherwise return the array unchanged.
  * 
  * The JSON-LD row parser can convert elements to singleton arrays. Collapsing the array
  * here avoids flatten() creating a header with a trailing .0 when there's only one element in the array.
  */
-function collapseArray<T>(array: readonly T[]): readonly T[] | T {
+function unwrapSingletonArray<T>(array: readonly T[]): readonly T[] | T {
   return array.length === 0 || array.length > 1 ? array : array[0];
 }
 
@@ -72,7 +72,7 @@ export function createJsonLdRowSerializer<
           return jsonLd;
         case "object": {
           if (Array.isArray(jsonLd)) {
-            return collapseArray(jsonLd.map(convertJsonLdTypesToXlsxTypes));
+            return unwrapSingletonArray(jsonLd.map(convertJsonLdTypesToXlsxTypes));
           }
 
           const jsonLdValueObject =
@@ -204,7 +204,7 @@ export function createJsonLdRowSerializer<
                 language,
                 langStringValueElements,
               ] of langStringValueElementsByLanguage) {
-                record[`${key}@${language}`] = collapseArray(langStringValueElements);
+                record[`${key}@${language}`] = unwrapSingletonArray(langStringValueElements);
               }
 
               // Put everything else under the original key
@@ -212,7 +212,7 @@ export function createJsonLdRowSerializer<
                 otherElements.length > 0 ||
                 langStringValueElementsByLanguage.size === 0
               ) {
-                record[key] = collapseArray(otherElements.map(convertJsonLdTypesToXlsxTypes));
+                record[key] = unwrapSingletonArray(otherElements.map(convertJsonLdTypesToXlsxTypes));
               }
             } else {
               // Not an rdf:langString or an array of them
