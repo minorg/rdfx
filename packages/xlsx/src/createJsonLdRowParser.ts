@@ -2,8 +2,7 @@ import type { Quad } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import type { NamespaceBuilder, PrefixMap } from "@rdfx/iri";
 import { type Resource, ResourceSet } from "@rdfx/resource";
-import { unflatten } from "flat";
-import { type Either, Left } from "purify-ts";
+import type { Either } from "purify-ts";
 import { Cell } from "./Cell.js";
 import type { RowParser } from "./RowParser.js";
 
@@ -65,6 +64,21 @@ type JsonLdValue =
   | undefined
   | LangStringJsonLdObject;
 
+function unflattenRowRecord(
+  rowRecord: Record<string, Cell>,
+): Unflattened<Cell> {
+  const root: Record<string, any> = {};
+  for (const [key, cell] of Object.entries(rowRecord)) {
+    const segments = key.split(".");
+    let node = root;
+    for (let i = 0; i < segments.length - 1; i++) {
+      node = node[segments[i]] ??= /^\d+$/.test(segments[i + 1]) ? [] : {};
+    }
+    node[segments[segments.length - 1]] = cell;
+  }
+  return root;
+}
+
 export function createJsonLdRowParser<
   IntermediateObjectT extends object,
   JsonObjectT extends object,
@@ -88,11 +102,11 @@ export function createJsonLdRowParser<
      * becomes
      *   { "label": [{ "@language": "en", "@value": "enlabel" }, { "@language": "fr", "@value": "frlabel" }] }
      */
-    function convertXlsxTreeToJsonLdTree(
+    function convertUnflattenedXlsxToJsonLd(
       unflattenedXlsx: Unflattened<Cell>,
     ): Unflattened<JsonLdValue> {
       if (Array.isArray(unflattenedXlsx)) {
-        return unflattenedXlsx.map(convertXlsxTreeToJsonLdTree);
+        return unflattenedXlsx.map(convertUnflattenedXlsxToJsonLd);
       }
 
       if (unflattenedXlsx instanceof Cell) {
@@ -121,7 +135,7 @@ export function createJsonLdRowParser<
         }
       }
 
-      const convertedRecord: Record<string, JsonLdTreeNode> = {};
+      const convertedRecord: Record<string, Unflattened<JsonLdValue>> = {};
       for (const [key, value] of Object.entries(unflattenedXlsx)) {
         const langStringKeyMatch = LANG_STRING_KEY_REGEX.exec(key);
         if (langStringKeyMatch) {
@@ -153,7 +167,7 @@ export function createJsonLdRowParser<
           }
         } else {
           // key is not property@language, recurse
-          const convertedValue = convertXlsxTreeToJsonLdTree(value);
+          const convertedValue = convertUnflattenedXlsxToJsonLd(value);
           if (key in convertedRecord) {
             appendRecordValues(
               convertedRecord,
@@ -168,7 +182,8 @@ export function createJsonLdRowParser<
       return convertedRecord;
     }
 
-    const jsonLdObject = convertXlsxTreeToJsonLdTree(unflatten(row.toRecord()));
+    const unflattenedRowRecord = unflattenRowRecord(row.toRecord());
+    const jsonLdObject = convertUnflattenedXlsxToJsonLd(unflattenedRowRecord);
 
     return intermediateObjectFunctions.Json.parse(jsonLdObject).chain(
       (jsonObject) =>
