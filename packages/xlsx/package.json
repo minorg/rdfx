@@ -6,7 +6,6 @@
     "@rdfx/resource": "0.0.70",
     "@rdfjs/types": "~2.0.1",
     "fast-formula-parser": "1.0.19",
-    "flat": "6.0.1",
     "js-sha256": "~0.11.1",
     "purify-ts": "~2.1.4",
     "ts-invariant": "~0.10.3",
