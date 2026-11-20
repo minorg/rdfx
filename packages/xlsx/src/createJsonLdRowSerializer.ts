@@ -31,6 +31,16 @@ const jsonLdNodeObjectSchema = z
   })
   .strict();
 
+/**
+ * Collapse an array of one element to that element. Otherwise return the array unchanged.
+ * 
+ * The JSON-LD row parser can convert elements to singleton arrays. Collapsing the array
+ * here avoids flatten() creating a header with a trailing .0 when there's only one element in the array.
+ */
+function collapseArray<T>(array: readonly T[]): readonly T[] | T {
+  return array.length === 0 || array.length > 1 ? array : array[0];
+}
+
 export function createJsonLdRowSerializer<
   IntermediateObjectT extends object,
   JsonObjectT extends object,
@@ -62,7 +72,7 @@ export function createJsonLdRowSerializer<
           return jsonLd;
         case "object": {
           if (Array.isArray(jsonLd)) {
-            return jsonLd.map(convertJsonLdTypesToXlsxTypes);
+            return collapseArray(jsonLd.map(convertJsonLdTypesToXlsxTypes));
           }
 
           const jsonLdValueObject =
@@ -157,44 +167,52 @@ export function createJsonLdRowSerializer<
             boolean | null | number | object | string | undefined
           > = {};
           for (const [key, value] of Object.entries(jsonLd)) {
-            // Intercept rdf:langString value objects and rewrite the key to property@language
+            // Intercept rdf:langString JSON-LD value objects and rewrite the key to property@language
             const jsonLdValueObject =
               jsonLdValueObjectSchema.safeParse(value)?.data;
             if (jsonLdValueObject?.["@language"]) {
               record[`${key}@${jsonLdValueObject["@language"]}`] =
                 jsonLdValueObject["@value"];
             } else if (Array.isArray(value)) {
+              // Separate array elements into rdf:langString JSON-LD value objects and other elements
               const otherElements: unknown[] = [];
-              const stringElementsByLanguage = new Map<string, string[]>();
+              const langStringValueElementsByLanguage = new Map<
+                string,
+                string[]
+              >();
               for (const arrayElement of value) {
                 const jsonLdValueObject =
                   jsonLdValueObjectSchema.safeParse(arrayElement).data;
                 const language = jsonLdValueObject?.["@language"];
                 if (language) {
-                  const existingStringElements =
-                    stringElementsByLanguage.get(language) ?? [];
-                  existingStringElements.push(jsonLdValueObject["@value"]);
-                  stringElementsByLanguage.set(
+                  const existingLangStringValueElements =
+                    langStringValueElementsByLanguage.get(language) ?? [];
+                  existingLangStringValueElements.push(
+                    jsonLdValueObject["@value"],
+                  );
+                  langStringValueElementsByLanguage.set(
                     language,
-                    existingStringElements,
+                    existingLangStringValueElements,
                   );
                 } else {
                   otherElements.push(arrayElement);
                 }
               }
 
+              // Mint a new key per language in the array
               for (const [
                 language,
-                stringElements,
-              ] of stringElementsByLanguage) {
-                record[`${key}@${language}`] = stringElements;
+                langStringValueElements,
+              ] of langStringValueElementsByLanguage) {
+                record[`${key}@${language}`] = collapseArray(langStringValueElements);
               }
 
+              // Put everything else under the original key
               if (
                 otherElements.length > 0 ||
-                stringElementsByLanguage.size === 0
+                langStringValueElementsByLanguage.size === 0
               ) {
-                record[key] = otherElements.map(convertJsonLdTypesToXlsxTypes);
+                record[key] = collapseArray(otherElements.map(convertJsonLdTypesToXlsxTypes));
               }
             } else {
               // Not an rdf:langString or an array of them

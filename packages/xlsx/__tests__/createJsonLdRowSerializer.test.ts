@@ -26,7 +26,7 @@ describe("createJsonLdRowSerializer", () => {
         dataFactory.literal("entest", "en"),
         dataFactory.literal("frtest", "fr"),
       ],
-      literalSetProperty: [dataFactory.literal("4.23e1", xsd.double)],
+      literalSetProperty: [dataFactory.literal("4.23e1", xsd.double), dataFactory.literal("4.24e1", xsd.double)],
       nodeProperty: $Lazy.fromPartial<$DefaultPartial, NodeShape2>(
         $DefaultPartial.createUnsafe({
           $identifier: dataFactory.namedNode("http://example.com/nodeProperty"),
@@ -40,7 +40,7 @@ describe("createJsonLdRowSerializer", () => {
       logger,
     });
     expect(Array.isArray(row)).toStrictEqual(false);
-    expect(Object.keys(row)).toHaveLength(15);
+    expect(Object.keys(row)).toHaveLength(16);
     expect(row["@id"]).toStrictEqual("http://example.com/test");
     expect(row["booleanProperty"]).toStrictEqual(object.booleanProperty);
     expect(row["dateProperty"]).toBeInstanceOf(Date);
@@ -57,14 +57,15 @@ describe("createJsonLdRowSerializer", () => {
     );
     expect(row["intProperty"]).toStrictEqual(object.intProperty);
     expect(row["iriProperty"]).toStrictEqual(object.iriProperty.value);
-    expect(row["langStringSetProperty@en.0"]).toStrictEqual("entest");
-    expect(row["langStringSetProperty@fr.0"]).toStrictEqual("frtest");
+    expect(row["langStringSetProperty@en"]).toStrictEqual("entest");
+    expect(row["langStringSetProperty@fr"]).toStrictEqual("frtest");
     expect(row["literalSetProperty.0"]).toStrictEqual(42.3);
+    expect(row["literalSetProperty.1"]).toStrictEqual(42.4);
     expect(row["nodeProperty"]).toStrictEqual(
       "http://example.com/nodeProperty",
     );
     expect(row["stringProperty"]).toStrictEqual("string");
-    expect(row["termSetProperty.0"]).toStrictEqual(true);
+    expect(row["termSetProperty"]).toStrictEqual(true);
   });
 
   it("NodeShape2", ({ expect }) => {
@@ -83,7 +84,7 @@ describe("createJsonLdRowSerializer", () => {
     expect(Array.isArray(row)).toStrictEqual(false);
     expect(Object.keys(row)).toHaveLength(3);
     expect(row["@id"].startsWith("_:")).toStrictEqual(true);
-    expect(row["label@en.0"]).toStrictEqual("entest");
-    expect(row["label@fr.0"]).toStrictEqual("frtest");
+    expect(row["label@en"]).toStrictEqual("entest");
+    expect(row["label@fr"]).toStrictEqual("frtest");
   });
 });
