@@ -8,6 +8,7 @@
 rdf:Property
     shaclmate:name "rdf_Property" ;
     a rdfs:Class, sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
     sh:property rdf:type, rdfs:comment, rdfs:domain, rdfs:isDefinedBy, rdfs:label, rdfs:range, rdfs:seeAlso, rdfs:subPropertyOf .
 
 rdf:Statement

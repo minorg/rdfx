@@ -8,6 +8,7 @@
 rdfs:Class
     shaclmate:name "rdfs_Class" ;
     a rdfs:Class, sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
     sh:property rdf:type, rdfs:comment, rdfs:isDefinedBy, rdfs:label, rdfs:seeAlso, rdfs:subClassOf .
 
 rdfs:comment
