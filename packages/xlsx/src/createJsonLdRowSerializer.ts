@@ -35,7 +35,11 @@ const jsonLdNodeObjectSchema = z
  */
 function convertJsonLdTypesToXlsxTypes(
   jsonLd: unknown,
-  options: { dataFactory: DataFactory; logger: Logger },
+  options: {
+    dataFactory: DataFactory;
+    logger: Logger;
+    unwrapSingletonArrays: boolean;
+  },
 ): boolean | number | object | null | string | undefined {
   if (jsonLd == null) {
     return jsonLd;
@@ -47,7 +51,7 @@ function convertJsonLdTypesToXlsxTypes(
       return jsonLd;
     case "object": {
       if (Array.isArray(jsonLd)) {
-        if (jsonLd.length === 1) {
+        if (jsonLd.length === 1 && options.unwrapSingletonArrays) {
           // Unwrap singleton array
           return convertJsonLdTypesToXlsxTypes(jsonLd[0], options);
         } else {
@@ -166,8 +170,9 @@ function convertJsonLdTypesToXlsxTypes(
 
 function flatten(
   node: unknown,
-  prefix = "",
-  out: Record<string, Cell.Value> = {},
+  keyPrefix: string,
+  out: Record<string, Cell.Value>,
+  unwrapSingletonArrays: boolean,
 ): Record<string, Cell.Value> {
   if (node == null) {
     return out;
@@ -177,11 +182,11 @@ function flatten(
     case "boolean":
     case "number":
     case "string":
-      out[prefix] = node;
+      out[keyPrefix] = node;
       return out;
     case "object":
       if (node instanceof Date) {
-        out[prefix] = node;
+        out[keyPrefix] = node;
         return out;
       }
       break;
@@ -191,7 +196,7 @@ function flatten(
 
   const jsonLdValueObject = jsonLdValueObjectSchema.safeParse(node).data;
   if (jsonLdValueObject?.["@language"]) {
-    out[`${prefix}@${jsonLdValueObject["@language"]}`] =
+    out[`${keyPrefix}@${jsonLdValueObject["@language"]}`] =
       jsonLdValueObject["@value"];
     return out;
   }
@@ -216,9 +221,8 @@ function flatten(
 
     // property@language, with .N only when a language has several values
     for (const [language, values] of langStringValuesByLanguage) {
-      const key = `${prefix}@${language}`;
-      if (values.length === 1) {
-        // Unwrap singleton array
+      const key = `${keyPrefix}@${language}`;
+      if (values.length === 1 && unwrapSingletonArrays) {
         out[key] = values[0];
       } else {
         values.forEach((value, i) => {
@@ -227,12 +231,11 @@ function flatten(
       }
     }
 
-    if (otherValues.length === 1) {
-      // Unwrap singleton array
-      flatten(otherValues[0], prefix, out);
+    if (otherValues.length === 1 && unwrapSingletonArrays) {
+      flatten(otherValues[0], keyPrefix, out, unwrapSingletonArrays);
     } else {
       otherValues.forEach((element, i) => {
-        flatten(element, `${prefix}.${i}`, out);
+        flatten(element, `${keyPrefix}.${i}`, out, unwrapSingletonArrays);
       });
     }
 
@@ -241,7 +244,12 @@ function flatten(
 
   // A Record-like object
   for (const [key, value] of Object.entries(node)) {
-    flatten(value, prefix ? `${prefix}.${key}` : key, out);
+    flatten(
+      value,
+      keyPrefix ? `${keyPrefix}.${key}` : key,
+      out,
+      unwrapSingletonArrays,
+    );
   }
 
   return out;
@@ -257,11 +265,23 @@ export function createJsonLdRowSerializer<
   >,
 ): (
   object: IntermediateObjectT,
-  parameters: { dataFactory: DataFactory; logger: Logger },
+  options: {
+    dataFactory: DataFactory;
+    logger: Logger;
+    unwrapSingletonArrays?: boolean;
+  },
 ) => Worksheet.Builder.Row {
   return (object, options) => {
     const jsonLdObject = intermediateObjectFunctions.toJson(object);
 
-    return flatten(convertJsonLdTypesToXlsxTypes(jsonLdObject, options));
+    return flatten(
+      convertJsonLdTypesToXlsxTypes(jsonLdObject, {
+        ...options,
+        unwrapSingletonArrays: !!options?.unwrapSingletonArrays,
+      }),
+      "",
+      {},
+      !!options?.unwrapSingletonArrays,
+    );
   };
 }
