@@ -57,14 +57,14 @@ describe("createJsonLdRowSerializer", () => {
     );
     expect(row["intProperty"]).toStrictEqual(object.intProperty);
     expect(row["iriProperty"]).toStrictEqual(object.iriProperty.value);
-    expect(row["langStringSetProperty@en"]).toStrictEqual("entest");
-    expect(row["langStringSetProperty@fr"]).toStrictEqual("frtest");
+    expect(row["langStringSetProperty@en.0"]).toStrictEqual("entest");
+    expect(row["langStringSetProperty@fr.0"]).toStrictEqual("frtest");
+    expect(row["literalSetProperty.0"]).toStrictEqual(42.3);
     expect(row["nodeProperty"]).toStrictEqual(
       "http://example.com/nodeProperty",
     );
     expect(row["stringProperty"]).toStrictEqual("string");
-    expect(row["literalSetProperty"]).toStrictEqual(42.3);
-    expect(row["termSetProperty"]).toStrictEqual(true);
+    expect(row["termSetProperty.0"]).toStrictEqual(true);
   });
 
   it("NodeShape2", ({ expect }) => {
@@ -83,7 +83,7 @@ describe("createJsonLdRowSerializer", () => {
     expect(Array.isArray(row)).toStrictEqual(false);
     expect(Object.keys(row)).toHaveLength(3);
     expect(row["@id"].startsWith("_:")).toStrictEqual(true);
-    expect(row["label@en"]).toStrictEqual("entest");
-    expect(row["label@fr"]).toStrictEqual("frtest");
+    expect(row["label@en.0"]).toStrictEqual("entest");
+    expect(row["label@fr.0"]).toStrictEqual("frtest");
   });
 });
