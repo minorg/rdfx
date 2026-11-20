@@ -1,7 +1,6 @@
 import type { Logger } from "@rdfx/logger";
 
 import { Memoize } from "typescript-memoize";
-import { appendRecordValue } from "./appendRecordValue.js";
 import type { Cell } from "./Cell.js";
 import type { Worksheet } from "./Worksheet.js";
 
@@ -46,7 +45,7 @@ export class Row implements Iterable<Cell | undefined> {
   }
 
   @Memoize()
-  toRecord(): Record<string, Cell | Cell[]> {
+  toRecord(): Record<string, Cell> {
     if (this.index === 0) {
       this.logger.warn(
         {
@@ -70,7 +69,7 @@ export class Row implements Iterable<Cell | undefined> {
       return {};
     }
 
-    const record: Record<string, Cell | Cell[]> = {};
+    const record: Record<string, Cell> = {};
     for (const [columnI, cell] of this.cells.entries()) {
       const logContext = {
         cell: cell ? { address: cell.address } : undefined,
@@ -98,7 +97,12 @@ export class Row implements Iterable<Cell | undefined> {
         continue;
       }
 
-      appendRecordValue(record, header, cell);
+      if (record[header] !== undefined) {
+        this.logger.warn(logContext, "duplicate header: %s", header);
+        continue;
+      }
+
+      record[header] = cell;
     }
 
     return record;

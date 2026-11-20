@@ -2,8 +2,8 @@ import type { Quad } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import type { NamespaceBuilder, PrefixMap } from "@rdfx/iri";
 import { type Resource, ResourceSet } from "@rdfx/resource";
-import { type Either, Left } from "purify-ts";
-import { appendRecordValue } from "./appendRecordValue.js";
+import type { Either } from "purify-ts";
+import { Cell } from "./Cell.js";
 import type { RowParser } from "./RowParser.js";
 
 interface IntermediateObjectFunctions<
@@ -30,6 +30,55 @@ interface IntermediateObjectFunctions<
   ) => Resource;
 }
 
+/**
+ * Append one or more values to a record entry, creating the entry if necessary.
+ */
+function appendRecordValues<T>(
+  record: Record<string, T | T[]>,
+  key: string,
+  values: readonly T[],
+): void {
+  const existingValues = record[key];
+  if (existingValues === undefined) {
+    record[key] = values.concat();
+  } else if (Array.isArray(existingValues)) {
+    record[key] = existingValues.concat(values);
+  } else {
+    record[key] = [existingValues, ...values];
+  }
+}
+
+const LANG_STRING_KEY_REGEX = /^([^@].*)@([^@]+)$/;
+
+type LangStringJsonLdObject = { "@language": string; "@value": string };
+
+type Unflattened<LeafNodeT> =
+  | LeafNodeT
+  | { [key: string]: Unflattened<LeafNodeT> }
+  | Unflattened<LeafNodeT>[];
+type JsonLdValue =
+  | boolean
+  | null
+  | number
+  | string
+  | undefined
+  | LangStringJsonLdObject;
+
+function unflattenRowRecord(
+  rowRecord: Record<string, Cell>,
+): Unflattened<Cell> {
+  const root: Record<string, any> = {};
+  for (const [key, cell] of Object.entries(rowRecord)) {
+    const segments = key.split(".");
+    let node = root;
+    for (let i = 0; i < segments.length - 1; i++) {
+      node = node[segments[i]] ??= /^\d+$/.test(segments[i + 1]) ? [] : {};
+    }
+    node[segments[segments.length - 1]] = cell;
+  }
+  return root;
+}
+
 export function createJsonLdRowParser<
   IntermediateObjectT extends object,
   JsonObjectT extends object,
@@ -40,71 +89,101 @@ export function createJsonLdRowParser<
   >,
 ): RowParser<readonly Quad[]> {
   return (row, options) => {
-    const jsonLdObject: Record<string, unknown> = {};
-    for (const [key, cells] of Object.entries(row.toRecord())) {
-      let jsonLdObjectKey: string;
-      let language: string | undefined;
-      if (key.startsWith("@")) {
-        jsonLdObjectKey = key;
-      } else {
-        [jsonLdObjectKey, language] = key.split("@", 2);
+    const logger = options.logger;
 
-        jsonLdObjectKey = jsonLdObjectKey.trim();
-        if (jsonLdObjectKey.length === 0) {
-          return Left(new Error(`invalid header: ${key}`));
-        }
-
-        if (language) {
-          language = language.trim();
-          if (language.length === 0) {
-            language = undefined;
-          }
-        }
+    /**
+     * Recursively convert an unflattened Row Record (Record<string, Cell>) to a JSON-LD object.
+     *
+     * Recursively coalesce lang string key: value entries { "label@en": string } to
+     * arrays of JSON-LD value objects { "@language": string, "@value": string }.
+     *
+     * For example,
+     *   { "label@en": "enlabel", "label@fr": "frlabel" } becomes
+     * becomes
+     *   { "label": [{ "@language": "en", "@value": "enlabel" }, { "@language": "fr", "@value": "frlabel" }] }
+     */
+    function convertUnflattenedXlsxToJsonLd(
+      unflattenedXlsx: Unflattened<Cell>,
+    ): Unflattened<JsonLdValue> {
+      if (Array.isArray(unflattenedXlsx)) {
+        return unflattenedXlsx.map(convertUnflattenedXlsxToJsonLd);
       }
 
-      for (const cell of Array.isArray(cells) ? cells : [cells]) {
+      if (unflattenedXlsx instanceof Cell) {
+        const cell = unflattenedXlsx;
         const cellHyperlink = cell.hyperlink.extract();
         if (cellHyperlink) {
-          appendRecordValue(
-            jsonLdObject,
-            jsonLdObjectKey,
-            cellHyperlink.target,
-          );
-          continue;
+          return cellHyperlink.target;
         }
         const cellValue = cell.value.extract();
-        if (cellValue === undefined) {
-          continue;
-        }
         switch (typeof cellValue) {
           case "boolean":
           case "number":
-            appendRecordValue(jsonLdObject, jsonLdObjectKey, cellValue);
-            break;
-          case "object":
+          case "string":
+          case "undefined":
+            return cellValue;
+          case "object": {
             if (cellValue instanceof Date) {
-              appendRecordValue(
-                jsonLdObject,
-                jsonLdObjectKey,
-                cellValue.toISOString(),
-              );
-              break;
+              return cellValue.toISOString();
             }
             throw new RangeError("unexpected object cell value");
-          case "string": {
-            if (language) {
-              appendRecordValue(jsonLdObject, jsonLdObjectKey, {
-                "@language": language,
-                "@value": cellValue,
-              });
-            } else {
-              appendRecordValue(jsonLdObject, jsonLdObjectKey, cellValue);
+          }
+          default:
+            throw new RangeError(
+              `unsupported cell value type: ${typeof cellValue}`,
+            );
+        }
+      }
+
+      const convertedRecord: Record<string, Unflattened<JsonLdValue>> = {};
+      for (const [key, value] of Object.entries(unflattenedXlsx)) {
+        const langStringKeyMatch = LANG_STRING_KEY_REGEX.exec(key);
+        if (langStringKeyMatch) {
+          // key is property@language
+          // The regex excludes keys starting with @ e.g., @id
+          const [, property, language] = langStringKeyMatch;
+          const langStrings: LangStringJsonLdObject[] = [];
+          for (const arrayElement of Array.isArray(value) ? value : [value]) {
+            if (!(arrayElement instanceof Cell)) {
+              logger.warn(
+                "%s: expected a text cell, found nested structure",
+                key,
+              );
+              continue;
             }
-            break;
+            const cellValue = arrayElement.value.extract();
+            if (typeof cellValue !== "string") {
+              logger.warn(
+                "%s: expected a text cell, found %s",
+                key,
+                typeof cellValue,
+              );
+              continue;
+            }
+            langStrings.push({ "@language": language, "@value": cellValue });
+          }
+          if (langStrings.length > 0) {
+            appendRecordValues(convertedRecord, property, langStrings);
+          }
+        } else {
+          // key is not property@language, recurse
+          const convertedValue = convertUnflattenedXlsxToJsonLd(value);
+          if (key in convertedRecord) {
+            appendRecordValues(
+              convertedRecord,
+              key,
+              Array.isArray(convertedValue) ? convertedValue : [convertedValue],
+            );
+          } else {
+            convertedRecord[key] = convertedValue;
           }
         }
       }
+      return convertedRecord;
     }
+
+    const unflattenedRowRecord = unflattenRowRecord(row.toRecord());
+    const jsonLdObject = convertUnflattenedXlsxToJsonLd(unflattenedRowRecord);
 
     return intermediateObjectFunctions.Json.parse(jsonLdObject).chain(
       (jsonObject) =>

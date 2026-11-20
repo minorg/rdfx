@@ -1,23 +1,24 @@
 {
   "dependencies": {
-    "@rdfx/collection": "0.0.70",
-    "@rdfx/iri": "0.0.70",
-    "@rdfx/logger": "0.0.70",
-    "@rdfx/resource": "0.0.70",
+    "@rdfx/collection": "0.0.71",
+    "@rdfx/iri": "0.0.71",
+    "@rdfx/logger": "0.0.71",
+    "@rdfx/resource": "0.0.71",
     "@rdfjs/types": "~2.0.1",
     "fast-formula-parser": "1.0.19",
     "js-sha256": "~0.11.1",
     "purify-ts": "~2.1.4",
     "ts-invariant": "~0.10.3",
     "typescript-memoize": "~1.1.1",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "zod": "~4.1.12"
   },
   "description": "Read and write RDF from and to spreadsheets",
   "devDependencies": {
-    "@rdfx/data-factory": "0.0.70",
-    "@rdfx/literal": "0.0.70",
-    "@rdfx/string": "0.0.70",
-    "@rdfx/testing": "0.0.70",
+    "@rdfx/data-factory": "0.0.71",
+    "@rdfx/literal": "0.0.71",
+    "@rdfx/string": "0.0.71",
+    "@rdfx/testing": "0.0.71",
     "@shaclmate/cli": "4.0.109",
     "@tpluscode/rdf-ns-builders": "~4.3.0",
     "@types/node": "^24",
@@ -48,5 +49,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.70"
+  "version": "0.0.71"
 }

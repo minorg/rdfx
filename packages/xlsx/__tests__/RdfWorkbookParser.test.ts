@@ -81,10 +81,11 @@ describe("RdfWorkbookParser", async () => {
         dataFactory.literal("enLangString1", "en"),
         dataFactory.literal("frLangString1", "fr"),
       ]);
-      expect(nodeShape1Id1.literalSetProperty).toHaveLength(1);
-      expect(nodeShape1Id1.literalSetProperty[0]).toEqualRdfTerm(
+      expect(nodeShape1Id1.literalSetProperty).toHaveLength(2);
+      expect(nodeShape1Id1.literalSetProperty).toEqualRdfTermArray([
         dataFactory.literal("4.23e1", xsd.double),
-      );
+        dataFactory.literal("4.24e1", xsd.double),
+      ]);
       expect(nodeShape1Id1.nodeProperty.partial.$identifier()).toEqualRdfTerm(
         ex("nodeShape2Id1"),
       );

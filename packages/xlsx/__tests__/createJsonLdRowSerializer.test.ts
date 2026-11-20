@@ -11,60 +11,81 @@ import {
 } from "./xlsx-test-shapes.shaclmate.js";
 
 describe("createJsonLdRowSerializer", () => {
-  it("NodeShape1", ({ expect }) => {
-    const object = NodeShape1.createUnsafe({
-      $identifier: dataFactory.namedNode("http://example.com/test"),
-      booleanProperty: true,
-      dateProperty: new Date(),
-      dateTimeProperty: new Date(),
-      decimalProperty: "42.3",
-      doubleProperty: 42.3,
-      integerProperty: "42",
-      intProperty: 42,
-      iriProperty: "http://example.com/iriProperty",
-      langStringSetProperty: [
-        dataFactory.literal("entest", "en"),
-        dataFactory.literal("frtest", "fr"),
-      ],
-      literalSetProperty: [dataFactory.literal("4.23e1", xsd.double)],
-      nodeProperty: $Lazy.fromPartial<$DefaultPartial, NodeShape2>(
-        $DefaultPartial.createUnsafe({
-          $identifier: dataFactory.namedNode("http://example.com/nodeProperty"),
-        }),
-      ),
-      stringProperty: "string",
-      termSetProperty: [dataFactory.literal("true", xsd.boolean)],
+  const object = NodeShape1.createUnsafe({
+    $identifier: dataFactory.namedNode("http://example.com/test"),
+    booleanProperty: true,
+    dateProperty: new Date(),
+    dateTimeProperty: new Date(),
+    decimalProperty: "42.3",
+    doubleProperty: 42.3,
+    integerProperty: "42",
+    intProperty: 42,
+    iriProperty: "http://example.com/iriProperty",
+    langStringSetProperty: [
+      dataFactory.literal("entest", "en"),
+      dataFactory.literal("frtest", "fr"),
+    ],
+    literalSetProperty: [
+      dataFactory.literal("4.23e1", xsd.double),
+      dataFactory.literal("4.24e1", xsd.double),
+    ],
+    nodeProperty: $Lazy.fromPartial<$DefaultPartial, NodeShape2>(
+      $DefaultPartial.createUnsafe({
+        $identifier: dataFactory.namedNode("http://example.com/nodeProperty"),
+      }),
+    ),
+    stringProperty: "string",
+    termSetProperty: [dataFactory.literal("true", xsd.boolean)],
+  });
+
+  describe("NodeShape1", () => {
+    it("with unwrapped singleton arrays", ({ expect }) => {
+      const row: any = createJsonLdRowSerializer(NodeShape1)(object, {
+        dataFactory,
+        logger,
+        unwrapSingletonArrays: true,
+      });
+      expect(Array.isArray(row)).toStrictEqual(false);
+      expect(Object.keys(row)).toHaveLength(16);
+      expect(row["@id"]).toStrictEqual("http://example.com/test");
+      expect(row["booleanProperty"]).toStrictEqual(object.booleanProperty);
+      expect(row["dateProperty"]).toBeInstanceOf(Date);
+      expect(row["dateTimeProperty"]).toBeInstanceOf(Date);
+      expect((row["dateTimeProperty"] as Date).getTime()).toStrictEqual(
+        object.dateTimeProperty.getTime(),
+      );
+      expect(row["decimalProperty"]).toStrictEqual(
+        object.decimalProperty.toFixed(),
+      );
+      expect(row["doubleProperty"]).toStrictEqual(object.doubleProperty);
+      expect(row["integerProperty"]).toStrictEqual(
+        object.integerProperty.toString(),
+      );
+      expect(row["intProperty"]).toStrictEqual(object.intProperty);
+      expect(row["iriProperty"]).toStrictEqual(object.iriProperty.value);
+      expect(row["langStringSetProperty@en"]).toStrictEqual("entest"); // Unwrapped singleton array
+      expect(row["langStringSetProperty@fr"]).toStrictEqual("frtest"); // Unwrapped singleton array
+      expect(row["literalSetProperty.0"]).toStrictEqual(42.3);
+      expect(row["literalSetProperty.1"]).toStrictEqual(42.4);
+      expect(row["nodeProperty"]).toStrictEqual(
+        "http://example.com/nodeProperty",
+      );
+      expect(row["stringProperty"]).toStrictEqual("string");
+      expect(row["termSetProperty"]).toStrictEqual(true); // Unwrapped singleton array
     });
-    const row: any = createJsonLdRowSerializer(NodeShape1)(object, {
-      dataFactory,
-      logger,
+
+    it("with singleton arrays as-is", ({ expect }) => {
+      const row: any = createJsonLdRowSerializer(NodeShape1)(object, {
+        dataFactory,
+        logger,
+        unwrapSingletonArrays: false,
+      });
+      expect(Array.isArray(row)).toStrictEqual(false);
+      expect(Object.keys(row)).toHaveLength(16);
+      expect(row["langStringSetProperty@en.0"]).toStrictEqual("entest");
+      expect(row["langStringSetProperty@fr.0"]).toStrictEqual("frtest");
+      expect(row["termSetProperty.0"]).toStrictEqual(true);
     });
-    expect(Array.isArray(row)).toStrictEqual(false);
-    expect(Object.keys(row)).toHaveLength(15);
-    expect(row["@id"]).toStrictEqual("http://example.com/test");
-    expect(row["booleanProperty"]).toStrictEqual(object.booleanProperty);
-    expect(row["dateProperty"]).toBeInstanceOf(Date);
-    expect(row["dateTimeProperty"]).toBeInstanceOf(Date);
-    expect((row["dateTimeProperty"] as Date).getTime()).toStrictEqual(
-      object.dateTimeProperty.getTime(),
-    );
-    expect(row["decimalProperty"]).toStrictEqual(
-      object.decimalProperty.toFixed(),
-    );
-    expect(row["doubleProperty"]).toStrictEqual(object.doubleProperty);
-    expect(row["integerProperty"]).toStrictEqual(
-      object.integerProperty.toString(),
-    );
-    expect(row["intProperty"]).toStrictEqual(object.intProperty);
-    expect(row["iriProperty"]).toStrictEqual(object.iriProperty.value);
-    expect(row["langStringSetProperty@en"]).toStrictEqual("entest");
-    expect(row["langStringSetProperty@fr"]).toStrictEqual("frtest");
-    expect(row["nodeProperty"]).toStrictEqual(
-      "http://example.com/nodeProperty",
-    );
-    expect(row["stringProperty"]).toStrictEqual("string");
-    expect(row["literalSetProperty"]).toStrictEqual(42.3);
-    expect(row["termSetProperty"]).toStrictEqual(true);
   });
 
   it("NodeShape2", ({ expect }) => {
@@ -78,6 +99,7 @@ describe("createJsonLdRowSerializer", () => {
       {
         dataFactory,
         logger,
+        unwrapSingletonArrays: true,
       },
     );
     expect(Array.isArray(row)).toStrictEqual(false);
