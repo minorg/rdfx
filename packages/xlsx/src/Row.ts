@@ -1,7 +1,6 @@
 import type { Logger } from "@rdfx/logger";
 
 import { Memoize } from "typescript-memoize";
-import { appendRecordValue } from "./appendRecordValue.js";
 import type { Cell } from "./Cell.js";
 import type { Worksheet } from "./Worksheet.js";
 
