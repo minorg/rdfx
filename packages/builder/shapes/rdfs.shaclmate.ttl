@@ -5,12 +5,20 @@
 @prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+rdfs:Class
+    a rdfs:Class, sh:NodeShape ;
+    shaclmate:name "rdfs_Class" ;
+    sh:property rdfs:subClassOf, rdf:type, rdfs:label, rdfs:comment, rdfs:seeAlso, rdfs:isDefinedBy .
+
 rdfs:comment
     a sh:PropertyShape ;
-    sh:datatype xsd:string ;
-    sh:maxCount 1 ;
-    sh:name "comment" ;
+    sh:datatype sh:Literal ;
     sh:path rdfs:comment .
+
+rdfs:domain
+    a sh:PropertyShape ;
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:domain .
 
 rdfs:isDefinedBy
     a sh:PropertyShape ;
@@ -27,12 +35,26 @@ rdfs:isDefinedBy
 rdfs:label
     shaclmate:display true ;
     a sh:PropertyShape ;
-    sh:datatype xsd:string ;
-    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
     sh:path rdfs:label .
+
+rdfs:range
+    a sh:PropertyShape ;
+    sh:class rdfs:Class ;
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:range .
+
+rdfs:seeAlso
+    a sh:PropertyShape ;
+    sh:nodeKind sh:IRIOrLiteral ;
+    sh:path rdfs:seeAlso .
 
 rdfs:subClassOf
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:subClassOf .
 
+rdfs:subPropertyOf
+    a sh:PropertyShape ;
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:subPropertyOf .

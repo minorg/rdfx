@@ -5,6 +5,35 @@
 @prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+rdf:Statement
+    a rdfs:Class, sh:NodeShape
+    shaclmate:name "rdf_Statement" ;
+    sh:property rdfs:comment, rdfs:label, rdf:object, rdf:predicate, rdf:subject, rdf:type .
+
+rdf:object
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:path rdf:object .
+
+rdf:predicate
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:path rdf:predicate .
+
+rdf:Property
+    a sh:NodeShape ;
+    shaclmate:name "rdf_Property" ;
+    sh:property rdfs:domain, rdfs:range, rdfs:subPropertyOf, rdfs:label, rdfs:comment, rdfs:seeAlso, rdfs:isDefinedBy, rdf:type .
+
+rdf:subject
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:path rdf:subject .
+
 rdf:type
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
