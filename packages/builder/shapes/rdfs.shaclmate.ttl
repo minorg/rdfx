@@ -6,9 +6,9 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 rdfs:Class
-    a rdfs:Class, sh:NodeShape ;
     shaclmate:name "rdfs_Class" ;
-    sh:property rdfs:subClassOf, rdf:type, rdfs:label, rdfs:comment, rdfs:seeAlso, rdfs:isDefinedBy .
+    a rdfs:Class, sh:NodeShape ;
+    sh:property rdf:type, rdfs:comment, rdfs:isDefinedBy, rdfs:label, rdfs:seeAlso, rdfs:subClassOf .
 
 rdfs:comment
     a sh:PropertyShape ;
@@ -58,3 +58,4 @@ rdfs:subPropertyOf
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:subPropertyOf .
+
