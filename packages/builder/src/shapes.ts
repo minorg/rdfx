@@ -420,16 +420,44 @@ const $rdf_nil = dataFactory.namedNode(
   "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
 );
 
+const $rdf_object = dataFactory.namedNode(
+  "http://www.w3.org/1999/02/22-rdf-syntax-ns#object",
+);
+
+const $rdf_predicate = dataFactory.namedNode(
+  "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate",
+);
+
+const $rdf_Property = dataFactory.namedNode(
+  "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+);
+
 const $rdf_rest = dataFactory.namedNode(
   "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+);
+
+const $rdf_Statement = dataFactory.namedNode(
+  "http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement",
+);
+
+const $rdf_subject = dataFactory.namedNode(
+  "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject",
 );
 
 const $rdf_type = dataFactory.namedNode(
   "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 );
 
+const $rdfs_Class = dataFactory.namedNode(
+  "http://www.w3.org/2000/01/rdf-schema#Class",
+);
+
 const $rdfs_comment = dataFactory.namedNode(
   "http://www.w3.org/2000/01/rdf-schema#comment",
+);
+
+const $rdfs_domain = dataFactory.namedNode(
+  "http://www.w3.org/2000/01/rdf-schema#domain",
 );
 
 const $rdfs_isDefinedBy = dataFactory.namedNode(
@@ -440,8 +468,20 @@ const $rdfs_label = dataFactory.namedNode(
   "http://www.w3.org/2000/01/rdf-schema#label",
 );
 
+const $rdfs_range = dataFactory.namedNode(
+  "http://www.w3.org/2000/01/rdf-schema#range",
+);
+
+const $rdfs_seeAlso = dataFactory.namedNode(
+  "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+);
+
 const $rdfs_subClassOf = dataFactory.namedNode(
   "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+);
+
+const $rdfs_subPropertyOf = dataFactory.namedNode(
+  "http://www.w3.org/2000/01/rdf-schema#subPropertyOf",
 );
 
 function $sequenceRecord<T extends Record<string, unknown>>(
@@ -601,9 +641,9 @@ const $xsd_string = dataFactory.namedNode(
 export type owl_Ontology = {
   readonly $identifier: () => owl_Ontology.Identifier;
 
-  readonly comment: Maybe<string>;
+  readonly comment: readonly Literal[];
 
-  readonly label: Maybe<string>;
+  readonly label: readonly Literal[];
 };
 
 export namespace owl_Ontology {
@@ -620,16 +660,12 @@ export namespace owl_Ontology {
     }
     parameters.resource.add(
       owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
       owl_Ontology.schema.properties.label.path,
-      parameters.object.label
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
     return parameters.resource;
@@ -651,20 +687,20 @@ export namespace owl_Ontology {
         parameters.$defaultNamespace,
       ),
       termType: Right("owl_Ontology" as const),
-      comment: $convertToMaybe($identityConversionFunction)(
+      comment: $convertToScalarSet($convertToLiteral)(
         parameters.comment,
         parameters.$defaultNamespace,
       ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
+        $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      label: $convertToMaybe($identityConversionFunction)(
+      label: $convertToScalarSet($convertToLiteral)(
         parameters.label,
         parameters.$defaultNamespace,
       ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
+        $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
         ),
@@ -682,8 +718,22 @@ export namespace owl_Ontology {
       | BlankNode
       | NamedNode
       | (keyof $DefaultNamespaceT & string);
-    readonly comment?: string | Maybe<string>;
-    readonly label?: string | Maybe<string>;
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
   };
 
   export const createUnsafe: <
@@ -726,18 +776,12 @@ export namespace owl_Ontology {
       comment: {
         kind: "Shacl",
         path: $rdfs_comment,
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
       label: {
         kind: "Shacl",
         path: $rdfs_label,
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
     },
   } as const;
@@ -766,7 +810,973 @@ export namespace owl_Ontology {
   > = (_owlOntology) =>
     $compactRecord({
       $identifier: _owlOntology.$identifier().toString(),
-      label: _owlOntology.label.map((item) => item.toString()).extract(),
+      label:
+        _owlOntology.label.length > 0
+          ? `[${_owlOntology.label.map((item) => item.toString())}]`
+          : undefined,
+    });
+}
+
+export type rdf_Property = {
+  readonly $identifier: () => rdf_Property.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly domain: readonly NamedNode[];
+
+  readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
+
+  readonly label: readonly Literal[];
+
+  readonly range: readonly NamedNode[];
+
+  readonly seeAlso: readonly (NamedNode | Literal)[];
+
+  readonly subPropertyOf: readonly NamedNode[];
+
+  readonly type: readonly NamedNode[];
+};
+
+export namespace rdf_Property {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    rdf_Property.Identifier,
+    rdf_Property
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        rdf_Property.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      owl_Ontology.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.domain.path,
+      parameters.object.domain.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.isDefinedBy.path,
+      parameters.object.isDefinedBy.toList().flatMap((value) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
+            return [value];
+          }
+          if (value["termType"] === "owl_Ontology") {
+            return owl_Ontology.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(value, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: rdf_Property.schema.properties.isDefinedBy.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      owl_Ontology.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.range.path,
+      parameters.object.range.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.seeAlso.path,
+      parameters.object.seeAlso.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.subPropertyOf.path,
+      parameters.object.subPropertyOf.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<rdf_Property, "$identifier" | "label">
+  > = (_rdfProperty) =>
+    `rdf_Property(${JSON.stringify(rdf_Property.toStringRecord(_rdfProperty))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: rdf_Property.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, rdf_Property.Discriminated> = (parameters = {}) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(
+        parameters.$identifier,
+        parameters.$defaultNamespace,
+      ),
+      termType: Right("rdf_Property" as const),
+      comment: $convertToScalarSet($convertToLiteral)(
+        parameters.comment,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          owl_Ontology.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      domain: $convertToScalarSet($convertToIri)(
+        parameters.domain,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.domain.type,
+          value,
+        ),
+      ),
+      isDefinedBy: $convertToMaybe(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | owl_Ontology.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | owl_Ontology.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          rdf_Property.schema.properties.isDefinedBy.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(
+        parameters.label,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          owl_Ontology.schema.properties.label.type,
+          value,
+        ),
+      ),
+      range: $convertToScalarSet($convertToIri)(
+        parameters.range,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.range.type,
+          value,
+        ),
+      ),
+      seeAlso: $convertToScalarSet($identityConversionFunction)(
+        parameters.seeAlso,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.seeAlso.type,
+          value,
+        ),
+      ),
+      subPropertyOf: $convertToScalarSet($convertToIri)(
+        parameters.subPropertyOf,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.subPropertyOf.type,
+          value,
+        ),
+      ),
+      type: $convertToScalarSet($convertToIri)(
+        parameters.type,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.type.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: rdf_Property.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => rdf_Property.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly domain?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly isDefinedBy?:
+      | NamedNode
+      | owl_Ontology.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | Maybe<NamedNode | owl_Ontology.Discriminated>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly range?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
+    readonly subPropertyOf?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly type?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: rdf_Property.CreateParameters<$DefaultNamespaceT>,
+  ) => rdf_Property.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = rdf_Property & {
+    readonly termType: "rdf_Property";
+  };
+
+  export type Identifier = BlankNode | NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIdentifier;
+  }
+
+  export const isrdf_Property: $ObjectTypeGuardFunction<
+    rdf_Property.Discriminated
+  > = (object): object is rdf_Property.Discriminated =>
+    object.termType === "rdf_Property";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: $rdf_Property,
+        kind: "RdfType",
+        toRdfTypes: [$rdf_Property],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      domain: {
+        kind: "Shacl",
+        path: $rdfs_domain,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      isDefinedBy: {
+        kind: "Shacl",
+        path: $rdfs_isDefinedBy,
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  owl_Ontology: {
+                    discriminantValues: ["owl_Ontology"],
+                    type: owl_Ontology.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      range: {
+        kind: "Shacl",
+        path: $rdfs_range,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      seeAlso: {
+        kind: "Shacl",
+        path: $rdfs_seeAlso,
+        type: {
+          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      subPropertyOf: {
+        kind: "Shacl",
+        path: $rdfs_subPropertyOf,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      type: {
+        kind: "Shacl",
+        path: $rdf_type,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    rdf_Property.Identifier,
+    rdf_Property
+  > = $wrap_ToRdfResourceFunction<rdf_Property.Identifier, rdf_Property>(
+    rdf_Property._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    rdf_Property,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    rdf_Property.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<rdf_Property, "$identifier" | "label">
+  > = (_rdfProperty) =>
+    $compactRecord({
+      $identifier: _rdfProperty.$identifier().toString(),
+      label:
+        _rdfProperty.label.length > 0
+          ? `[${_rdfProperty.label.map((item) => item.toString())}]`
+          : undefined,
+    });
+}
+
+export type rdf_Statement = {
+  readonly $identifier: () => rdf_Statement.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly label: readonly Literal[];
+
+  readonly object: BlankNode | NamedNode | Literal;
+
+  readonly predicate: NamedNode;
+
+  readonly subject: BlankNode | NamedNode | Literal;
+
+  readonly type: readonly NamedNode[];
+};
+
+export namespace rdf_Statement {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    rdf_Statement.Identifier,
+    rdf_Statement
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        rdf_Statement.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      owl_Ontology.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      owl_Ontology.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Statement.schema.properties.object.path,
+      [parameters.object.object],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Statement.schema.properties.predicate.path,
+      [parameters.object.predicate],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Statement.schema.properties.subject.path,
+      [parameters.object.subject],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<rdf_Statement, "$identifier" | "label">
+  > = (_rdfStatement) =>
+    `rdf_Statement(${JSON.stringify(rdf_Statement.toStringRecord(_rdfStatement))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: rdf_Statement.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, rdf_Statement.Discriminated> = (parameters) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(
+        parameters.$identifier,
+        parameters.$defaultNamespace,
+      ),
+      termType: Right("rdf_Statement" as const),
+      comment: $convertToScalarSet($convertToLiteral)(
+        parameters.comment,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          owl_Ontology.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(
+        parameters.label,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          owl_Ontology.schema.properties.label.type,
+          value,
+        ),
+      ),
+      object: Either.of(parameters.object),
+      predicate: $convertToIri(
+        parameters.predicate,
+        parameters.$defaultNamespace,
+      ),
+      subject: Either.of(parameters.subject),
+      type: $convertToScalarSet($convertToIri)(
+        parameters.type,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.type.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: rdf_Statement.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => rdf_Statement.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly object: BlankNode | NamedNode | Literal;
+    readonly predicate: (keyof $DefaultNamespaceT & string) | NamedNode;
+    readonly subject: BlankNode | NamedNode | Literal;
+    readonly type?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: rdf_Statement.CreateParameters<$DefaultNamespaceT>,
+  ) => rdf_Statement.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = rdf_Statement & {
+    readonly termType: "rdf_Statement";
+  };
+
+  export type Identifier = BlankNode | NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIdentifier;
+  }
+
+  export const isrdf_Statement: $ObjectTypeGuardFunction<
+    rdf_Statement.Discriminated
+  > = (object): object is rdf_Statement.Discriminated =>
+    object.termType === "rdf_Statement";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: $rdf_Statement,
+        kind: "RdfType",
+        toRdfTypes: [$rdf_Statement],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      object: {
+        kind: "Shacl",
+        path: $rdf_object,
+        type: {
+          kind: "Term",
+          types: ["BlankNode", "NamedNode", "Literal"],
+        } as const,
+      } as const,
+      predicate: {
+        kind: "Shacl",
+        path: $rdf_predicate,
+        type: { kind: "Iri" } as const,
+      } as const,
+      subject: {
+        kind: "Shacl",
+        path: $rdf_subject,
+        type: {
+          kind: "Term",
+          types: ["BlankNode", "NamedNode", "Literal"],
+        } as const,
+      } as const,
+      type: {
+        kind: "Shacl",
+        path: $rdf_type,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    rdf_Statement.Identifier,
+    rdf_Statement
+  > = $wrap_ToRdfResourceFunction<rdf_Statement.Identifier, rdf_Statement>(
+    rdf_Statement._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    rdf_Statement,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    rdf_Statement.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<rdf_Statement, "$identifier" | "label">
+  > = (_rdfStatement) =>
+    $compactRecord({
+      $identifier: _rdfStatement.$identifier().toString(),
+      label:
+        _rdfStatement.label.length > 0
+          ? `[${_rdfStatement.label.map((item) => item.toString())}]`
+          : undefined,
+    });
+}
+
+export type rdfs_Class = {
+  readonly $identifier: () => rdfs_Class.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
+
+  readonly label: readonly Literal[];
+
+  readonly seeAlso: readonly (NamedNode | Literal)[];
+
+  readonly subClassOf: readonly NamedNode[];
+
+  readonly type: readonly NamedNode[];
+};
+
+export namespace rdfs_Class {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    rdfs_Class.Identifier,
+    rdfs_Class
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        rdfs_Class.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      owl_Ontology.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.isDefinedBy.path,
+      parameters.object.isDefinedBy.toList().flatMap((value) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
+            return [value];
+          }
+          if (value["termType"] === "owl_Ontology") {
+            return owl_Ontology.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(value, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: rdf_Property.schema.properties.isDefinedBy.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      owl_Ontology.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.seeAlso.path,
+      parameters.object.seeAlso.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdfs_Class.schema.properties.subClassOf.path,
+      parameters.object.subClassOf.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<rdfs_Class, "$identifier" | "label">
+  > = (_rdfsClass) =>
+    `rdfs_Class(${JSON.stringify(rdfs_Class.toStringRecord(_rdfsClass))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, rdfs_Class.Discriminated> = (parameters = {}) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(
+        parameters.$identifier,
+        parameters.$defaultNamespace,
+      ),
+      termType: Right("rdfs_Class" as const),
+      comment: $convertToScalarSet($convertToLiteral)(
+        parameters.comment,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          owl_Ontology.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      isDefinedBy: $convertToMaybe(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | owl_Ontology.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          defaultNamespace?: $DefaultNamespaceT,
+        ): Either<Error, NamedNode | owl_Ontology.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, defaultNamespace);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          rdf_Property.schema.properties.isDefinedBy.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(
+        parameters.label,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          owl_Ontology.schema.properties.label.type,
+          value,
+        ),
+      ),
+      seeAlso: $convertToScalarSet($identityConversionFunction)(
+        parameters.seeAlso,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.seeAlso.type,
+          value,
+        ),
+      ),
+      subClassOf: $convertToScalarSet($convertToIri)(
+        parameters.subClassOf,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdfs_Class.schema.properties.subClassOf.type,
+          value,
+        ),
+      ),
+      type: $convertToScalarSet($convertToIri)(
+        parameters.type,
+        parameters.$defaultNamespace,
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.type.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: rdfs_Class.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => rdfs_Class.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly isDefinedBy?:
+      | NamedNode
+      | owl_Ontology.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | Maybe<NamedNode | owl_Ontology.Discriminated>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
+    readonly subClassOf?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly type?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
+  ) => rdfs_Class.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = rdfs_Class & { readonly termType: "rdfs_Class" };
+
+  export type Identifier = BlankNode | NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIdentifier;
+  }
+
+  export const isrdfs_Class: $ObjectTypeGuardFunction<
+    rdfs_Class.Discriminated
+  > = (object): object is rdfs_Class.Discriminated =>
+    object.termType === "rdfs_Class";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: $rdfs_Class,
+        kind: "RdfType",
+        toRdfTypes: [$rdfs_Class],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      isDefinedBy: {
+        kind: "Shacl",
+        path: $rdfs_isDefinedBy,
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  owl_Ontology: {
+                    discriminantValues: ["owl_Ontology"],
+                    type: owl_Ontology.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      seeAlso: {
+        kind: "Shacl",
+        path: $rdfs_seeAlso,
+        type: {
+          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      subClassOf: {
+        kind: "Shacl",
+        path: $rdfs_subClassOf,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      type: {
+        kind: "Shacl",
+        path: $rdf_type,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    rdfs_Class.Identifier,
+    rdfs_Class
+  > = $wrap_ToRdfResourceFunction<rdfs_Class.Identifier, rdfs_Class>(
+    rdfs_Class._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    rdfs_Class,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    rdfs_Class.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<rdfs_Class, "$identifier" | "label">
+  > = (_rdfsClass) =>
+    $compactRecord({
+      $identifier: _rdfsClass.$identifier().toString(),
+      label:
+        _rdfsClass.label.length > 0
+          ? `[${_rdfsClass.label.map((item) => item.toString())}]`
+          : undefined,
     });
 }
 
@@ -779,7 +1789,7 @@ export type sh_NodeShape = {
 
   readonly closed: Maybe<boolean>;
 
-  readonly comment: Maybe<string>;
+  readonly comment: readonly Literal[];
 
   readonly datatype: Maybe<NamedNode>;
 
@@ -806,7 +1816,7 @@ export type sh_NodeShape = {
 
   readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
 
-  readonly label: Maybe<string>;
+  readonly label: readonly Literal[];
 
   readonly languageIn: Maybe<readonly string[]>;
 
@@ -975,9 +1985,7 @@ export namespace sh_NodeShape {
     );
     parameters.resource.add(
       owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -1141,7 +2149,7 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.isDefinedBy.path,
+      rdf_Property.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList().flatMap((value) =>
         ((value, _options): (NamedNode | BlankNode)[] => {
           if (value["termType"] === "NamedNode") {
@@ -1162,16 +2170,14 @@ export namespace sh_NodeShape {
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: sh_NodeShape.schema.properties.isDefinedBy.path,
+          propertyPath: rdf_Property.schema.properties.isDefinedBy.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
       owl_Ontology.schema.properties.label.path,
-      parameters.object.label
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -1465,7 +2471,7 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.subClassOf.path,
+      rdfs_Class.schema.properties.subClassOf.path,
       parameters.object.subClassOf.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -1502,7 +2508,7 @@ export namespace sh_NodeShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.type.path,
+      rdf_Property.schema.properties.type.path,
       parameters.object.type.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -1643,11 +2649,11 @@ export namespace sh_NodeShape {
           value,
         ),
       ),
-      comment: $convertToMaybe($identityConversionFunction)(
+      comment: $convertToScalarSet($convertToLiteral)(
         parameters.comment,
         parameters.$defaultNamespace,
       ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
+        $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
@@ -1757,15 +2763,15 @@ export namespace sh_NodeShape {
         },
       )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.isDefinedBy.type,
+          rdf_Property.schema.properties.isDefinedBy.type,
           value,
         ),
       ),
-      label: $convertToMaybe($identityConversionFunction)(
+      label: $convertToScalarSet($convertToLiteral)(
         parameters.label,
         parameters.$defaultNamespace,
       ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
+        $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
         ),
@@ -2002,7 +3008,7 @@ export namespace sh_NodeShape {
         parameters.$defaultNamespace,
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.subClassOf.type,
+          rdfs_Class.schema.properties.subClassOf.type,
           value,
         ),
       ),
@@ -2065,7 +3071,7 @@ export namespace sh_NodeShape {
         parameters.$defaultNamespace,
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.type.type,
+          rdf_Property.schema.properties.type.type,
           value,
         ),
       ),
@@ -2113,7 +3119,14 @@ export namespace sh_NodeShape {
       | NamedNode
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly closed?: boolean | Maybe<boolean>;
-    readonly comment?: string | Maybe<string>;
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly datatype?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -2141,7 +3154,14 @@ export namespace sh_NodeShape {
       | owl_Ontology.Discriminated
       | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | owl_Ontology.Discriminated>;
-    readonly label?: string | Maybe<string>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
     readonly maxExclusive?:
       | bigint
@@ -2357,10 +3377,7 @@ export namespace sh_NodeShape {
       comment: {
         kind: "Shacl",
         path: $rdfs_comment,
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
       datatype: {
         kind: "Shacl",
@@ -2483,10 +3500,7 @@ export namespace sh_NodeShape {
       label: {
         kind: "Shacl",
         path: $rdfs_label,
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
       languageIn: {
         kind: "Shacl",
@@ -2839,7 +3853,10 @@ export namespace sh_NodeShape {
   > = (_shNodeShape) =>
     $compactRecord({
       $identifier: _shNodeShape.$identifier().toString(),
-      label: _shNodeShape.label.map((item) => item.toString()).extract(),
+      label:
+        _shNodeShape.label.length > 0
+          ? `[${_shNodeShape.label.map((item) => item.toString())}]`
+          : undefined,
       shaclmateName: _shNodeShape.shaclmateName
         .map((item) => item.toString())
         .extract(),
@@ -2849,9 +3866,9 @@ export namespace sh_NodeShape {
 export type sh_PropertyGroup = {
   readonly $identifier: () => sh_PropertyGroup.Identifier;
 
-  readonly comment: Maybe<string>;
+  readonly comment: readonly Literal[];
 
-  readonly label: Maybe<string>;
+  readonly label: readonly Literal[];
 };
 
 export namespace sh_PropertyGroup {
@@ -2868,16 +3885,12 @@ export namespace sh_PropertyGroup {
     }
     parameters.resource.add(
       owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
       owl_Ontology.schema.properties.label.path,
-      parameters.object.label
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
     return parameters.resource;
@@ -2899,20 +3912,20 @@ export namespace sh_PropertyGroup {
         parameters.$defaultNamespace,
       ),
       termType: Right("sh_PropertyGroup" as const),
-      comment: $convertToMaybe($identityConversionFunction)(
+      comment: $convertToScalarSet($convertToLiteral)(
         parameters.comment,
         parameters.$defaultNamespace,
       ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
+        $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      label: $convertToMaybe($identityConversionFunction)(
+      label: $convertToScalarSet($convertToLiteral)(
         parameters.label,
         parameters.$defaultNamespace,
       ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
+        $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
         ),
@@ -2930,8 +3943,22 @@ export namespace sh_PropertyGroup {
       | BlankNode
       | NamedNode
       | (keyof $DefaultNamespaceT & string);
-    readonly comment?: string | Maybe<string>;
-    readonly label?: string | Maybe<string>;
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
   };
 
   export const createUnsafe: <
@@ -2974,18 +4001,12 @@ export namespace sh_PropertyGroup {
       comment: {
         kind: "Shacl",
         path: $rdfs_comment,
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
       label: {
         kind: "Shacl",
         path: $rdfs_label,
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
     },
   } as const;
@@ -3015,7 +4036,10 @@ export namespace sh_PropertyGroup {
   > = (_shPropertyGroup) =>
     $compactRecord({
       $identifier: _shPropertyGroup.$identifier().toString(),
-      label: _shPropertyGroup.label.map((item) => item.toString()).extract(),
+      label:
+        _shPropertyGroup.label.length > 0
+          ? `[${_shPropertyGroup.label.map((item) => item.toString())}]`
+          : undefined,
     });
 }
 
@@ -3026,7 +4050,7 @@ export type sh_PropertyShape = {
 
   readonly class_: readonly NamedNode[];
 
-  readonly comment: Maybe<string>;
+  readonly comment: readonly Literal[];
 
   readonly datatype: Maybe<NamedNode>;
 
@@ -3060,7 +4084,7 @@ export type sh_PropertyShape = {
 
   readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
 
-  readonly label: Maybe<string>;
+  readonly label: readonly Literal[];
 
   readonly languageIn: Maybe<readonly string[]>;
 
@@ -3236,9 +4260,7 @@ export namespace sh_PropertyShape {
     );
     parameters.resource.add(
       owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -3384,7 +4406,7 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.isDefinedBy.path,
+      rdf_Property.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList().flatMap((value) =>
         ((value, _options): (NamedNode | BlankNode)[] => {
           if (value["termType"] === "NamedNode") {
@@ -3405,16 +4427,14 @@ export namespace sh_PropertyShape {
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: sh_NodeShape.schema.properties.isDefinedBy.path,
+          propertyPath: rdf_Property.schema.properties.isDefinedBy.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
       owl_Ontology.schema.properties.label.path,
-      parameters.object.label
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -3913,11 +4933,11 @@ export namespace sh_PropertyShape {
           value,
         ),
       ),
-      comment: $convertToMaybe($identityConversionFunction)(
+      comment: $convertToScalarSet($convertToLiteral)(
         parameters.comment,
         parameters.$defaultNamespace,
       ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
+        $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
@@ -4055,15 +5075,15 @@ export namespace sh_PropertyShape {
         },
       )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.isDefinedBy.type,
+          rdf_Property.schema.properties.isDefinedBy.type,
           value,
         ),
       ),
-      label: $convertToMaybe($identityConversionFunction)(
+      label: $convertToScalarSet($convertToLiteral)(
         parameters.label,
         parameters.$defaultNamespace,
       ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
+        $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
         ),
@@ -4452,7 +5472,14 @@ export namespace sh_PropertyShape {
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly comment?: string | Maybe<string>;
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly datatype?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -4491,7 +5518,14 @@ export namespace sh_PropertyShape {
       | owl_Ontology.Discriminated
       | (keyof $DefaultNamespaceT & string)
       | Maybe<NamedNode | owl_Ontology.Discriminated>;
-    readonly label?: string | Maybe<string>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
     readonly lessThan?:
       | (keyof $DefaultNamespaceT & string)
@@ -4700,10 +5734,7 @@ export namespace sh_PropertyShape {
       comment: {
         kind: "Shacl",
         path: $rdfs_comment,
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
       datatype: {
         kind: "Shacl",
@@ -4847,10 +5878,7 @@ export namespace sh_PropertyShape {
       label: {
         kind: "Shacl",
         path: $rdfs_label,
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
       languageIn: {
         kind: "Shacl",
@@ -5258,7 +6286,10 @@ export namespace sh_PropertyShape {
   > = (_shPropertyShape) =>
     $compactRecord({
       $identifier: _shPropertyShape.$identifier().toString(),
-      label: _shPropertyShape.label.map((item) => item.toString()).extract(),
+      label:
+        _shPropertyShape.label.length > 0
+          ? `[${_shPropertyShape.label.map((item) => item.toString())}]`
+          : undefined,
       name: _shPropertyShape.name.map((item) => item.toString()).extract(),
       path: $PropertyPath.$toString(_shPropertyShape.path),
       shaclmateName: _shPropertyShape.shaclmateName
@@ -5438,7 +6469,7 @@ export namespace skos_Concept {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.type.path,
+      rdf_Property.schema.properties.type.path,
       parameters.object.type.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -5535,7 +6566,7 @@ export namespace skos_Concept {
         parameters.$defaultNamespace,
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.type.type,
+          rdf_Property.schema.properties.type.type,
           value,
         ),
       ),
@@ -5949,7 +6980,7 @@ export namespace skos_ConceptScheme {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.type.path,
+      rdf_Property.schema.properties.type.path,
       parameters.object.type.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -6070,7 +7101,7 @@ export namespace skos_ConceptScheme {
         parameters.$defaultNamespace,
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.type.type,
+          rdf_Property.schema.properties.type.type,
           value,
         ),
       ),
@@ -6433,6 +7464,9 @@ export namespace sh_Shape {
 
 export type $Object =
   | owl_Ontology.Discriminated
+  | rdf_Property.Discriminated
+  | rdf_Statement.Discriminated
+  | rdfs_Class.Discriminated
   | sh_NodeShape.Discriminated
   | sh_PropertyGroup.Discriminated
   | sh_PropertyShape.Discriminated
@@ -6447,6 +7481,12 @@ export namespace $Object {
     switch (object.termType) {
       case "owl_Ontology":
         return owl_Ontology.toRdfResource(object, options);
+      case "rdf_Property":
+        return rdf_Property.toRdfResource(object, options);
+      case "rdf_Statement":
+        return rdf_Statement.toRdfResource(object, options);
+      case "rdfs_Class":
+        return rdfs_Class.toRdfResource(object, options);
       case "sh_NodeShape":
         return sh_NodeShape.toRdfResource(object, options);
       case "sh_PropertyGroup":
@@ -6467,6 +7507,12 @@ export namespace $Object {
     switch (object.termType) {
       case "owl_Ontology":
         return owl_Ontology.$toString(object);
+      case "rdf_Property":
+        return rdf_Property.$toString(object);
+      case "rdf_Statement":
+        return rdf_Statement.$toString(object);
+      case "rdfs_Class":
+        return rdfs_Class.$toString(object);
       case "sh_NodeShape":
         return sh_NodeShape.$toString(object);
       case "sh_PropertyGroup":

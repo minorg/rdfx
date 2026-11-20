@@ -12,7 +12,7 @@ rdfs:Class
 
 rdfs:comment
     a sh:PropertyShape ;
-    sh:datatype sh:Literal ;
+    sh:nodeKind sh:Literal ;
     sh:path rdfs:comment .
 
 rdfs:domain
