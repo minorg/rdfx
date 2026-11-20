@@ -2,8 +2,9 @@ import type { Quad } from "@rdfjs/types";
 import { datasetFactory } from "@rdfx/collection";
 import type { NamespaceBuilder, PrefixMap } from "@rdfx/iri";
 import { type Resource, ResourceSet } from "@rdfx/resource";
-import { type Either, Left } from "purify-ts";
-import { appendRecordValue } from "./appendRecordValue.js";
+import { unflatten } from "flat";
+import type { Either } from "purify-ts";
+import { Cell } from "./Cell.js";
 import type { RowParser } from "./RowParser.js";
 
 interface IntermediateObjectFunctions<
@@ -30,6 +31,41 @@ interface IntermediateObjectFunctions<
   ) => Resource;
 }
 
+/**
+ * Append one or more values to a record entry, creating the entry if necessary.
+ */
+function appendRecordValues<T>(
+  record: Record<string, T | T[]>,
+  key: string,
+  values: readonly T[],
+): void {
+  const existingValues = record[key];
+  if (existingValues === undefined) {
+    record[key] = values.concat();
+  } else if (Array.isArray(existingValues)) {
+    record[key] = existingValues.concat(values);
+  } else {
+    record[key] = [existingValues, ...values];
+  }
+}
+
+const LANG_STRING_KEY_REGEX = /^([^@].*)@([^@]+)$/;
+
+type LangStringJsonLdObject = { "@language": string; "@value": string };
+
+type Unflattened<CellT> =
+  | CellT
+  | { [key: string]: Unflattened<CellT> }
+  | Unflattened<CellT>[];
+
+type JsonLdValue =
+  | boolean
+  | null
+  | number
+  | string
+  | undefined
+  | LangStringJsonLdObject;
+
 export function createJsonLdRowParser<
   IntermediateObjectT extends object,
   JsonObjectT extends object,
@@ -40,73 +76,126 @@ export function createJsonLdRowParser<
   >,
 ): RowParser<readonly Quad[]> {
   return (row, options) => {
-    const jsonLdObject: Record<string, unknown> = {};
-    for (const [key, cells] of Object.entries(row.toRecord())) {
-      let jsonLdObjectKey: string;
-      let language: string | undefined;
-      if (key.startsWith("@")) {
-        jsonLdObjectKey = key;
-      } else {
-        [jsonLdObjectKey, language] = key.split("@", 2);
+    const logger = options.logger;
 
-        jsonLdObjectKey = jsonLdObjectKey.trim();
-        if (jsonLdObjectKey.length === 0) {
-          return Left(new Error(`invalid header: ${key}`));
-        }
+    /**
+     * Recursively coalesce lang string key: value entries { "label@en": string } to
+     * arrays of JSON-LD value objects { "@language": string, "@value": string }.
+     *
+     * For example,
+     *   { "label@en": "enlabel", "label@fr": "frlabel" } becomes
+     * becomes
+     *   { "label": [{ "@language": "en", "@value": "enlabel" }, { "@language": "fr", "@value": "frlabel" }] }
+     */
+    function coalesceLangStrings(
+      jsonLd: Unflattened<JsonLdValue>,
+    ): Unflattened<JsonLdValue> {
+      if (jsonLd === null || typeof jsonLd !== "object") {
+        return jsonLd;
+      }
 
-        if (language) {
-          language = language.trim();
-          if (language.length === 0) {
-            language = undefined;
+      if (Array.isArray(jsonLd)) {
+        return jsonLd.map(coalesceLangStrings);
+      }
+
+      const convertedRecord: Record<string, Unflattened<JsonLdValue>> = {};
+      for (const [key, value] of Object.entries(jsonLd)) {
+        const langStringKeyMatch = LANG_STRING_KEY_REGEX.exec(key);
+        if (langStringKeyMatch) {
+          // key is property@language
+          // The regex excludes keys starting with @ like "@id"
+          const [, property, language] = langStringKeyMatch;
+          const langStrings: LangStringJsonLdObject[] = [];
+          for (const arrayElement of Array.isArray(value) ? value : [value]) {
+            if (typeof arrayElement !== "string") {
+              logger.warn(
+                "%s: expected a text cell, found %s",
+                key,
+                typeof arrayElement,
+              );
+              continue;
+            }
+
+            langStrings.push({ "@language": language, "@value": arrayElement });
+          }
+          if (langStrings.length > 0) {
+            appendRecordValues(convertedRecord, property, langStrings);
+          }
+        } else {
+          // key is not property@language, recurse
+          const convertedValue = coalesceLangStrings(value);
+          if (key in convertedRecord) {
+            appendRecordValues(
+              convertedRecord,
+              key,
+              Array.isArray(convertedValue) ? convertedValue : [convertedValue],
+            );
+          } else {
+            convertedRecord[key] = convertedValue;
           }
         }
       }
+      return convertedRecord;
+    }
 
-      for (const cell of Array.isArray(cells) ? cells : [cells]) {
+    /**
+     * Recursively convert a Row Record (Record<string, Cell>) to a JSON-LD object.
+     */
+    function convertXlsxTypesToJsonLdTypes(
+      xlsxTreeNode: Unflattened<Cell>,
+    ): Unflattened<JsonLdValue> {
+      if (Array.isArray(xlsxTreeNode)) {
+        return xlsxTreeNode.map(convertXlsxTypesToJsonLdTypes);
+      }
+
+      if (xlsxTreeNode instanceof Cell) {
+        const cell = xlsxTreeNode;
         const cellHyperlink = cell.hyperlink.extract();
         if (cellHyperlink) {
-          appendRecordValue(
-            jsonLdObject,
-            jsonLdObjectKey,
-            cellHyperlink.target,
-          );
-          continue;
+          return cellHyperlink.target;
         }
         const cellValue = cell.value.extract();
-        if (cellValue === undefined) {
-          continue;
-        }
         switch (typeof cellValue) {
           case "boolean":
           case "number":
-            appendRecordValue(jsonLdObject, jsonLdObjectKey, cellValue);
-            break;
-          case "object":
+          case "string":
+          case "undefined":
+            return cellValue;
+          case "object": {
             if (cellValue instanceof Date) {
-              appendRecordValue(
-                jsonLdObject,
-                jsonLdObjectKey,
-                cellValue.toISOString(),
-              );
-              break;
+              return cellValue.toISOString();
             }
             throw new RangeError("unexpected object cell value");
-          case "string": {
-            if (language) {
-              appendRecordValue(jsonLdObject, jsonLdObjectKey, {
-                "@language": language,
-                "@value": cellValue,
-              });
-            } else {
-              appendRecordValue(jsonLdObject, jsonLdObjectKey, cellValue);
-            }
-            break;
           }
+          default:
+            throw new RangeError(
+              `unsupported cell value type: ${typeof cellValue}`,
+            );
         }
       }
+
+      const convertedRecord: Record<string, Unflattened<JsonLdValue>> = {};
+      for (const [key, value] of Object.entries(xlsxTreeNode)) {
+        const convertedValue = convertXlsxTypesToJsonLdTypes(value);
+        if (key in convertedRecord) {
+          appendRecordValues(
+            convertedRecord,
+            key,
+            Array.isArray(convertedValue) ? convertedValue : [convertedValue],
+          );
+        } else {
+          convertedRecord[key] = convertedValue;
+        }
+      }
+      return convertedRecord;
     }
 
-    return intermediateObjectFunctions.Json.parse(jsonLdObject).chain(
+    const flatJsonLdObject = convertXlsxTypesToJsonLdTypes(row.toRecord());
+    const unflattenedJsonLdObject: Unflattened<JsonLdValue> =
+      unflatten(flatJsonLdObject);
+    const coalescedJsonLdObject = coalesceLangStrings(unflattenedJsonLdObject);
+
+    return intermediateObjectFunctions.Json.parse(coalescedJsonLdObject).chain(
       (jsonObject) =>
         intermediateObjectFunctions
           .fromJson(jsonObject, {
