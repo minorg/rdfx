@@ -1,14 +1,14 @@
 {
   "dependencies": {
-    "@rdfx/collection": "0.0.70",
-    "@rdfx/data-factory": "0.0.70",
-    "@rdfx/format": "0.0.70",
-    "@rdfx/graph-store": "0.0.70",
-    "@rdfx/logger": "0.0.70",
-    "@rdfx/parser": "0.0.70",
-    "@rdfx/serializer": "0.0.70",
-    "@rdfx/stream": "0.0.70",
-    "@rdfx/string": "0.0.70",
+    "@rdfx/collection": "0.0.71",
+    "@rdfx/data-factory": "0.0.71",
+    "@rdfx/format": "0.0.71",
+    "@rdfx/graph-store": "0.0.71",
+    "@rdfx/logger": "0.0.71",
+    "@rdfx/parser": "0.0.71",
+    "@rdfx/serializer": "0.0.71",
+    "@rdfx/stream": "0.0.71",
+    "@rdfx/string": "0.0.71",
     "@rdfjs/types": "~2.0.1",
     "@types/node": "^24",
     "@types/unbzip2-stream": "~1.4.3",
@@ -18,7 +18,7 @@
   },
   "description": "Read and write RDF from and to the file system",
   "devDependencies": {
-    "@rdfx/testing": "0.0.70"
+    "@rdfx/testing": "0.0.71"
   },
   "files": [
     "LICENSE",
@@ -43,5 +43,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.70"
+  "version": "0.0.71"
 }
