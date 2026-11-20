@@ -1,7 +1,6 @@
 import type { DataFactory } from "@rdfjs/types";
 import { LiteralDecoder, literalDatatypeDefinitions } from "@rdfx/literal";
 import type { Logger } from "@rdfx/logger";
-import { flatten } from "flat";
 import type { Either } from "purify-ts";
 import { z } from "zod";
 import type { Cell } from "./Cell.js";
@@ -21,7 +20,7 @@ const jsonLdValueObjectSchema = z
   .object({
     "@language": z.string().min(1).optional(),
     "@type": z.string().min(1).optional(),
-    "@value": z.string().min(1),
+    "@value": z.string(),
   })
   .strict();
 
@@ -32,13 +31,220 @@ const jsonLdNodeObjectSchema = z
   .strict();
 
 /**
- * Convert an array of one element to that element. Otherwise return the array unchanged.
- * 
- * The JSON-LD row parser can convert elements to singleton arrays. Collapsing the array
- * here avoids flatten() creating a header with a trailing .0 when there's only one element in the array.
+ * Recursively convert JSON-LD to cell values, preserving arrays and objects.
  */
-function unwrapSingletonArray<T>(array: readonly T[]): readonly T[] | T {
-  return array.length === 0 || array.length > 1 ? array : array[0];
+function convertJsonLdTypesToXlsxTypes(
+  jsonLd: unknown,
+  options: { dataFactory: DataFactory; logger: Logger },
+): boolean | number | object | null | string | undefined {
+  if (jsonLd == null) {
+    return jsonLd;
+  }
+
+  switch (typeof jsonLd) {
+    case "boolean":
+    case "number":
+      return jsonLd;
+    case "object": {
+      if (Array.isArray(jsonLd)) {
+        if (jsonLd.length === 1) {
+          // Unwrap singleton array
+          return convertJsonLdTypesToXlsxTypes(jsonLd[0], options);
+        } else {
+          return jsonLd.map((jsonLdArrayElement) =>
+            convertJsonLdTypesToXlsxTypes(jsonLdArrayElement, options),
+          );
+        }
+      }
+
+      const jsonLdValueObject = jsonLdValueObjectSchema.safeParse(jsonLd).data;
+      if (jsonLdValueObject) {
+        if (jsonLdValueObject["@language"]) {
+          // rdf:langString
+          return jsonLd;
+        }
+
+        if (jsonLdValueObject["@type"]) {
+          const { dataFactory, logger } = options;
+          const literalDatatypeDefinition =
+            literalDatatypeDefinitions[jsonLdValueObject["@type"]];
+          if (literalDatatypeDefinition) {
+            const literal = dataFactory.literal(
+              jsonLdValueObject["@value"],
+              dataFactory.namedNode(jsonLdValueObject["@type"]),
+            );
+
+            let decodedLiteralEither: Either<
+              Error,
+              boolean | Date | string | number
+            >;
+            switch (literalDatatypeDefinition.kind) {
+              case "bigdecimal":
+                decodedLiteralEither = LiteralDecoder.decodeBigDecimalLiteral(
+                  literal,
+                ).map((_) => _.toFixed());
+                break;
+              case "bigint":
+                decodedLiteralEither = LiteralDecoder.decodeBigIntLiteral(
+                  literal,
+                ).map((_) => _.toString());
+                break;
+              case "boolean":
+                decodedLiteralEither =
+                  LiteralDecoder.decodeBooleanLiteral(literal);
+                break;
+              case "date":
+                decodedLiteralEither =
+                  LiteralDecoder.decodeDateLiteral(literal);
+                break;
+              case "datetime":
+                decodedLiteralEither =
+                  LiteralDecoder.decodeDateTimeLiteral(literal);
+                break;
+              case "float":
+              case "int":
+                decodedLiteralEither =
+                  LiteralDecoder.decodeNumberLiteral(literal);
+                break;
+              case "string":
+                decodedLiteralEither =
+                  LiteralDecoder.decodeStringLiteral(literal);
+                break;
+              default:
+                literalDatatypeDefinition satisfies never;
+                throw new Error("should never reach this point");
+            }
+
+            return decodedLiteralEither
+              .mapLeft((error) => {
+                logger.warn(
+                  { error, jsonLd },
+                  "unable to decode JSON-LD literal into an .xlsx-safe type, falling back to string",
+                );
+                return literal.value;
+              })
+              .extract();
+          } else {
+            logger.warn(
+              { jsonLd },
+              "unrecognized JSON-LD literal @type while trying to decode literal into an .xlsx-safe type, falling back to string",
+            );
+            return jsonLdValueObject["@value"];
+          }
+        }
+
+        // xsd:string
+        return jsonLdValueObject["@value"];
+      }
+
+      const jsonLdNodeObject = jsonLdNodeObjectSchema.safeParse(jsonLd).data;
+      if (jsonLdNodeObject) {
+        return jsonLdNodeObject["@id"];
+      }
+
+      const record: Record<
+        string,
+        boolean | null | number | object | string | undefined
+      > = {};
+      for (const [key, value] of Object.entries(jsonLd)) {
+        record[key] = convertJsonLdTypesToXlsxTypes(value, options);
+      }
+      return record;
+    }
+    case "string":
+      if (DATE_ISO_STRING_REGEX.test(jsonLd)) {
+        // If the string exactly matches the format of Date.toISOString() or Date.toISOString().slice(0, 10) (date only)
+        // then convert it to a Date.
+        return new Date(jsonLd);
+      } else {
+        return jsonLd;
+      }
+    default:
+      throw new RangeError(`unsupported JSON-LD type: ${typeof jsonLd}`);
+  }
+}
+
+function flatten(
+  node: unknown,
+  prefix = "",
+  out: Record<string, Cell.Value> = {},
+): Record<string, Cell.Value> {
+  if (node == null) {
+    return out;
+  }
+
+  switch (typeof node) {
+    case "boolean":
+    case "number":
+    case "string":
+      out[prefix] = node;
+      return out;
+    case "object":
+      if (node instanceof Date) {
+        out[prefix] = node;
+        return out;
+      }
+      break;
+    default:
+      throw new RangeError(`unsupported cell type: ${typeof node}`);
+  }
+
+  const jsonLdValueObject = jsonLdValueObjectSchema.safeParse(node).data;
+  if (jsonLdValueObject?.["@language"]) {
+    out[`${prefix}@${jsonLdValueObject["@language"]}`] =
+      jsonLdValueObject["@value"];
+    return out;
+  }
+
+  if (Array.isArray(node)) {
+    const langStringValuesByLanguage = new Map<string, string[]>();
+    const otherValues: unknown[] = [];
+    for (const element of node) {
+      const jsonLdValueObject = jsonLdValueObjectSchema.safeParse(element).data;
+      if (jsonLdValueObject?.["@language"]) {
+        const langStringValues =
+          langStringValuesByLanguage.get(jsonLdValueObject["@language"]) ?? [];
+        langStringValues.push(jsonLdValueObject["@value"]);
+        langStringValuesByLanguage.set(
+          jsonLdValueObject["@language"],
+          langStringValues,
+        );
+      } else {
+        otherValues.push(element);
+      }
+    }
+
+    // property@language, with .N only when a language has several values
+    for (const [language, values] of langStringValuesByLanguage) {
+      const key = `${prefix}@${language}`;
+      if (values.length === 1) {
+        // Unwrap singleton array
+        out[key] = values[0];
+      } else {
+        values.forEach((value, i) => {
+          out[`${key}.${i}`] = value;
+        });
+      }
+    }
+
+    if (otherValues.length === 1) {
+      // Unwrap singleton array
+      flatten(otherValues[0], prefix, out);
+    } else {
+      otherValues.forEach((element, i) => {
+        flatten(element, `${prefix}.${i}`, out);
+      });
+    }
+
+    return out;
+  }
+
+  // A Record-like object
+  for (const [key, value] of Object.entries(node)) {
+    flatten(value, prefix ? `${prefix}.${key}` : key, out);
+  }
+
+  return out;
 }
 
 export function createJsonLdRowSerializer<
@@ -53,190 +259,9 @@ export function createJsonLdRowSerializer<
   object: IntermediateObjectT,
   parameters: { dataFactory: DataFactory; logger: Logger },
 ) => Worksheet.Builder.Row {
-  return (object, { dataFactory, logger }) => {
+  return (object, options) => {
     const jsonLdObject = intermediateObjectFunctions.toJson(object);
 
-    /**
-     * Recursively convert JSON-LD to cell values, preserving arrays and objects.
-     */
-    function convertJsonLdTypesToXlsxTypes(
-      jsonLd: unknown,
-    ): boolean | number | object | null | string | undefined {
-      if (jsonLd == null) {
-        return jsonLd;
-      }
-
-      switch (typeof jsonLd) {
-        case "boolean":
-        case "number":
-          return jsonLd;
-        case "object": {
-          if (Array.isArray(jsonLd)) {
-            return unwrapSingletonArray(jsonLd.map(convertJsonLdTypesToXlsxTypes));
-          }
-
-          const jsonLdValueObject =
-            jsonLdValueObjectSchema.safeParse(jsonLd)?.data;
-          if (jsonLdValueObject) {
-            if (jsonLdValueObject["@language"]) {
-              // rdf:langString
-              return jsonLd;
-            }
-
-            if (jsonLdValueObject["@type"]) {
-              const literalDatatypeDefinition =
-                literalDatatypeDefinitions[jsonLdValueObject["@type"]];
-              if (literalDatatypeDefinition) {
-                const literal = dataFactory.literal(
-                  jsonLdValueObject["@value"],
-                  dataFactory.namedNode(jsonLdValueObject["@type"]),
-                );
-
-                let decodedLiteralEither: Either<
-                  Error,
-                  boolean | Date | string | number
-                >;
-                switch (literalDatatypeDefinition.kind) {
-                  case "bigdecimal":
-                    decodedLiteralEither =
-                      LiteralDecoder.decodeBigDecimalLiteral(literal).map((_) =>
-                        _.toFixed(),
-                      );
-                    break;
-                  case "bigint":
-                    decodedLiteralEither = LiteralDecoder.decodeBigIntLiteral(
-                      literal,
-                    ).map((_) => _.toString());
-                    break;
-                  case "boolean":
-                    decodedLiteralEither =
-                      LiteralDecoder.decodeBooleanLiteral(literal);
-                    break;
-                  case "date":
-                    decodedLiteralEither =
-                      LiteralDecoder.decodeDateLiteral(literal);
-                    break;
-                  case "datetime":
-                    decodedLiteralEither =
-                      LiteralDecoder.decodeDateTimeLiteral(literal);
-                    break;
-                  case "float":
-                  case "int":
-                    decodedLiteralEither =
-                      LiteralDecoder.decodeNumberLiteral(literal);
-                    break;
-                  case "string":
-                    decodedLiteralEither =
-                      LiteralDecoder.decodeStringLiteral(literal);
-                    break;
-                  default:
-                    literalDatatypeDefinition satisfies never;
-                    throw new Error("should never reach this point");
-                }
-
-                return decodedLiteralEither
-                  .mapLeft((error) => {
-                    logger.warn(
-                      { error, jsonLd },
-                      "unable to decode JSON-LD literal into an .xlsx-safe type, falling back to string",
-                    );
-                    return literal.value;
-                  })
-                  .extract();
-              } else {
-                logger.warn(
-                  { jsonLd },
-                  "unrecognized JSON-LD literal @type while trying to decode literal into an .xlsx-safe type, falling back to string",
-                );
-                return jsonLdValueObject["@value"];
-              }
-            }
-
-            // xsd:string
-            return jsonLdValueObject["@value"];
-          }
-
-          const jsonLdNodeObject =
-            jsonLdNodeObjectSchema.safeParse(jsonLd).data;
-          if (jsonLdNodeObject) {
-            return jsonLdNodeObject["@id"];
-          }
-
-          const record: Record<
-            string,
-            boolean | null | number | object | string | undefined
-          > = {};
-          for (const [key, value] of Object.entries(jsonLd)) {
-            // Intercept rdf:langString JSON-LD value objects and rewrite the key to property@language
-            const jsonLdValueObject =
-              jsonLdValueObjectSchema.safeParse(value)?.data;
-            if (jsonLdValueObject?.["@language"]) {
-              record[`${key}@${jsonLdValueObject["@language"]}`] =
-                jsonLdValueObject["@value"];
-            } else if (Array.isArray(value)) {
-              // Separate array elements into rdf:langString JSON-LD value objects and other elements
-              const otherElements: unknown[] = [];
-              const langStringValueElementsByLanguage = new Map<
-                string,
-                string[]
-              >();
-              for (const arrayElement of value) {
-                const jsonLdValueObject =
-                  jsonLdValueObjectSchema.safeParse(arrayElement).data;
-                const language = jsonLdValueObject?.["@language"];
-                if (language) {
-                  const existingLangStringValueElements =
-                    langStringValueElementsByLanguage.get(language) ?? [];
-                  existingLangStringValueElements.push(
-                    jsonLdValueObject["@value"],
-                  );
-                  langStringValueElementsByLanguage.set(
-                    language,
-                    existingLangStringValueElements,
-                  );
-                } else {
-                  otherElements.push(arrayElement);
-                }
-              }
-
-              // Mint a new key per language in the array
-              for (const [
-                language,
-                langStringValueElements,
-              ] of langStringValueElementsByLanguage) {
-                record[`${key}@${language}`] = unwrapSingletonArray(langStringValueElements);
-              }
-
-              // Put everything else under the original key
-              if (
-                otherElements.length > 0 ||
-                langStringValueElementsByLanguage.size === 0
-              ) {
-                record[key] = unwrapSingletonArray(otherElements.map(convertJsonLdTypesToXlsxTypes));
-              }
-            } else {
-              // Not an rdf:langString or an array of them
-              record[key] = convertJsonLdTypesToXlsxTypes(value);
-            }
-          }
-          return record;
-        }
-        case "string":
-          if (DATE_ISO_STRING_REGEX.test(jsonLd)) {
-            // If the string exactly matches the format of Date.toISOString() or Date.toISOString().slice(0, 10) (date only)
-            // then convert it to a Date.
-            return new Date(jsonLd);
-          } else {
-            return jsonLd;
-          }
-        default:
-          throw new RangeError(`unsupported JSON-LD type: ${typeof jsonLd}`);
-      }
-    }
-
-    return flatten(convertJsonLdTypesToXlsxTypes(jsonLdObject)) as Record<
-      string,
-      Cell.Value
-    >;
+    return flatten(convertJsonLdTypesToXlsxTypes(jsonLdObject, options));
   };
 }
