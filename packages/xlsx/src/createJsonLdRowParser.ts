@@ -3,7 +3,7 @@ import { datasetFactory } from "@rdfx/collection";
 import type { NamespaceBuilder, PrefixMap } from "@rdfx/iri";
 import { type Resource, ResourceSet } from "@rdfx/resource";
 import { unflatten } from "flat";
-import type { Either } from "purify-ts";
+import { type Either, Left } from "purify-ts";
 import { Cell } from "./Cell.js";
 import type { RowParser } from "./RowParser.js";
 
@@ -53,11 +53,10 @@ const LANG_STRING_KEY_REGEX = /^([^@].*)@([^@]+)$/;
 
 type LangStringJsonLdObject = { "@language": string; "@value": string };
 
-type Unflattened<CellT> =
-  | CellT
-  | { [key: string]: Unflattened<CellT> }
-  | Unflattened<CellT>[];
-
+type Unflattened<LeafNodeT> =
+  | LeafNodeT
+  | { [key: string]: Unflattened<LeafNodeT> }
+  | Unflattened<LeafNodeT>[];
 type JsonLdValue =
   | boolean
   | null
@@ -79,6 +78,8 @@ export function createJsonLdRowParser<
     const logger = options.logger;
 
     /**
+     * Recursively convert an unflattened Row Record (Record<string, Cell>) to a JSON-LD object.
+     *
      * Recursively coalesce lang string key: value entries { "label@en": string } to
      * arrays of JSON-LD value objects { "@language": string, "@value": string }.
      *
@@ -87,69 +88,15 @@ export function createJsonLdRowParser<
      * becomes
      *   { "label": [{ "@language": "en", "@value": "enlabel" }, { "@language": "fr", "@value": "frlabel" }] }
      */
-    function coalesceLangStrings(
-      jsonLd: Unflattened<JsonLdValue>,
+    function convertXlsxTreeToJsonLdTree(
+      unflattenedXlsx: Unflattened<Cell>,
     ): Unflattened<JsonLdValue> {
-      if (jsonLd === null || typeof jsonLd !== "object") {
-        return jsonLd;
+      if (Array.isArray(unflattenedXlsx)) {
+        return unflattenedXlsx.map(convertXlsxTreeToJsonLdTree);
       }
 
-      if (Array.isArray(jsonLd)) {
-        return jsonLd.map(coalesceLangStrings);
-      }
-
-      const convertedRecord: Record<string, Unflattened<JsonLdValue>> = {};
-      for (const [key, value] of Object.entries(jsonLd)) {
-        const langStringKeyMatch = LANG_STRING_KEY_REGEX.exec(key);
-        if (langStringKeyMatch) {
-          // key is property@language
-          // The regex excludes keys starting with @ like "@id"
-          const [, property, language] = langStringKeyMatch;
-          const langStrings: LangStringJsonLdObject[] = [];
-          for (const arrayElement of Array.isArray(value) ? value : [value]) {
-            if (typeof arrayElement !== "string") {
-              logger.warn(
-                "%s: expected a text cell, found %s",
-                key,
-                typeof arrayElement,
-              );
-              continue;
-            }
-
-            langStrings.push({ "@language": language, "@value": arrayElement });
-          }
-          if (langStrings.length > 0) {
-            appendRecordValues(convertedRecord, property, langStrings);
-          }
-        } else {
-          // key is not property@language, recurse
-          const convertedValue = coalesceLangStrings(value);
-          if (key in convertedRecord) {
-            appendRecordValues(
-              convertedRecord,
-              key,
-              Array.isArray(convertedValue) ? convertedValue : [convertedValue],
-            );
-          } else {
-            convertedRecord[key] = convertedValue;
-          }
-        }
-      }
-      return convertedRecord;
-    }
-
-    /**
-     * Recursively convert a Row Record (Record<string, Cell>) to a JSON-LD object.
-     */
-    function convertXlsxTypesToJsonLdTypes(
-      xlsxTreeNode: Unflattened<Cell>,
-    ): Unflattened<JsonLdValue> {
-      if (Array.isArray(xlsxTreeNode)) {
-        return xlsxTreeNode.map(convertXlsxTypesToJsonLdTypes);
-      }
-
-      if (xlsxTreeNode instanceof Cell) {
-        const cell = xlsxTreeNode;
+      if (unflattenedXlsx instanceof Cell) {
+        const cell = unflattenedXlsx;
         const cellHyperlink = cell.hyperlink.extract();
         if (cellHyperlink) {
           return cellHyperlink.target;
@@ -174,28 +121,56 @@ export function createJsonLdRowParser<
         }
       }
 
-      const convertedRecord: Record<string, Unflattened<JsonLdValue>> = {};
-      for (const [key, value] of Object.entries(xlsxTreeNode)) {
-        const convertedValue = convertXlsxTypesToJsonLdTypes(value);
-        if (key in convertedRecord) {
-          appendRecordValues(
-            convertedRecord,
-            key,
-            Array.isArray(convertedValue) ? convertedValue : [convertedValue],
-          );
+      const convertedRecord: Record<string, JsonLdTreeNode> = {};
+      for (const [key, value] of Object.entries(unflattenedXlsx)) {
+        const langStringKeyMatch = LANG_STRING_KEY_REGEX.exec(key);
+        if (langStringKeyMatch) {
+          // key is property@language
+          // The regex excludes keys starting with @ e.g., @id
+          const [, property, language] = langStringKeyMatch;
+          const langStrings: LangStringJsonLdObject[] = [];
+          for (const arrayElement of Array.isArray(value) ? value : [value]) {
+            if (!(arrayElement instanceof Cell)) {
+              logger.warn(
+                "%s: expected a text cell, found nested structure",
+                key,
+              );
+              continue;
+            }
+            const cellValue = arrayElement.value.extract();
+            if (typeof cellValue !== "string") {
+              logger.warn(
+                "%s: expected a text cell, found %s",
+                key,
+                typeof cellValue,
+              );
+              continue;
+            }
+            langStrings.push({ "@language": language, "@value": cellValue });
+          }
+          if (langStrings.length > 0) {
+            appendRecordValues(convertedRecord, property, langStrings);
+          }
         } else {
-          convertedRecord[key] = convertedValue;
+          // key is not property@language, recurse
+          const convertedValue = convertXlsxTreeToJsonLdTree(value);
+          if (key in convertedRecord) {
+            appendRecordValues(
+              convertedRecord,
+              key,
+              Array.isArray(convertedValue) ? convertedValue : [convertedValue],
+            );
+          } else {
+            convertedRecord[key] = convertedValue;
+          }
         }
       }
       return convertedRecord;
     }
 
-    const flatJsonLdObject = convertXlsxTypesToJsonLdTypes(row.toRecord());
-    const unflattenedJsonLdObject: Unflattened<JsonLdValue> =
-      unflatten(flatJsonLdObject);
-    const coalescedJsonLdObject = coalesceLangStrings(unflattenedJsonLdObject);
+    const jsonLdObject = convertXlsxTreeToJsonLdTree(unflatten(row.toRecord()));
 
-    return intermediateObjectFunctions.Json.parse(coalescedJsonLdObject).chain(
+    return intermediateObjectFunctions.Json.parse(jsonLdObject).chain(
       (jsonObject) =>
         intermediateObjectFunctions
           .fromJson(jsonObject, {
