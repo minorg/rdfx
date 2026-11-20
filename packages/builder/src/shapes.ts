@@ -857,7 +857,7 @@ export namespace rdf_Property {
     parameters.resource.add(
       rdf_Property.schema.properties.domain.path,
       parameters.object.domain.flatMap((item) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
@@ -916,7 +916,7 @@ export namespace rdf_Property {
     parameters.resource.add(
       rdf_Property.schema.properties.range.path,
       parameters.object.range.flatMap((item) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
@@ -948,7 +948,7 @@ export namespace rdf_Property {
     parameters.resource.add(
       rdf_Property.schema.properties.subPropertyOf.path,
       parameters.object.subPropertyOf.flatMap((item) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
@@ -988,10 +988,10 @@ export namespace rdf_Property {
   export const create: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters?: rdf_Property.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, rdf_Property.Discriminated> = (parameters = {}) =>
+    parameters: rdf_Property.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, rdf_Property.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(
+      $identifier: $convertToIriIdentifierProperty(
         parameters.$identifier,
         parameters.$defaultNamespace,
       ),
@@ -1136,11 +1136,10 @@ export namespace rdf_Property {
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   > = {
     readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier?:
+    readonly $identifier:
       | (() => rdf_Property.Identifier)
-      | BlankNode
-      | NamedNode
-      | (keyof $DefaultNamespaceT & string);
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode;
     readonly comment?:
       | bigint
       | boolean
@@ -1199,7 +1198,7 @@ export namespace rdf_Property {
   export const createUnsafe: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters?: rdf_Property.CreateParameters<$DefaultNamespaceT>,
+    parameters: rdf_Property.CreateParameters<$DefaultNamespaceT>,
   ) => rdf_Property.Discriminated = (parameters) =>
     create(parameters).unsafeCoerce();
 
@@ -1207,9 +1206,9 @@ export namespace rdf_Property {
     readonly termType: "rdf_Property";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = NamedNode;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $parseIri;
   }
 
   export const isrdf_Property: $ObjectTypeGuardFunction<
@@ -1222,7 +1221,7 @@ export namespace rdf_Property {
     properties: {
       $identifier: {
         kind: "Identifier",
-        type: { kind: "Identifier" } as const,
+        type: { kind: "Iri" } as const,
       } as const,
       $rdfType: {
         fromRdfType: $rdf_Property,
@@ -1362,7 +1361,7 @@ export namespace rdf_Property {
 
   export const toRdfResourceValues: $ToRdfResourceValuesFunction<
     rdf_Property,
-    BlankNode | NamedNode
+    NamedNode
   > = (value, options) => [
     rdf_Property.toRdfResource(value, {
       graph: options.graph,
@@ -1706,7 +1705,7 @@ export namespace rdfs_Class {
     parameters.resource.add(
       rdfs_Class.schema.properties.subClassOf.path,
       parameters.object.subClassOf.flatMap((item) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
@@ -1746,10 +1745,10 @@ export namespace rdfs_Class {
   export const create: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters?: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, rdfs_Class.Discriminated> = (parameters = {}) =>
+    parameters: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, rdfs_Class.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(
+      $identifier: $convertToIriIdentifierProperty(
         parameters.$identifier,
         parameters.$defaultNamespace,
       ),
@@ -1846,11 +1845,10 @@ export namespace rdfs_Class {
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   > = {
     readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier?:
+    readonly $identifier:
       | (() => rdfs_Class.Identifier)
-      | BlankNode
-      | NamedNode
-      | (keyof $DefaultNamespaceT & string);
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode;
     readonly comment?:
       | bigint
       | boolean
@@ -1891,15 +1889,15 @@ export namespace rdfs_Class {
   export const createUnsafe: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters?: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
+    parameters: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
   ) => rdfs_Class.Discriminated = (parameters) =>
     create(parameters).unsafeCoerce();
 
   export type Discriminated = rdfs_Class & { readonly termType: "rdfs_Class" };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = NamedNode;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $parseIri;
   }
 
   export const isrdfs_Class: $ObjectTypeGuardFunction<
@@ -1912,7 +1910,7 @@ export namespace rdfs_Class {
     properties: {
       $identifier: {
         kind: "Identifier",
-        type: { kind: "Identifier" } as const,
+        type: { kind: "Iri" } as const,
       } as const,
       $rdfType: {
         fromRdfType: $rdfs_Class,
@@ -2004,7 +2002,7 @@ export namespace rdfs_Class {
 
   export const toRdfResourceValues: $ToRdfResourceValuesFunction<
     rdfs_Class,
-    BlankNode | NamedNode
+    NamedNode
   > = (value, options) => [
     rdfs_Class.toRdfResource(value, {
       graph: options.graph,
@@ -2717,7 +2715,7 @@ export namespace sh_NodeShape {
     parameters.resource.add(
       rdfs_Class.schema.properties.subClassOf.path,
       parameters.object.subClassOf.flatMap((item) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
