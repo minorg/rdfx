@@ -8,5 +8,6 @@
 owl:Ontology
     shaclmate:name "owl_Ontology" ;
     a owl:Class, sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
     sh:property rdfs:comment, rdfs:label .
 

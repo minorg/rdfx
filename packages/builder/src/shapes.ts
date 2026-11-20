@@ -679,10 +679,10 @@ export namespace owl_Ontology {
   export const create: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters?: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, owl_Ontology.Discriminated> = (parameters = {}) =>
+    parameters: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, owl_Ontology.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(
+      $identifier: $convertToIriIdentifierProperty(
         parameters.$identifier,
         parameters.$defaultNamespace,
       ),
@@ -713,11 +713,10 @@ export namespace owl_Ontology {
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   > = {
     readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier?:
+    readonly $identifier:
       | (() => owl_Ontology.Identifier)
-      | BlankNode
-      | NamedNode
-      | (keyof $DefaultNamespaceT & string);
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode;
     readonly comment?:
       | bigint
       | boolean
@@ -739,7 +738,7 @@ export namespace owl_Ontology {
   export const createUnsafe: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters?: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
+    parameters: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
   ) => owl_Ontology.Discriminated = (parameters) =>
     create(parameters).unsafeCoerce();
 
@@ -747,9 +746,9 @@ export namespace owl_Ontology {
     readonly termType: "owl_Ontology";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = NamedNode;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $parseIri;
   }
 
   export const isowl_Ontology: $ObjectTypeGuardFunction<
@@ -762,7 +761,7 @@ export namespace owl_Ontology {
     properties: {
       $identifier: {
         kind: "Identifier",
-        type: { kind: "Identifier" } as const,
+        type: { kind: "Iri" } as const,
       } as const,
       $rdfType: {
         fromRdfType: dataFactory.namedNode(
@@ -797,7 +796,7 @@ export namespace owl_Ontology {
 
   export const toRdfResourceValues: $ToRdfResourceValuesFunction<
     owl_Ontology,
-    BlankNode | NamedNode
+    NamedNode
   > = (value, options) => [
     owl_Ontology.toRdfResource(value, {
       graph: options.graph,
@@ -884,7 +883,7 @@ export namespace rdf_Property {
     parameters.resource.add(
       rdf_Property.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList().flatMap((value) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
@@ -1668,7 +1667,7 @@ export namespace rdfs_Class {
     parameters.resource.add(
       rdf_Property.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList().flatMap((value) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
@@ -2393,7 +2392,7 @@ export namespace sh_NodeShape {
     parameters.resource.add(
       rdf_Property.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList().flatMap((value) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
@@ -4711,7 +4710,7 @@ export namespace sh_PropertyShape {
     parameters.resource.add(
       rdf_Property.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList().flatMap((value) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
