@@ -11,7 +11,7 @@ export interface ConvertibleConceptParameters<
   DefaultNamespaceT extends NamespaceBuilder,
 > extends Omit<
     Parameters<typeof skos_Concept.createUnsafe<DefaultNamespaceT>>[0],
-    "$identifier" | "broader" | "termType"
+    "$defaultNamespace" | "$identifier" | "broader" | "termType"
   > {
   readonly broader?: ConvertibleRelatedConcepts<ConceptIriString>;
 }
@@ -111,7 +111,11 @@ export function skos<DefaultNamespaceT extends NamespaceBuilder>({
         Parameters<
           typeof skos_ConceptScheme.createUnsafe<DefaultNamespaceT>
         >[0],
-        "$identifier" | "concepts" | "termType" | "topConcepts"
+        | "$defaultNamespace"
+        | "$identifier"
+        | "concepts"
+        | "termType"
+        | "topConcepts"
       > & {
         readonly concepts?: ConceptsRecordT;
       },
