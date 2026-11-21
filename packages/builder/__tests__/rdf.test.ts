@@ -106,4 +106,46 @@ describe("rdf", () => {
       });
     });
   });
+
+  describe("Statement", () => {
+    const subject = dataFactory.namedNode("http://example.com/subject");
+    const predicate = dataFactory.namedNode("http://example.com/predicate");
+    const object = dataFactory.namedNode("http://example.com/object");
+
+    testRdfsResource(($identifier, options) =>
+      rdf.Statement($identifier, { ...options, subject, predicate, object }),
+    );
+
+    describe("$identifier", () => {
+      it("string", ({ expect }) => {
+        expect(
+          rdf
+            .Statement("Statement", { subject, predicate, object })
+            .$identifier(),
+        ).toEqualRdfTerm(exTbox.Property);
+      });
+
+      it("IRI", ({ expect }) => {
+        expect(
+          rdf
+            .Statement(exTbox.Statement, { subject, predicate, object })
+            .$identifier(),
+        ).toEqualRdfTerm(exTbox.Property);
+      });
+
+      it("blank node", ({ expect }) => {
+        const expected = dataFactory.blankNode();
+        expect(
+          rdf.Statement(expected, { subject, predicate, object }).$identifier(),
+        ).toEqualRdfTerm(expected);
+      });
+
+      it("undefined", ({ expect }) => {
+        expect(
+          rdf.Statement(undefined, { subject, predicate, object }).$identifier()
+            .termType,
+        ).toStrictEqual("BlankNode");
+      });
+    });
+  });
 });

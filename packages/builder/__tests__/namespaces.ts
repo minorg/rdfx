@@ -19,6 +19,7 @@ interface ExTbox {
   List: NamedNode<"http://example.com/tbox#List">;
   Property: NamedNode<"http://example.com/tbox#Property">;
   property: NamedNode<"http://example.com/tbox#property">;
+  Statement: NamedNode<"http://example.com/tbox#Statement">;
   XoneMember1: NamedNode<"http://example.com/tbox#XoneMember1">;
   XoneMember2: NamedNode<"http://example.com/tbox#XoneMember2">;
 }

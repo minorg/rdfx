@@ -1,7 +1,7 @@
 import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { describe, it } from "vitest";
-import type { rdf_Property, rdfs_Class } from "../src/shapes.js";
+import type { rdf_Property, rdf_Statement, rdfs_Class } from "../src/shapes.js";
 
 export function testRdfsResource(
   rdfsResourceFactory: (
@@ -10,7 +10,7 @@ export function testRdfsResource(
       Parameters<typeof rdfs_Class.createUnsafe>[0],
       "comment" | "isDefinedBy" | "label" | "seeAlso" | "type"
     >,
-  ) => rdfs_Class | rdf_Property,
+  ) => rdfs_Class | rdf_Property | rdf_Statement,
 ) {
   const $identifier = dataFactory.namedNode("http://example.com/test");
 
