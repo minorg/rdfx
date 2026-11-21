@@ -1,18 +1,14 @@
 import type { NamedNode } from "@rdfjs/types";
 import dataFactory from "@rdfx/data-factory";
 import { describe, it } from "vitest";
-import {
-  owl_Ontology,
-  type rdf_Property,
-  type rdfs_Class,
-} from "../src/shapes.js";
+import type { rdf_Property, rdfs_Class } from "../src/shapes.js";
 
 export function testRdfsResource(
   rdfsResourceFactory: (
     $identifier: NamedNode,
     options?: Pick<
       Parameters<typeof rdfs_Class.createUnsafe>[0],
-      "comment" | "isDefinedBy" | "label" | "seeAlso"
+      "comment" | "isDefinedBy" | "label" | "seeAlso" | "type"
     >,
   ) => rdfs_Class | rdf_Property,
 ) {
@@ -48,12 +44,6 @@ export function testRdfsResource(
   });
 
   describe("isDefinedBy", () => {
-    it("unspecified", ({ expect }) => {
-      expect(
-        rdfsResourceFactory($identifier, {}).isDefinedBy.extract(),
-      ).toBeUndefined();
-    });
-
     it("IRI", ({ expect }) => {
       const expected = dataFactory.namedNode("http://example/ontology");
       expect(
@@ -61,19 +51,6 @@ export function testRdfsResource(
           isDefinedBy: expected,
         }).isDefinedBy.extract(),
       ).toEqualRdfTerm(expected);
-    });
-
-    it("Ontology", ({ expect }) => {
-      const expected = owl_Ontology.createUnsafe({
-        $identifier: dataFactory.namedNode("http://example/ontology"),
-      });
-      const actual = rdfsResourceFactory($identifier, {
-        isDefinedBy: expected,
-      }).isDefinedBy.extract();
-      expect(actual?.termType).toStrictEqual("owl_Ontology");
-      expect((actual! as owl_Ontology).$identifier()).toStrictEqual(
-        expected.$identifier(),
-      );
     });
   });
 
@@ -146,6 +123,17 @@ export function testRdfsResource(
           seeAlso: expected,
         }).seeAlso,
       ).toEqualRdfTermArray(expected);
+    });
+  });
+
+  describe("type", () => {
+    it("IRI", ({ expect }) => {
+      const expected = dataFactory.namedNode("http://example/Class");
+      expect(
+        rdfsResourceFactory($identifier, {
+          type: expected,
+        }).type,
+      ).toEqualRdfTermArray([expected]);
     });
   });
 }

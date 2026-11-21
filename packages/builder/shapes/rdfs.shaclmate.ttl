@@ -19,25 +19,13 @@ rdfs:comment
 rdfs:domain
     a sh:PropertyShape ;
     sh:path rdfs:domain ;
-    sh:xone ([
-            sh:nodeKind sh:IRI
-        ]
-        [
-            sh:node rdfs:Class
-        ]
-    ) .
+    sh:nodeKind sh:IRI .
 
 rdfs:isDefinedBy
     a sh:PropertyShape ;
     sh:maxCount 1 ;
     sh:path rdfs:isDefinedBy ;
-    sh:xone ([
-            sh:nodeKind sh:IRI
-        ]
-        [
-            sh:node owl:Ontology
-        ]
-    ) .
+    sh:nodeKind sh:IRI .
 
 rdfs:label
     shaclmate:display true ;
@@ -47,15 +35,8 @@ rdfs:label
 
 rdfs:range
     a sh:PropertyShape ;
-    sh:class rdfs:Class ;
     sh:path rdfs:range ;
-    sh:xone ([
-            sh:nodeKind sh:IRI
-        ]
-        [
-            sh:node rdfs:Class
-        ]
-    ) .
+    sh:nodeKind sh:IRI .
 
 rdfs:seeAlso
     a sh:PropertyShape ;
@@ -65,22 +46,10 @@ rdfs:seeAlso
 rdfs:subClassOf
     a sh:PropertyShape ;
     sh:path rdfs:subClassOf ;
-    sh:xone ([
-            sh:nodeKind sh:IRI
-        ]
-        [
-            sh:node rdfs:Class
-        ]
-    ) .
+    sh:nodeKind sh:IRI .
 
 rdfs:subPropertyOf
     a sh:PropertyShape ;
     sh:path rdfs:subPropertyOf ;
-    sh:xone ([
-            sh:nodeKind sh:IRI
-        ]
-        [
-            sh:node rdf:Property
-        ]
-    ) .
+    sh:nodeKind sh:IRI .
 

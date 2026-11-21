@@ -7,10 +7,7 @@ import { rdf, skos as skosNs } from "@tpluscode/rdf-ns-builders";
 import { skos_Concept, type skos_ConceptScheme } from "../src/shapes.js";
 import { exCbox, exTbox } from "./namespaces.js";
 import "@rdfx/testing";
-
-type Mutable<T> = {
-  -readonly [P in keyof T]: T[P];
-};
+import type { Mutable } from "./Mutable.js";
 
 describe("skos", () => {
   const skos = builder({ defaultNamespace: exCbox }).skos;
