@@ -57,7 +57,7 @@ type $ConversionFunction<
   DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
 > = (
   source: SourceT,
-  defaultNamespace?: DefaultNamespaceT,
+  options: { defaultNamespace: DefaultNamespaceT | undefined },
 ) => Either<Error, TargetT>;
 
 const $convertToBigInt: $ConversionFunction<
@@ -69,7 +69,7 @@ function $convertToIdentifier<
   DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
 >(
   value: BlankNode | NamedNode | (keyof DefaultNamespaceT & string) | undefined,
-  defaultNamespace?: DefaultNamespaceT,
+  { defaultNamespace }: { defaultNamespace: DefaultNamespaceT | undefined },
 ): Either<Error, BlankNode | NamedNode> {
   switch (typeof value) {
     case "object":
@@ -90,7 +90,7 @@ function $convertToIdentifierProperty<
     | NamedNode
     | (keyof DefaultNamespaceT & string)
     | undefined,
-  defaultNamespace?: DefaultNamespaceT,
+  { defaultNamespace }: { defaultNamespace: DefaultNamespaceT | undefined },
 ): Either<Error, () => BlankNode | NamedNode> {
   switch (typeof identifier) {
     case "function":
@@ -115,7 +115,7 @@ function $convertToIri<
   DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
 >(
   value: NamedNode | (keyof DefaultNamespaceT & string),
-  defaultNamespace?: DefaultNamespaceT,
+  { defaultNamespace }: { defaultNamespace: DefaultNamespaceT | undefined },
 ): Either<Error, NamedNode> {
   switch (typeof value) {
     case "object":
@@ -132,7 +132,7 @@ function $convertToIriIdentifierProperty<
     | (() => NamedNode)
     | NamedNode
     | (keyof DefaultNamespaceT & string),
-  defaultNamespace?: DefaultNamespaceT,
+  { defaultNamespace }: { defaultNamespace: DefaultNamespaceT | undefined },
 ): Either<Error, () => NamedNode> {
   switch (typeof identifier) {
     case "function":
@@ -152,7 +152,7 @@ function $convertToIriIdentifierProperty<
 
 function $convertToIriLiteral<IriT extends string>(
   value: IriT | NamedNode<IriT>,
-  _defaultNamespace?: NamespaceBuilder,
+  _options: { defaultNamespace: NamespaceBuilder | undefined },
 ): Either<Error, NamedNode<IriT>> {
   switch (typeof value) {
     case "object":
@@ -177,9 +177,9 @@ function $convertToList<
   readonly ItemTargetT[],
   DefaultNamespaceT
 > {
-  return (value, defaultNamespace) =>
+  return (value, options) =>
     Either.sequence(
-      value.map((value) => convertToItem(value, defaultNamespace)),
+      value.map((value) => convertToItem(value, options)),
     ) as Either<Error, readonly ItemTargetT[]>;
 }
 
@@ -212,7 +212,7 @@ function $convertToMaybe<
   Maybe<ItemTargetT>,
   DefaultNamespaceT
 > {
-  return (value, defaultNamespace) => {
+  return (value, options) => {
     switch (typeof value) {
       case "object": {
         if (Maybe.isMaybe(value)) {
@@ -224,7 +224,7 @@ function $convertToMaybe<
         return Either.of(Maybe.empty());
     }
 
-    return convertToItem(value, defaultNamespace).map(Maybe.of);
+    return convertToItem(value, options).map(Maybe.of);
   };
 }
 
@@ -243,7 +243,7 @@ function $convertToScalarSet<
   readonly ItemTargetT[],
   DefaultNamespaceT
 > {
-  return (value, defaultNamespace) => {
+  return (value, options) => {
     if (typeof value === "undefined") {
       return Either.of<Error, readonly ItemTargetT[]>(
         [] as unknown as readonly ItemTargetT[],
@@ -251,10 +251,10 @@ function $convertToScalarSet<
     }
     if (Array.isArray(value)) {
       return Either.sequence(
-        value.map((value) => convertToItem(value, defaultNamespace)),
+        value.map((value) => convertToItem(value, options)),
       ) as Either<Error, readonly ItemTargetT[]>;
     }
-    return convertToItem(value as ItemSourceT).map((value) => [
+    return convertToItem(value as ItemSourceT, options).map((value) => [
       value,
     ]) as Either<Error, readonly ItemTargetT[]>;
   };
@@ -264,11 +264,11 @@ function $convertWithDefaultValue<ItemSourceT, ItemTargetT>(
   convertToItem: $ConversionFunction<ItemSourceT, ItemTargetT>,
   defaultValue: ItemSourceT,
 ): $ConversionFunction<ItemSourceT | undefined, ItemTargetT> {
-  return (value) => {
+  return (value, options) => {
     if (typeof value === "undefined") {
-      return convertToItem(defaultValue);
+      return convertToItem(defaultValue, options);
     }
-    return convertToItem(value);
+    return convertToItem(value, options);
   };
 }
 
@@ -325,7 +325,7 @@ export namespace $EqualsResult {
 
 function $identityConversionFunction<T>(
   value: T,
-  _defaultNamespace?: NamespaceBuilder,
+  _options: { defaultNamespace: NamespaceBuilder | undefined },
 ): Either<Error, T> {
   return Either.of(value);
 }
@@ -682,24 +682,21 @@ export namespace owl_Ontology {
     parameters: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, owl_Ontology.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("owl_Ontology" as const),
-      comment: $convertToScalarSet($convertToLiteral)(
-        parameters.comment,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      label: $convertToScalarSet($convertToLiteral)(
-        parameters.label,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
@@ -821,17 +818,17 @@ export type rdf_Property = {
 
   readonly comment: readonly Literal[];
 
-  readonly domain: readonly (NamedNode | rdfs_Class.Discriminated)[];
+  readonly domain: readonly NamedNode[];
 
-  readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
+  readonly isDefinedBy: Maybe<NamedNode>;
 
   readonly label: readonly Literal[];
 
-  readonly range: readonly (NamedNode | rdfs_Class.Discriminated)[];
+  readonly range: readonly NamedNode[];
 
   readonly seeAlso: readonly (NamedNode | Literal)[];
 
-  readonly subPropertyOf: readonly (NamedNode | rdf_Property.Discriminated)[];
+  readonly subPropertyOf: readonly NamedNode[];
 
   readonly type: readonly NamedNode[];
 };
@@ -855,56 +852,12 @@ export namespace rdf_Property {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.domain.path,
-      parameters.object.domain.flatMap((item) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "rdfs_Class") {
-            return rdfs_Class.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdf_Property.schema.properties.domain.path,
-        }),
-      ),
+      parameters.object.domain.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
       rdf_Property.schema.properties.isDefinedBy.path,
-      parameters.object.isDefinedBy.toList().flatMap((value) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "owl_Ontology") {
-            return owl_Ontology.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(value, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdf_Property.schema.properties.isDefinedBy.path,
-        }),
-      ),
+      parameters.object.isDefinedBy.toList(),
       parameters.graph,
     );
     parameters.resource.add(
@@ -914,29 +867,7 @@ export namespace rdf_Property {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.range.path,
-      parameters.object.range.flatMap((item) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "rdfs_Class") {
-            return rdfs_Class.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdf_Property.schema.properties.range.path,
-        }),
-      ),
+      parameters.object.range.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -946,29 +877,7 @@ export namespace rdf_Property {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.subPropertyOf.path,
-      parameters.object.subPropertyOf.flatMap((item) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "rdf_Property") {
-            return rdf_Property.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdf_Property.schema.properties.subPropertyOf.path,
-        }),
-      ),
+      parameters.object.subPropertyOf.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -990,96 +899,45 @@ export namespace rdf_Property {
     parameters: rdf_Property.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, rdf_Property.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("rdf_Property" as const),
-      comment: $convertToScalarSet($convertToLiteral)(
-        parameters.comment,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      domain: $convertToScalarSet(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | rdfs_Class.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | rdfs_Class.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.domain, parameters.$defaultNamespace).chain((value) =>
+      domain: $convertToScalarSet($convertToIri)(parameters.domain, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.domain.type,
           value,
         ),
       ),
-      isDefinedBy: $convertToMaybe(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | owl_Ontology.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | owl_Ontology.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           rdf_Property.schema.properties.isDefinedBy.type,
           value,
         ),
       ),
-      label: $convertToScalarSet($convertToLiteral)(
-        parameters.label,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
         ),
       ),
-      range: $convertToScalarSet(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | rdfs_Class.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | rdfs_Class.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.range, parameters.$defaultNamespace).chain((value) =>
+      range: $convertToScalarSet($convertToIri)(parameters.range, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.range.type,
           value,
@@ -1087,41 +945,29 @@ export namespace rdf_Property {
       ),
       seeAlso: $convertToScalarSet($identityConversionFunction)(
         parameters.seeAlso,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.seeAlso.type,
           value,
         ),
       ),
-      subPropertyOf: $convertToScalarSet(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | rdf_Property.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | rdf_Property.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
+      subPropertyOf: $convertToScalarSet($convertToIri)(
+        parameters.subPropertyOf,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
         },
-      )(parameters.subPropertyOf, parameters.$defaultNamespace).chain((value) =>
+      ).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.subPropertyOf.type,
           value,
         ),
       ),
-      type: $convertToScalarSet($convertToIri)(
-        parameters.type,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.type.type,
           value,
@@ -1148,19 +994,13 @@ export namespace rdf_Property {
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly domain?:
-      | NamedNode
-      | rdfs_Class.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | rdfs_Class.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly isDefinedBy?:
-      | NamedNode
-      | owl_Ontology.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | Maybe<NamedNode | owl_Ontology.Discriminated>;
+      | NamedNode
+      | Maybe<NamedNode>;
     readonly label?:
       | bigint
       | boolean
@@ -1170,24 +1010,14 @@ export namespace rdf_Property {
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly range?:
-      | NamedNode
-      | rdfs_Class.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | rdfs_Class.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
     readonly subPropertyOf?:
-      | NamedNode
-      | rdf_Property.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | rdf_Property.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -1235,50 +1065,12 @@ export namespace rdf_Property {
       domain: {
         kind: "Shacl",
         path: $rdfs_domain,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  rdfs_Class: {
-                    discriminantValues: ["rdfs_Class"],
-                    type: rdfs_Class.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Set",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
       } as const,
       isDefinedBy: {
         kind: "Shacl",
         path: $rdfs_isDefinedBy,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  owl_Ontology: {
-                    discriminantValues: ["owl_Ontology"],
-                    type: owl_Ontology.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Option",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
       } as const,
       label: {
         kind: "Shacl",
@@ -1288,26 +1080,7 @@ export namespace rdf_Property {
       range: {
         kind: "Shacl",
         path: $rdfs_range,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  rdfs_Class: {
-                    discriminantValues: ["rdfs_Class"],
-                    type: rdfs_Class.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Set",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
       } as const,
       seeAlso: {
         kind: "Shacl",
@@ -1320,26 +1093,7 @@ export namespace rdf_Property {
       subPropertyOf: {
         kind: "Shacl",
         path: $rdfs_subPropertyOf,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  rdf_Property: {
-                    discriminantValues: ["rdf_Property"],
-                    type: rdf_Property.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Set",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
       } as const,
       type: {
         kind: "Shacl",
@@ -1452,39 +1206,34 @@ export namespace rdf_Statement {
     parameters: rdf_Statement.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, rdf_Statement.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("rdf_Statement" as const),
-      comment: $convertToScalarSet($convertToLiteral)(
-        parameters.comment,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      label: $convertToScalarSet($convertToLiteral)(
-        parameters.label,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
         ),
       ),
       object: Either.of(parameters.object),
-      predicate: $convertToIri(
-        parameters.predicate,
-        parameters.$defaultNamespace,
-      ),
+      predicate: $convertToIri(parameters.predicate, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       subject: Either.of(parameters.subject),
-      type: $convertToScalarSet($convertToIri)(
-        parameters.type,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.type.type,
           value,
@@ -1636,13 +1385,13 @@ export type rdfs_Class = {
 
   readonly comment: readonly Literal[];
 
-  readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
+  readonly isDefinedBy: Maybe<NamedNode>;
 
   readonly label: readonly Literal[];
 
   readonly seeAlso: readonly (NamedNode | Literal)[];
 
-  readonly subClassOf: readonly (NamedNode | rdfs_Class.Discriminated)[];
+  readonly subClassOf: readonly NamedNode[];
 
   readonly type: readonly NamedNode[];
 };
@@ -1666,29 +1415,7 @@ export namespace rdfs_Class {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.isDefinedBy.path,
-      parameters.object.isDefinedBy.toList().flatMap((value) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "owl_Ontology") {
-            return owl_Ontology.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(value, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdf_Property.schema.properties.isDefinedBy.path,
-        }),
-      ),
+      parameters.object.isDefinedBy.toList(),
       parameters.graph,
     );
     parameters.resource.add(
@@ -1703,29 +1430,7 @@ export namespace rdfs_Class {
     );
     parameters.resource.add(
       rdfs_Class.schema.properties.subClassOf.path,
-      parameters.object.subClassOf.flatMap((item) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "rdfs_Class") {
-            return rdfs_Class.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdfs_Class.schema.properties.subClassOf.path,
-        }),
-      ),
+      parameters.object.subClassOf.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -1747,48 +1452,29 @@ export namespace rdfs_Class {
     parameters: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, rdfs_Class.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("rdfs_Class" as const),
-      comment: $convertToScalarSet($convertToLiteral)(
-        parameters.comment,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      isDefinedBy: $convertToMaybe(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | owl_Ontology.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | owl_Ontology.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           rdf_Property.schema.properties.isDefinedBy.type,
           value,
         ),
       ),
-      label: $convertToScalarSet($convertToLiteral)(
-        parameters.label,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
@@ -1796,41 +1482,26 @@ export namespace rdfs_Class {
       ),
       seeAlso: $convertToScalarSet($identityConversionFunction)(
         parameters.seeAlso,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.seeAlso.type,
           value,
         ),
       ),
-      subClassOf: $convertToScalarSet(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | rdfs_Class.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | rdfs_Class.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.subClassOf, parameters.$defaultNamespace).chain((value) =>
+      subClassOf: $convertToScalarSet($convertToIri)(parameters.subClassOf, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdfs_Class.schema.properties.subClassOf.type,
           value,
         ),
       ),
-      type: $convertToScalarSet($convertToIri)(
-        parameters.type,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.type.type,
           value,
@@ -1857,10 +1528,9 @@ export namespace rdfs_Class {
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly isDefinedBy?:
-      | NamedNode
-      | owl_Ontology.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | Maybe<NamedNode | owl_Ontology.Discriminated>;
+      | NamedNode
+      | Maybe<NamedNode>;
     readonly label?:
       | bigint
       | boolean
@@ -1871,14 +1541,9 @@ export namespace rdfs_Class {
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
     readonly subClassOf?:
-      | NamedNode
-      | rdfs_Class.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | rdfs_Class.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -1924,26 +1589,7 @@ export namespace rdfs_Class {
       isDefinedBy: {
         kind: "Shacl",
         path: $rdfs_isDefinedBy,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  owl_Ontology: {
-                    discriminantValues: ["owl_Ontology"],
-                    type: owl_Ontology.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Option",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
       } as const,
       label: {
         kind: "Shacl",
@@ -1961,26 +1607,7 @@ export namespace rdfs_Class {
       subClassOf: {
         kind: "Shacl",
         path: $rdfs_subClassOf,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  rdfs_Class: {
-                    discriminantValues: ["rdfs_Class"],
-                    type: rdfs_Class.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Set",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
       } as const,
       type: {
         kind: "Shacl",
@@ -2055,7 +1682,7 @@ export type sh_NodeShape = {
 
   readonly in_: Maybe<readonly (NamedNode | Literal)[]>;
 
-  readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
+  readonly isDefinedBy: Maybe<NamedNode>;
 
   readonly label: readonly Literal[];
 
@@ -2104,7 +1731,7 @@ export type sh_NodeShape = {
 
   readonly shaclmateName: Maybe<string>;
 
-  readonly subClassOf: readonly (NamedNode | rdfs_Class.Discriminated)[];
+  readonly subClassOf: readonly NamedNode[];
 
   readonly targetClasses: readonly NamedNode[];
 
@@ -2391,29 +2018,7 @@ export namespace sh_NodeShape {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.isDefinedBy.path,
-      parameters.object.isDefinedBy.toList().flatMap((value) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "owl_Ontology") {
-            return owl_Ontology.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(value, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdf_Property.schema.properties.isDefinedBy.path,
-        }),
-      ),
+      parameters.object.isDefinedBy.toList(),
       parameters.graph,
     );
     parameters.resource.add(
@@ -2713,29 +2318,7 @@ export namespace sh_NodeShape {
     );
     parameters.resource.add(
       rdfs_Class.schema.properties.subClassOf.path,
-      parameters.object.subClassOf.flatMap((item) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "rdfs_Class") {
-            return rdfs_Class.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdfs_Class.schema.properties.subClassOf.path,
-        }),
-      ),
+      parameters.object.subClassOf.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -2866,65 +2449,62 @@ export namespace sh_NodeShape {
     parameters?: sh_NodeShape.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, sh_NodeShape.Discriminated> = (parameters = {}) =>
     $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("sh_NodeShape" as const),
       and: $convertToMaybe(
         $convertToList(
           <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
             value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            defaultNamespace?: $DefaultNamespaceT,
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
           ): Either<Error, NamedNode | sh_Shape> => {
             switch (typeof value) {
               case "object":
                 return Either.of(value);
               case "string":
-                return $convertToIri(value, defaultNamespace);
+                return $convertToIri(value, options);
               default:
                 value satisfies never;
                 throw new Error("should never reach this point");
             }
           },
         ),
-      )(parameters.and, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.and, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.and.type,
           value,
         ),
       ),
-      class_: $convertToScalarSet($convertToIri)(
-        parameters.class_,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      class_: $convertToScalarSet($convertToIri)(parameters.class_, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.class_.type,
           value,
         ),
       ),
-      closed: $convertToMaybe($identityConversionFunction)(
-        parameters.closed,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      closed: $convertToMaybe($identityConversionFunction)(parameters.closed, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.closed.type,
           value,
         ),
       ),
-      comment: $convertToScalarSet($convertToLiteral)(
-        parameters.comment,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      datatype: $convertToMaybe($convertToIri)(
-        parameters.datatype,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      datatype: $convertToMaybe($convertToIri)(parameters.datatype, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.datatype.type,
           value,
@@ -2932,7 +2512,9 @@ export namespace sh_NodeShape {
       ),
       deactivated: $convertToMaybe($identityConversionFunction)(
         parameters.deactivated,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.deactivated.type,
@@ -2941,35 +2523,34 @@ export namespace sh_NodeShape {
       ),
       discriminantValue: $convertToMaybe($identityConversionFunction)(
         parameters.discriminantValue,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.discriminantValue.type,
           value,
         ),
       ),
-      extern: $convertToMaybe($identityConversionFunction)(
-        parameters.extern,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      extern: $convertToMaybe($identityConversionFunction)(parameters.extern, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.extern.type,
           value,
         ),
       ),
-      flags: $convertToMaybe($identityConversionFunction)(
-        parameters.flags,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      flags: $convertToMaybe($identityConversionFunction)(parameters.flags, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.flags.type,
           value,
         ),
       ),
-      fromRdfType: $convertToMaybe($convertToIri)(
-        parameters.fromRdfType,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      fromRdfType: $convertToMaybe($convertToIri)(parameters.fromRdfType, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.fromRdfType.type,
           value,
@@ -2977,7 +2558,9 @@ export namespace sh_NodeShape {
       ),
       hasValues: $convertToScalarSet($identityConversionFunction)(
         parameters.hasValues,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.hasValues.type,
@@ -2986,11 +2569,15 @@ export namespace sh_NodeShape {
       ),
       ignore: $convertWithDefaultValue($identityConversionFunction, false)(
         parameters.ignore,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ),
       ignoredProperties: $convertToMaybe($convertToList($convertToIri))(
         parameters.ignoredProperties,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.ignoredProperties.type,
@@ -2999,41 +2586,26 @@ export namespace sh_NodeShape {
       ),
       in_: $convertToMaybe($convertToList($identityConversionFunction))(
         parameters.in_,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.in_.type,
           value,
         ),
       ),
-      isDefinedBy: $convertToMaybe(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | owl_Ontology.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | owl_Ontology.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           rdf_Property.schema.properties.isDefinedBy.type,
           value,
         ),
       ),
-      label: $convertToScalarSet($convertToLiteral)(
-        parameters.label,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
@@ -3041,7 +2613,9 @@ export namespace sh_NodeShape {
       ),
       languageIn: $convertToMaybe($convertToList($identityConversionFunction))(
         parameters.languageIn,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.languageIn.type,
@@ -3050,7 +2624,9 @@ export namespace sh_NodeShape {
       ),
       maxExclusive: $convertToMaybe($convertToLiteral)(
         parameters.maxExclusive,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.maxExclusive.type,
@@ -3059,17 +2635,18 @@ export namespace sh_NodeShape {
       ),
       maxInclusive: $convertToMaybe($convertToLiteral)(
         parameters.maxInclusive,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.maxInclusive.type,
           value,
         ),
       ),
-      maxLength: $convertToMaybe($convertToBigInt)(
-        parameters.maxLength,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      maxLength: $convertToMaybe($convertToBigInt)(parameters.maxLength, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.maxLength.type,
           value,
@@ -3077,7 +2654,9 @@ export namespace sh_NodeShape {
       ),
       message: $convertToMaybe($identityConversionFunction)(
         parameters.message,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.message.type,
@@ -3086,7 +2665,9 @@ export namespace sh_NodeShape {
       ),
       minExclusive: $convertToMaybe($convertToLiteral)(
         parameters.minExclusive,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.minExclusive.type,
@@ -3095,17 +2676,18 @@ export namespace sh_NodeShape {
       ),
       minInclusive: $convertToMaybe($convertToLiteral)(
         parameters.minInclusive,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.minInclusive.type,
           value,
         ),
       ),
-      minLength: $convertToMaybe($convertToBigInt)(
-        parameters.minLength,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      minLength: $convertToMaybe($convertToBigInt)(parameters.minLength, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.minLength.type,
           value,
@@ -3113,7 +2695,9 @@ export namespace sh_NodeShape {
       ),
       mutable: $convertToMaybe($identityConversionFunction)(
         parameters.mutable,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.mutable.type,
@@ -3126,19 +2710,21 @@ export namespace sh_NodeShape {
             | NamedNode
             | sh_NodeShape.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | sh_NodeShape.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.node, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.node, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.node.type,
           value,
@@ -3153,7 +2739,9 @@ export namespace sh_NodeShape {
           | "http://www.w3.org/ns/shacl#IRIOrLiteral"
           | "http://www.w3.org/ns/shacl#Literal"
         >,
-      )(parameters.nodeKind, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.nodeKind, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.nodeKind.type,
           value,
@@ -3165,19 +2753,21 @@ export namespace sh_NodeShape {
             | NamedNode
             | sh_NodeShape.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | sh_NodeShape.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.not, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.not, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.not.type,
           value,
@@ -3187,20 +2777,22 @@ export namespace sh_NodeShape {
         $convertToList(
           <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
             value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            defaultNamespace?: $DefaultNamespaceT,
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
           ): Either<Error, NamedNode | sh_Shape> => {
             switch (typeof value) {
               case "object":
                 return Either.of(value);
               case "string":
-                return $convertToIri(value, defaultNamespace);
+                return $convertToIri(value, options);
               default:
                 value satisfies never;
                 throw new Error("should never reach this point");
             }
           },
         ),
-      )(parameters.or, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.or, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.or.type,
           value,
@@ -3208,7 +2800,9 @@ export namespace sh_NodeShape {
       ),
       pattern: $convertToMaybe($identityConversionFunction)(
         parameters.pattern,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.pattern.type,
@@ -3221,28 +2815,29 @@ export namespace sh_NodeShape {
             | NamedNode
             | sh_PropertyShape.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | sh_PropertyShape.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.properties, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.properties, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.properties.type,
           value,
         ),
       ),
-      rdfType: $convertToMaybe($convertToIri)(
-        parameters.rdfType,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      rdfType: $convertToMaybe($convertToIri)(parameters.rdfType, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.rdfType.type,
           value,
@@ -3250,7 +2845,9 @@ export namespace sh_NodeShape {
       ),
       severity: $convertToMaybe($convertToIriLiteral<sh_Severity["value"]>)(
         parameters.severity,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.severity.type,
@@ -3259,32 +2856,18 @@ export namespace sh_NodeShape {
       ),
       shaclmateName: $convertToMaybe($identityConversionFunction)(
         parameters.shaclmateName,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.shaclmateName.type,
           value,
         ),
       ),
-      subClassOf: $convertToScalarSet(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | rdfs_Class.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | rdfs_Class.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.subClassOf, parameters.$defaultNamespace).chain((value) =>
+      subClassOf: $convertToScalarSet($convertToIri)(parameters.subClassOf, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdfs_Class.schema.properties.subClassOf.type,
           value,
@@ -3292,7 +2875,9 @@ export namespace sh_NodeShape {
       ),
       targetClasses: $convertToScalarSet($convertToIri)(
         parameters.targetClasses,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.targetClasses.type,
@@ -3301,7 +2886,9 @@ export namespace sh_NodeShape {
       ),
       targetNodes: $convertToScalarSet($identityConversionFunction)(
         parameters.targetNodes,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.targetNodes.type,
@@ -3310,7 +2897,9 @@ export namespace sh_NodeShape {
       ),
       targetObjectsOf: $convertToScalarSet($convertToIri)(
         parameters.targetObjectsOf,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.targetObjectsOf.type,
@@ -3319,17 +2908,18 @@ export namespace sh_NodeShape {
       ),
       targetSubjectsOf: $convertToScalarSet($convertToIri)(
         parameters.targetSubjectsOf,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.targetSubjectsOf.type,
           value,
         ),
       ),
-      toRdfTypes: $convertToScalarSet($convertToIri)(
-        parameters.toRdfTypes,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      toRdfTypes: $convertToScalarSet($convertToIri)(parameters.toRdfTypes, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.toRdfTypes.type,
           value,
@@ -3337,17 +2927,18 @@ export namespace sh_NodeShape {
       ),
       tsImports: $convertToScalarSet($identityConversionFunction)(
         parameters.tsImports,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.tsImports.type,
           value,
         ),
       ),
-      type: $convertToScalarSet($convertToIri)(
-        parameters.type,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.type.type,
           value,
@@ -3357,20 +2948,22 @@ export namespace sh_NodeShape {
         $convertToList(
           <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
             value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            defaultNamespace?: $DefaultNamespaceT,
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
           ): Either<Error, NamedNode | sh_Shape> => {
             switch (typeof value) {
               case "object":
                 return Either.of(value);
               case "string":
-                return $convertToIri(value, defaultNamespace);
+                return $convertToIri(value, options);
               default:
                 value satisfies never;
                 throw new Error("should never reach this point");
             }
           },
         ),
-      )(parameters.xone, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.xone, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.xone.type,
           value,
@@ -3428,10 +3021,9 @@ export namespace sh_NodeShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | NamedNode
-      | owl_Ontology.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | Maybe<NamedNode | owl_Ontology.Discriminated>;
+      | NamedNode
+      | Maybe<NamedNode>;
     readonly label?:
       | bigint
       | boolean
@@ -3538,14 +3130,9 @@ export namespace sh_NodeShape {
     readonly severity?: sh_Severity["value"] | sh_Severity | Maybe<sh_Severity>;
     readonly shaclmateName?: string | Maybe<string>;
     readonly subClassOf?:
-      | NamedNode
-      | rdfs_Class.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | rdfs_Class.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
     readonly targetClasses?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
@@ -3759,26 +3346,7 @@ export namespace sh_NodeShape {
       isDefinedBy: {
         kind: "Shacl",
         path: $rdfs_isDefinedBy,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  owl_Ontology: {
-                    discriminantValues: ["owl_Ontology"],
-                    type: owl_Ontology.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Option",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
       } as const,
       label: {
         kind: "Shacl",
@@ -4026,26 +3594,7 @@ export namespace sh_NodeShape {
       subClassOf: {
         kind: "Shacl",
         path: $rdfs_subClassOf,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  rdfs_Class: {
-                    discriminantValues: ["rdfs_Class"],
-                    type: rdfs_Class.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Set",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
       } as const,
       targetClasses: {
         kind: "Shacl",
@@ -4209,24 +3758,21 @@ export namespace sh_PropertyGroup {
     parameters?: sh_PropertyGroup.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, sh_PropertyGroup.Discriminated> = (parameters = {}) =>
     $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("sh_PropertyGroup" as const),
-      comment: $convertToScalarSet($convertToLiteral)(
-        parameters.comment,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      label: $convertToScalarSet($convertToLiteral)(
-        parameters.label,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
@@ -4384,7 +3930,7 @@ export type sh_PropertyShape = {
 
   readonly in_: Maybe<readonly (NamedNode | Literal)[]>;
 
-  readonly isDefinedBy: Maybe<NamedNode | owl_Ontology.Discriminated>;
+  readonly isDefinedBy: Maybe<NamedNode>;
 
   readonly label: readonly Literal[];
 
@@ -4709,29 +4255,7 @@ export namespace sh_PropertyShape {
     );
     parameters.resource.add(
       rdf_Property.schema.properties.isDefinedBy.path,
-      parameters.object.isDefinedBy.toList().flatMap((value) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "owl_Ontology") {
-            return owl_Ontology.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(value, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: rdf_Property.schema.properties.isDefinedBy.path,
-        }),
-      ),
+      parameters.object.isDefinedBy.toList(),
       parameters.graph,
     );
     parameters.resource.add(
@@ -5198,56 +4722,54 @@ export namespace sh_PropertyShape {
     parameters: sh_PropertyShape.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, sh_PropertyShape.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("sh_PropertyShape" as const),
       and: $convertToMaybe(
         $convertToList(
           <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
             value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            defaultNamespace?: $DefaultNamespaceT,
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
           ): Either<Error, NamedNode | sh_Shape> => {
             switch (typeof value) {
               case "object":
                 return Either.of(value);
               case "string":
-                return $convertToIri(value, defaultNamespace);
+                return $convertToIri(value, options);
               default:
                 value satisfies never;
                 throw new Error("should never reach this point");
             }
           },
         ),
-      )(parameters.and, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.and, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.and.type,
           value,
         ),
       ),
-      class_: $convertToScalarSet($convertToIri)(
-        parameters.class_,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      class_: $convertToScalarSet($convertToIri)(parameters.class_, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.class_.type,
           value,
         ),
       ),
-      comment: $convertToScalarSet($convertToLiteral)(
-        parameters.comment,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.comment.type,
           value,
         ),
       ),
-      datatype: $convertToMaybe($convertToIri)(
-        parameters.datatype,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      datatype: $convertToMaybe($convertToIri)(parameters.datatype, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.datatype.type,
           value,
@@ -5255,7 +4777,9 @@ export namespace sh_PropertyShape {
       ),
       deactivated: $convertToMaybe($identityConversionFunction)(
         parameters.deactivated,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.deactivated.type,
@@ -5264,7 +4788,9 @@ export namespace sh_PropertyShape {
       ),
       defaultValue: $convertToMaybe($identityConversionFunction)(
         parameters.defaultValue,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.defaultValue.type,
@@ -5273,17 +4799,18 @@ export namespace sh_PropertyShape {
       ),
       description: $convertToMaybe($identityConversionFunction)(
         parameters.description,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.description.type,
           value,
         ),
       ),
-      disjoint: $convertToScalarSet($convertToIri)(
-        parameters.disjoint,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      disjoint: $convertToScalarSet($convertToIri)(parameters.disjoint, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_PropertyShape.schema.properties.disjoint.type,
           value,
@@ -5291,21 +4818,21 @@ export namespace sh_PropertyShape {
       ),
       display: $convertWithDefaultValue($identityConversionFunction, false)(
         parameters.display,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ),
-      equals: $convertToScalarSet($convertToIri)(
-        parameters.equals,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      equals: $convertToScalarSet($convertToIri)(parameters.equals, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_PropertyShape.schema.properties.equals.type,
           value,
         ),
       ),
-      flags: $convertToMaybe($identityConversionFunction)(
-        parameters.flags,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      flags: $convertToMaybe($identityConversionFunction)(parameters.flags, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.flags.type,
           value,
@@ -5317,19 +4844,21 @@ export namespace sh_PropertyShape {
             | NamedNode
             | sh_PropertyGroup.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | sh_PropertyGroup.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.groups, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.groups, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_PropertyShape.schema.properties.groups.type,
           value,
@@ -5337,7 +4866,9 @@ export namespace sh_PropertyShape {
       ),
       hasValues: $convertToScalarSet($identityConversionFunction)(
         parameters.hasValues,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.hasValues.type,
@@ -5346,45 +4877,32 @@ export namespace sh_PropertyShape {
       ),
       ignore: $convertWithDefaultValue($identityConversionFunction, false)(
         parameters.ignore,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ),
       in_: $convertToMaybe($convertToList($identityConversionFunction))(
         parameters.in_,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.in_.type,
           value,
         ),
       ),
-      isDefinedBy: $convertToMaybe(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | owl_Ontology.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
-        ): Either<Error, NamedNode | owl_Ontology.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, defaultNamespace);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.isDefinedBy, parameters.$defaultNamespace).chain((value) =>
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           rdf_Property.schema.properties.isDefinedBy.type,
           value,
         ),
       ),
-      label: $convertToScalarSet($convertToLiteral)(
-        parameters.label,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           owl_Ontology.schema.properties.label.type,
           value,
@@ -5392,17 +4910,18 @@ export namespace sh_PropertyShape {
       ),
       languageIn: $convertToMaybe($convertToList($identityConversionFunction))(
         parameters.languageIn,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.languageIn.type,
           value,
         ),
       ),
-      lessThan: $convertToScalarSet($convertToIri)(
-        parameters.lessThan,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      lessThan: $convertToScalarSet($convertToIri)(parameters.lessThan, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_PropertyShape.schema.properties.lessThan.type,
           value,
@@ -5410,17 +4929,18 @@ export namespace sh_PropertyShape {
       ),
       lessThanOrEquals: $convertToScalarSet($convertToIri)(
         parameters.lessThanOrEquals,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_PropertyShape.schema.properties.lessThanOrEquals.type,
           value,
         ),
       ),
-      maxCount: $convertToMaybe($convertToBigInt)(
-        parameters.maxCount,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      maxCount: $convertToMaybe($convertToBigInt)(parameters.maxCount, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.maxCount.type,
           value,
@@ -5428,7 +4948,9 @@ export namespace sh_PropertyShape {
       ),
       maxExclusive: $convertToMaybe($convertToLiteral)(
         parameters.maxExclusive,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.maxExclusive.type,
@@ -5437,17 +4959,18 @@ export namespace sh_PropertyShape {
       ),
       maxInclusive: $convertToMaybe($convertToLiteral)(
         parameters.maxInclusive,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.maxInclusive.type,
           value,
         ),
       ),
-      maxLength: $convertToMaybe($convertToBigInt)(
-        parameters.maxLength,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      maxLength: $convertToMaybe($convertToBigInt)(parameters.maxLength, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.maxLength.type,
           value,
@@ -5455,17 +4978,18 @@ export namespace sh_PropertyShape {
       ),
       message: $convertToMaybe($identityConversionFunction)(
         parameters.message,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.message.type,
           value,
         ),
       ),
-      minCount: $convertToMaybe($convertToBigInt)(
-        parameters.minCount,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      minCount: $convertToMaybe($convertToBigInt)(parameters.minCount, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.minCount.type,
           value,
@@ -5473,7 +4997,9 @@ export namespace sh_PropertyShape {
       ),
       minExclusive: $convertToMaybe($convertToLiteral)(
         parameters.minExclusive,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.minExclusive.type,
@@ -5482,17 +5008,18 @@ export namespace sh_PropertyShape {
       ),
       minInclusive: $convertToMaybe($convertToLiteral)(
         parameters.minInclusive,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.minInclusive.type,
           value,
         ),
       ),
-      minLength: $convertToMaybe($convertToBigInt)(
-        parameters.minLength,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      minLength: $convertToMaybe($convertToBigInt)(parameters.minLength, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.minLength.type,
           value,
@@ -5500,17 +5027,18 @@ export namespace sh_PropertyShape {
       ),
       mutable: $convertToMaybe($identityConversionFunction)(
         parameters.mutable,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.mutable.type,
           value,
         ),
       ),
-      name: $convertToMaybe($identityConversionFunction)(
-        parameters.name,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      name: $convertToMaybe($identityConversionFunction)(parameters.name, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.name.type,
           value,
@@ -5522,19 +5050,21 @@ export namespace sh_PropertyShape {
             | NamedNode
             | sh_NodeShape.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | sh_NodeShape.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.node, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.node, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.node.type,
           value,
@@ -5549,7 +5079,9 @@ export namespace sh_PropertyShape {
           | "http://www.w3.org/ns/shacl#IRIOrLiteral"
           | "http://www.w3.org/ns/shacl#Literal"
         >,
-      )(parameters.nodeKind, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.nodeKind, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.nodeKind.type,
           value,
@@ -5561,19 +5093,21 @@ export namespace sh_PropertyShape {
             | NamedNode
             | sh_NodeShape.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | sh_NodeShape.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.not, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.not, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.not.type,
           value,
@@ -5583,29 +5117,30 @@ export namespace sh_PropertyShape {
         $convertToList(
           <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
             value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            defaultNamespace?: $DefaultNamespaceT,
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
           ): Either<Error, NamedNode | sh_Shape> => {
             switch (typeof value) {
               case "object":
                 return Either.of(value);
               case "string":
-                return $convertToIri(value, defaultNamespace);
+                return $convertToIri(value, options);
               default:
                 value satisfies never;
                 throw new Error("should never reach this point");
             }
           },
         ),
-      )(parameters.or, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.or, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.or.type,
           value,
         ),
       ),
-      order: $convertToMaybe($identityConversionFunction)(
-        parameters.order,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      order: $convertToMaybe($identityConversionFunction)(parameters.order, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.order.type,
           value,
@@ -5614,7 +5149,9 @@ export namespace sh_PropertyShape {
       path: Either.of(parameters.path),
       pattern: $convertToMaybe($identityConversionFunction)(
         parameters.pattern,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.pattern.type,
@@ -5623,7 +5160,9 @@ export namespace sh_PropertyShape {
       ),
       qualifiedMaxCount: $convertToMaybe($convertToBigInt)(
         parameters.qualifiedMaxCount,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.qualifiedMaxCount.type,
@@ -5632,7 +5171,9 @@ export namespace sh_PropertyShape {
       ),
       qualifiedMinCount: $convertToMaybe($convertToBigInt)(
         parameters.qualifiedMinCount,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.qualifiedMinCount.type,
@@ -5641,7 +5182,9 @@ export namespace sh_PropertyShape {
       ),
       qualifiedValueShape: $convertToMaybe($convertToIdentifier)(
         parameters.qualifiedValueShape,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.qualifiedValueShape.type,
@@ -5650,19 +5193,17 @@ export namespace sh_PropertyShape {
       ),
       qualifiedValueShapesDisjoint: $convertToMaybe(
         $identityConversionFunction,
-      )(
-        parameters.qualifiedValueShapesDisjoint,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      )(parameters.qualifiedValueShapesDisjoint, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.qualifiedValueShapesDisjoint.type,
           value,
         ),
       ),
-      resolve: $convertToMaybe($convertToIdentifier)(
-        parameters.resolve,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      resolve: $convertToMaybe($convertToIdentifier)(parameters.resolve, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.resolve.type,
           value,
@@ -5670,7 +5211,9 @@ export namespace sh_PropertyShape {
       ),
       severity: $convertToMaybe($convertToIriLiteral<sh_Severity["value"]>)(
         parameters.severity,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.severity.type,
@@ -5679,7 +5222,9 @@ export namespace sh_PropertyShape {
       ),
       shaclmateName: $convertToMaybe($identityConversionFunction)(
         parameters.shaclmateName,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_NodeShape.schema.properties.shaclmateName.type,
@@ -5688,7 +5233,9 @@ export namespace sh_PropertyShape {
       ),
       targetClasses: $convertToScalarSet($convertToIri)(
         parameters.targetClasses,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.targetClasses.type,
@@ -5697,7 +5244,9 @@ export namespace sh_PropertyShape {
       ),
       targetNodes: $convertToScalarSet($identityConversionFunction)(
         parameters.targetNodes,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.targetNodes.type,
@@ -5706,7 +5255,9 @@ export namespace sh_PropertyShape {
       ),
       targetObjectsOf: $convertToScalarSet($convertToIri)(
         parameters.targetObjectsOf,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.targetObjectsOf.type,
@@ -5715,7 +5266,9 @@ export namespace sh_PropertyShape {
       ),
       targetSubjectsOf: $convertToScalarSet($convertToIri)(
         parameters.targetSubjectsOf,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           sh_NodeShape.schema.properties.targetSubjectsOf.type,
@@ -5724,7 +5277,9 @@ export namespace sh_PropertyShape {
       ),
       uniqueLang: $convertToMaybe($identityConversionFunction)(
         parameters.uniqueLang,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
           sh_PropertyShape.schema.properties.uniqueLang.type,
@@ -5735,20 +5290,22 @@ export namespace sh_PropertyShape {
         $convertToList(
           <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
             value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            defaultNamespace?: $DefaultNamespaceT,
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
           ): Either<Error, NamedNode | sh_Shape> => {
             switch (typeof value) {
               case "object":
                 return Either.of(value);
               case "string":
-                return $convertToIri(value, defaultNamespace);
+                return $convertToIri(value, options);
               default:
                 value satisfies never;
                 throw new Error("should never reach this point");
             }
           },
         ),
-      )(parameters.xone, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.xone, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
           sh_NodeShape.schema.properties.xone.type,
           value,
@@ -5816,10 +5373,9 @@ export namespace sh_PropertyShape {
       | readonly (NamedNode | Literal)[]
       | Maybe<readonly (NamedNode | Literal)[]>;
     readonly isDefinedBy?:
-      | NamedNode
-      | owl_Ontology.Discriminated
       | (keyof $DefaultNamespaceT & string)
-      | Maybe<NamedNode | owl_Ontology.Discriminated>;
+      | NamedNode
+      | Maybe<NamedNode>;
     readonly label?:
       | bigint
       | boolean
@@ -6156,26 +5712,7 @@ export namespace sh_PropertyShape {
       isDefinedBy: {
         kind: "Shacl",
         path: $rdfs_isDefinedBy,
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  owl_Ontology: {
-                    discriminantValues: ["owl_Ontology"],
-                    type: owl_Ontology.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Option",
-          } as const;
-        },
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
       } as const,
       label: {
         kind: "Shacl",
@@ -6789,14 +6326,15 @@ export namespace skos_Concept {
     parameters: skos_Concept.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, skos_Concept.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("skos_Concept" as const),
       altLabel: $convertToScalarSet($identityConversionFunction)(
         parameters.altLabel,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.altLabel.type,
@@ -6809,19 +6347,21 @@ export namespace skos_Concept {
             | NamedNode
             | skos_Concept.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.broader, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.broader, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.broader.type,
           value,
@@ -6829,7 +6369,9 @@ export namespace skos_Concept {
       ),
       definition: $convertToScalarSet($identityConversionFunction)(
         parameters.definition,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.definition.type,
@@ -6838,17 +6380,18 @@ export namespace skos_Concept {
       ),
       hiddenLabel: $convertToScalarSet($identityConversionFunction)(
         parameters.hiddenLabel,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.hiddenLabel.type,
           value,
         ),
       ),
-      notation: $convertToScalarSet($convertToLiteral)(
-        parameters.notation,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      notation: $convertToScalarSet($convertToLiteral)(parameters.notation, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.notation.type,
           value,
@@ -6856,17 +6399,18 @@ export namespace skos_Concept {
       ),
       prefLabel: $convertToScalarSet($identityConversionFunction)(
         parameters.prefLabel,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.prefLabel.type,
           value,
         ),
       ),
-      type: $convertToScalarSet($convertToIri)(
-        parameters.type,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.type.type,
           value,
@@ -7300,14 +6844,15 @@ export namespace skos_ConceptScheme {
     parameters: skos_ConceptScheme.CreateParameters<$DefaultNamespaceT>,
   ) => Either<Error, skos_ConceptScheme.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(
-        parameters.$identifier,
-        parameters.$defaultNamespace,
-      ),
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
       termType: Right("skos_ConceptScheme" as const),
       altLabel: $convertToScalarSet($identityConversionFunction)(
         parameters.altLabel,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.altLabel.type,
@@ -7320,19 +6865,21 @@ export namespace skos_ConceptScheme {
             | NamedNode
             | skos_Concept.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.concepts, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.concepts, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.concepts.type,
           value,
@@ -7340,7 +6887,9 @@ export namespace skos_ConceptScheme {
       ),
       definition: $convertToScalarSet($identityConversionFunction)(
         parameters.definition,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.definition.type,
@@ -7349,17 +6898,18 @@ export namespace skos_ConceptScheme {
       ),
       hiddenLabel: $convertToScalarSet($identityConversionFunction)(
         parameters.hiddenLabel,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.hiddenLabel.type,
           value,
         ),
       ),
-      notation: $convertToScalarSet($convertToLiteral)(
-        parameters.notation,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      notation: $convertToScalarSet($convertToLiteral)(parameters.notation, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.notation.type,
           value,
@@ -7367,7 +6917,9 @@ export namespace skos_ConceptScheme {
       ),
       prefLabel: $convertToScalarSet($identityConversionFunction)(
         parameters.prefLabel,
-        parameters.$defaultNamespace,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_Concept.schema.properties.prefLabel.type,
@@ -7380,28 +6932,29 @@ export namespace skos_ConceptScheme {
             | NamedNode
             | skos_Concept.Discriminated
             | (keyof $DefaultNamespaceT & string),
-          defaultNamespace?: $DefaultNamespaceT,
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
         ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
             case "string":
-              return $convertToIri(value, defaultNamespace);
+              return $convertToIri(value, options);
             default:
               value satisfies never;
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.topConcepts, parameters.$defaultNamespace).chain((value) =>
+      )(parameters.topConcepts, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.topConcepts.type,
           value,
         ),
       ),
-      type: $convertToScalarSet($convertToIri)(
-        parameters.type,
-        parameters.$defaultNamespace,
-      ).chain((value) =>
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
         $validateArray($identityValidationFunction)(
           rdf_Property.schema.properties.type.type,
           value,
