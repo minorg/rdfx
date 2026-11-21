@@ -6,8 +6,8 @@
   },
   "description": "Decoder and factory between RDF/JS Literals and TypeScript types",
   "devDependencies": {
-    "@rdfx/data-factory": "0.0.71",
-    "@rdfx/testing": "0.0.71",
+    "@rdfx/data-factory": "0.0.72",
+    "@rdfx/testing": "0.0.72",
     "@tpluscode/rdf-ns-builders": "~4.3.0"
   },
   "files": [
@@ -33,5 +33,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.71"
+  "version": "0.0.72"
 }

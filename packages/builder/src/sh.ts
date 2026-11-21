@@ -92,7 +92,13 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
       NonNullable<
         Parameters<typeof sh_PropertyShape.createUnsafe<DefaultNamespaceT>>[0]
       >,
-      "$identifier" | "in_" | "maxCount" | "minCount" | "nodeKind" | "path"
+      | "$defaultNamespace"
+      | "$identifier"
+      | "in_"
+      | "maxCount"
+      | "minCount"
+      | "nodeKind"
+      | "path"
     > & {
       readonly cardinality?: "optional" | "required" | "set";
       readonly in_?: skos_ConceptScheme | ConvertibleInArray;
@@ -197,7 +203,12 @@ export function sh<DefaultNamespaceT extends NamespaceBuilder>({
         NonNullable<
           Parameters<typeof sh_NodeShape.createUnsafe<DefaultNamespaceT>>[0]
         >,
-        "$identifier" | "in_" | "nodeKind" | "properties" | "shaclmateName"
+        | "$defaultNamespace"
+        | "$identifier"
+        | "in_"
+        | "nodeKind"
+        | "properties"
+        | "shaclmateName"
       > & {
         readonly in_?: skos_ConceptScheme | ConvertibleInArray;
         readonly implicitClassTarget?: true;

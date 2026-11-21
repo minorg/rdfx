@@ -4,6 +4,8 @@ import { type NamespaceBuilder, namespace } from "@rdfx/iri";
 import type { BuilderBuilderParameters } from "./BuilderBuilderParameters.js";
 import type { IdentifierLike } from "./IdentifierLike.js";
 import type { IriLike } from "./IriLike.js";
+import { rdf } from "./rdf.js";
+import { rdfs } from "./rdfs.js";
 import { sh } from "./sh.js";
 import { skos } from "./skos.js";
 
@@ -56,6 +58,8 @@ export function builder<
     };
 
   return {
+    rdf: rdf<DefaultNamespaceT>(builderBuilderParameters),
+    rdfs: rdfs<DefaultNamespaceT>(builderBuilderParameters),
     sh: sh<DefaultNamespaceT>(builderBuilderParameters),
     skos: skos<DefaultNamespaceT>(builderBuilderParameters),
   };

@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "@rdfx/graph-store": "0.0.71",
-    "@rdfx/logger": "0.0.71",
-    "@rdfx/stream": "0.0.71",
-    "@rdfx/string": "0.0.71",
+    "@rdfx/graph-store": "0.0.72",
+    "@rdfx/logger": "0.0.72",
+    "@rdfx/stream": "0.0.72",
+    "@rdfx/string": "0.0.72",
     "@rdfjs/types": "~2.0.1",
     "@types/n3": "~1.26.0",
     "n3": "~1.26.0",
@@ -12,8 +12,8 @@
   },
   "description": "TinyBase-backed @rdfx/graph-store implementation",
   "devDependencies": {
-    "@rdfx/collection": "0.0.71",
-    "@rdfx/data-factory": "0.0.71"
+    "@rdfx/collection": "0.0.72",
+    "@rdfx/data-factory": "0.0.72"
   },
   "files": [
     "LICENSE",
@@ -38,5 +38,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.71"
+  "version": "0.0.72"
 }
