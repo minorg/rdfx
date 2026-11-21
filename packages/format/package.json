@@ -5,7 +5,7 @@
   },
   "description": "Metadata about RDF formats such as Turtle and utilities for inferring formats from file names",
   "devDependencies": {
-    "@rdfx/testing": "0.0.71"
+    "@rdfx/testing": "0.0.72"
   },
   "files": [
     "LICENSE",
@@ -30,5 +30,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.71"
+  "version": "0.0.72"
 }

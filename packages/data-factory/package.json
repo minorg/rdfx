@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@rdfx/string": "0.0.71",
+    "@rdfx/string": "0.0.72",
     "@rdfjs/types": "~2.0.1"
   },
   "description": "RDF/JS DataFactory implementation with .toJSON and .toString methods",
@@ -29,5 +29,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.71"
+  "version": "0.0.72"
 }
