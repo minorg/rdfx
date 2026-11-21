@@ -18,14 +18,14 @@ rdfs:comment
 
 rdfs:domain
     a sh:PropertyShape ;
-    sh:path rdfs:domain ;
-    sh:nodeKind sh:IRI .
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:domain .
 
 rdfs:isDefinedBy
     a sh:PropertyShape ;
     sh:maxCount 1 ;
-    sh:path rdfs:isDefinedBy ;
-    sh:nodeKind sh:IRI .
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:isDefinedBy .
 
 rdfs:label
     shaclmate:display true ;
@@ -35,8 +35,8 @@ rdfs:label
 
 rdfs:range
     a sh:PropertyShape ;
-    sh:path rdfs:range ;
-    sh:nodeKind sh:IRI .
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:range .
 
 rdfs:seeAlso
     a sh:PropertyShape ;
@@ -45,11 +45,11 @@ rdfs:seeAlso
 
 rdfs:subClassOf
     a sh:PropertyShape ;
-    sh:path rdfs:subClassOf ;
-    sh:nodeKind sh:IRI .
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:subClassOf .
 
 rdfs:subPropertyOf
     a sh:PropertyShape ;
-    sh:path rdfs:subPropertyOf ;
-    sh:nodeKind sh:IRI .
+    sh:nodeKind sh:IRI ;
+    sh:path rdfs:subPropertyOf .
 

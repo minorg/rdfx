@@ -1139,11 +1139,15 @@ export type rdf_Statement = {
 
   readonly comment: readonly Literal[];
 
+  readonly isDefinedBy: Maybe<NamedNode>;
+
   readonly label: readonly Literal[];
 
   readonly object: BlankNode | NamedNode | Literal;
 
   readonly predicate: NamedNode;
+
+  readonly seeAlso: readonly (NamedNode | Literal)[];
 
   readonly subject: BlankNode | NamedNode | Literal;
 
@@ -1168,6 +1172,11 @@ export namespace rdf_Statement {
       parameters.graph,
     );
     parameters.resource.add(
+      rdf_Property.schema.properties.isDefinedBy.path,
+      parameters.object.isDefinedBy.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
       owl_Ontology.schema.properties.label.path,
       parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
@@ -1180,6 +1189,11 @@ export namespace rdf_Statement {
     parameters.resource.add(
       rdf_Statement.schema.properties.predicate.path,
       [parameters.object.predicate],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.seeAlso.path,
+      parameters.object.seeAlso.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
@@ -1218,6 +1232,14 @@ export namespace rdf_Statement {
           value,
         ),
       ),
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          rdf_Property.schema.properties.isDefinedBy.type,
+          value,
+        ),
+      ),
       label: $convertToScalarSet($convertToLiteral)(parameters.label, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
@@ -1230,6 +1252,17 @@ export namespace rdf_Statement {
       predicate: $convertToIri(parameters.predicate, {
         defaultNamespace: parameters.$defaultNamespace,
       }),
+      seeAlso: $convertToScalarSet($identityConversionFunction)(
+        parameters.seeAlso,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.seeAlso.type,
+          value,
+        ),
+      ),
       subject: Either.of(parameters.subject),
       type: $convertToScalarSet($convertToIri)(parameters.type, {
         defaultNamespace: parameters.$defaultNamespace,
@@ -1260,6 +1293,10 @@ export namespace rdf_Statement {
       | Date
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly isDefinedBy?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | Maybe<NamedNode>;
     readonly label?:
       | bigint
       | boolean
@@ -1270,6 +1307,7 @@ export namespace rdf_Statement {
       | readonly (bigint | boolean | number | string | Date | Literal)[];
     readonly object: BlankNode | NamedNode | Literal;
     readonly predicate: (keyof $DefaultNamespaceT & string) | NamedNode;
+    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
     readonly subject: BlankNode | NamedNode | Literal;
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
@@ -1315,6 +1353,11 @@ export namespace rdf_Statement {
         path: $rdfs_comment,
         type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
       } as const,
+      isDefinedBy: {
+        kind: "Shacl",
+        path: $rdfs_isDefinedBy,
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
+      } as const,
       label: {
         kind: "Shacl",
         path: $rdfs_label,
@@ -1332,6 +1375,14 @@ export namespace rdf_Statement {
         kind: "Shacl",
         path: $rdf_predicate,
         type: { kind: "Iri" } as const,
+      } as const,
+      seeAlso: {
+        kind: "Shacl",
+        path: $rdfs_seeAlso,
+        type: {
+          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
+          kind: "Set",
+        } as const,
       } as const,
       subject: {
         kind: "Shacl",

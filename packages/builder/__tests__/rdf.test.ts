@@ -122,7 +122,7 @@ describe("rdf", () => {
           rdf
             .Statement("Statement", { subject, predicate, object })
             .$identifier(),
-        ).toEqualRdfTerm(exTbox.Property);
+        ).toEqualRdfTerm(exTbox.Statement);
       });
 
       it("IRI", ({ expect }) => {
@@ -130,7 +130,7 @@ describe("rdf", () => {
           rdf
             .Statement(exTbox.Statement, { subject, predicate, object })
             .$identifier(),
-        ).toEqualRdfTerm(exTbox.Property);
+        ).toEqualRdfTerm(exTbox.Statement);
       });
 
       it("blank node", ({ expect }) => {

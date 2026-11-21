@@ -14,7 +14,7 @@ rdf:Property
 rdf:Statement
     shaclmate:name "rdf_Statement" ;
     a rdfs:Class, sh:NodeShape ;
-    sh:property rdf:object, rdf:predicate, rdf:subject, rdf:type, rdfs:comment, rdfs:label .
+    sh:property rdf:object, rdf:predicate, rdf:subject, rdf:type, rdfs:comment, rdfs:isDefinedBy, rdfs:label, rdfs:seeAlso .
 
 rdf:object
     a sh:PropertyShape ;
