@@ -9,7 +9,7 @@
 rdfx:ShBaseShape
     shaclmate:name "sh_BaseShape" ;
     a sh:NodeShape ;
-    sh:property rdfx:ShShape-and, rdfx:ShShape-class, rdfx:ShShape-datatype, rdfx:ShShape-deactivated, rdfx:ShShape-flags, rdfx:ShShape-hasValue, rdfx:ShShape-ignore, rdfx:ShShape-in, rdfx:ShShape-languageIn, rdfx:ShShape-maxExclusive, rdfx:ShShape-maxInclusive, rdfx:ShShape-maxLength, rdfx:ShShape-message, rdfx:ShShape-minExclusive, rdfx:ShShape-minInclusive, rdfx:ShShape-minLength, rdfx:ShShape-mutable, rdfx:ShShape-node, rdfx:ShShape-nodeKind, rdfx:ShShape-not, rdfx:ShShape-or, rdfx:ShShape-pattern, rdfx:ShShape-severity, rdfx:ShShape-shaclmateName, rdfx:ShShape-targetClass, rdfx:ShShape-targetNode, rdfx:ShShape-targetObjectsOf, rdfx:ShShape-targetSubjectsOf, rdfx:ShShape-xone, rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfs:subClassOf .
+    sh:property rdfx:ShShape-and, rdfx:ShShape-class, rdfx:ShShape-datatype, rdfx:ShShape-deactivated, rdfx:ShShape-flags, rdfx:ShShape-hasValue, rdfx:ShShape-ignore, rdfx:ShShape-in, rdfx:ShShape-languageIn, rdfx:ShShape-maxExclusive, rdfx:ShShape-maxInclusive, rdfx:ShShape-maxLength, rdfx:ShShape-message, rdfx:ShShape-minExclusive, rdfx:ShShape-minInclusive, rdfx:ShShape-minLength, rdfx:ShShape-mutable, rdfx:ShShape-node, rdfx:ShShape-nodeKind, rdfx:ShShape-not, rdfx:ShShape-or, rdfx:ShShape-pattern, rdfx:ShShape-severity, rdfx:ShShape-shaclmateName, rdfx:ShShape-targetClass, rdfx:ShShape-targetNode, rdfx:ShShape-targetObjectsOf, rdfx:ShShape-targetSubjectsOf, rdfx:ShShape-xone, rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfx:rdfsSubClassOf .
 
 rdfx:ShInList
     a sh:NodeShape ;
@@ -95,7 +95,7 @@ rdfx:ShNodeShape-property
             sh:nodeKind sh:IRI
         ]
         [
-            sh:node sh:PropertyShape
+            sh:node rdfx:ShPropertyShape
         ]
     ) .
 
@@ -394,7 +394,7 @@ rdfx:ShShape-node
             sh:nodeKind sh:IRI
         ]
         [
-            sh:node sh:NodeShape
+            sh:node rdfx:ShNodeShape
         ]
     ) .
 
@@ -417,7 +417,7 @@ rdfx:ShShape-not
             sh:nodeKind sh:IRI
         ]
         [
-            sh:node sh:NodeShape
+            sh:node rdfx:ShNodeShape
         ]
     ) .
 
@@ -490,7 +490,7 @@ rdfx:ShShapeList
                         sh:nodeKind sh:IRI
                     ]
                     [
-                        sh:node sh:Shape
+                        sh:node rdfx:ShShape
                     ]
                 )
             ], [
