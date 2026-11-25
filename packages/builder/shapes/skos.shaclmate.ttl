@@ -1,18 +1,19 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdfx: <http://purl.org/rdfx/builder/ontology#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-skos:Concept
+rdfx:SkosConcept
     shaclmate:name "skos_Concept" ;
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
-    sh:property rdf:type, skos:Concept-broader, skos:altLabel, skos:definition, skos:hiddenLabel, skos:notation, skos:prefLabel .
+    sh:property rdfx:rdfType, rdfx:SkosConcept-broader, rdfx:skosAltLabel, rdfx:skosDefinition, rdfx:skosHiddenLabel, rdfx:skosNotation, rdfx:skosPrefLabel .
 
-skos:Concept-broader
+rdfx:SkosConcept-broader
     a sh:PropertyShape ;
     sh:name "broader" ;
     sh:path skos:broader ;
@@ -20,17 +21,17 @@ skos:Concept-broader
             sh:nodeKind sh:IRI
         ]
         [
-            sh:node skos:Concept
+            sh:node rdfx:SkosConcept
         ]
     ) .
 
-skos:ConceptScheme
+rdfx:SkosConceptScheme
     shaclmate:name "skos_ConceptScheme" ;
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
-    sh:property rdf:type, skos:ConceptScheme-concepts, skos:ConceptScheme-topConcepts, skos:altLabel, skos:definition, skos:hiddenLabel, skos:notation, skos:prefLabel .
+    sh:property rdfx:rdfType, rdfx:SkosConceptScheme-concepts, rdfx:SkosConceptScheme-topConcepts, rdfx:skosAltLabel, rdfx:skosDefinition, rdfx:skosHiddenLabel, rdfx:skosNotation, rdfx:skosPrefLabel .
 
-skos:ConceptScheme-concepts
+rdfx:SkosConceptScheme-concepts
     a sh:PropertyShape ;
     sh:name "concepts" ;
     sh:path [
@@ -40,11 +41,11 @@ skos:ConceptScheme-concepts
             sh:nodeKind sh:IRI
         ]
         [
-            sh:node skos:Concept
+            sh:node rdfx:SkosConcept
         ]
     ) .
 
-skos:ConceptScheme-topConcepts
+rdfx:SkosConceptScheme-topConcepts
     a sh:PropertyShape ;
     sh:name "topConcepts" ;
     sh:path [
@@ -54,12 +55,13 @@ skos:ConceptScheme-topConcepts
             sh:nodeKind sh:IRI
         ]
         [
-            sh:node skos:Concept
+            sh:node rdfx:SkosConcept
         ]
     ) .
 
-skos:altLabel
+rdfx:skosAltLabel
     a sh:PropertyShape ;
+    sh:name "altLabel" ;
     sh:path skos:altLabel ;
     sh:xone ([
             sh:datatype xsd:string
@@ -69,8 +71,9 @@ skos:altLabel
         ]
     ) .
 
-skos:definition
+rdfx:skosDefinition
     a sh:PropertyShape ;
+    sh:name "definition" ;
     sh:path skos:definition ;
     sh:xone ([
             sh:datatype xsd:string
@@ -80,8 +83,9 @@ skos:definition
         ]
     ) .
 
-skos:hiddenLabel
+rdfx:skosHiddenLabel
     a sh:PropertyShape ;
+    sh:name "hiddenLabel" ;
     sh:path skos:hiddenLabel ;
     sh:xone ([
             sh:datatype xsd:string
@@ -91,13 +95,15 @@ skos:hiddenLabel
         ]
     ) .
 
-skos:notation
+rdfx:skosNotation
     a sh:PropertyShape ;
+    sh:name "notation" ;
     sh:nodeKind sh:Literal ;
     sh:path skos:notation .
 
-skos:prefLabel
+rdfx:skosPrefLabel
     a sh:PropertyShape ;
+    sh:name "prefLabel" ;
     sh:path skos:prefLabel ;
     sh:xone ([
             sh:datatype xsd:string
