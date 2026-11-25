@@ -10,11 +10,16 @@ import "@rdfx/testing";
 import type { NamespaceBuilder } from "@rdfx/iri";
 import { owl, rdfs } from "@tpluscode/rdf-ns-builders";
 import { exCbox, exTbox } from "./namespaces.js";
+import { shaclmateCompilerInputDataset } from "./shaclmateCompilerInputDataset.js";
 
 describe("sh", () => {
   const { sh } = builder({ defaultNamespace: exTbox });
-  const shapesGraphValidator = new ZazukoValidator({
+
+  const shaclShaclValidator = new ZazukoValidator({
     shapesGraph: shaclShaclDataset,
+  });
+  const shaclmateCompilerInputValidator = new ZazukoValidator({
+    shapesGraph: shaclmateCompilerInputDataset,
   });
 
   const conceptScheme = builder({
@@ -42,10 +47,21 @@ describe("sh", () => {
       sh_Shape.toRdfResource(shape, { resourceSet: shapesGraphResourceSet });
     }
 
-    const validationReport = (
-      await shapesGraphValidator.validate(shapesGraphResourceSet.dataset)
-    ).unsafeCoerce();
-    expect(validationReport.conforms);
+    expect(shaclShaclDataset.size).toBeGreaterThan(0);
+    expect(
+      (
+        await shaclShaclValidator.validate(shapesGraphResourceSet.dataset)
+      ).unsafeCoerce().conforms,
+    ).toStrictEqual(true);
+
+    expect(shaclmateCompilerInputDataset.size).toBeGreaterThan(0);
+    expect(
+      (
+        await shaclmateCompilerInputValidator.validate(
+          shapesGraphResourceSet.dataset,
+        )
+      ).unsafeCoerce().conforms,
+    ).toStrictEqual(true);
 
     const shapesGraph = ShapesGraph.fromDataset(
       shapesGraphResourceSet.dataset,
