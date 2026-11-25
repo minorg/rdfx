@@ -638,1589 +638,69 @@ const $xsd_string = dataFactory.namedNode(
   "http://www.w3.org/2001/XMLSchema#string",
 );
 
-export type owl_Ontology = {
-  readonly $identifier: () => owl_Ontology.Identifier;
+export type skos_ConceptScheme = {
+  readonly $identifier: () => skos_ConceptScheme.Identifier;
 
-  readonly comment: readonly Literal[];
+  readonly altLabel: readonly (string | Literal)[];
 
-  readonly label: readonly Literal[];
-};
+  readonly concepts: readonly (NamedNode | skos_Concept.Discriminated)[];
 
-export namespace owl_Ontology {
-  export const _toRdfResource: $_ToRdfResourceFunction<
-    owl_Ontology.Identifier,
-    owl_Ontology
-  > = (parameters) => {
-    if (!parameters.ignoreRdfType) {
-      parameters.resource.add(
-        $rdf_type,
-        owl_Ontology.schema.properties.$rdfType.toRdfTypes,
-        parameters.graph,
-      );
-    }
-    parameters.resource.add(
-      owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      owl_Ontology.schema.properties.label.path,
-      parameters.object.label.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    return parameters.resource;
-  };
+  readonly definition: readonly (string | Literal)[];
 
-  export const $toString: $ToStringFunction<Omit<owl_Ontology, "comment">> = (
-    _owlOntology,
-  ) =>
-    `owl_Ontology(${JSON.stringify(owl_Ontology.toStringRecord(_owlOntology))})`;
+  readonly hiddenLabel: readonly (string | Literal)[];
 
-  export const create: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, owl_Ontology.Discriminated> = (parameters) =>
-    $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }),
-      termType: Right("owl_Ontology" as const),
-      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.comment.type,
-          value,
-        ),
-      ),
-      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.label.type,
-          value,
-        ),
-      ),
-    }).map((object) =>
-      $monkeyPatchObject(object, { $toString: owl_Ontology.$toString }),
-    );
+  readonly notation: readonly Literal[];
 
-  export type CreateParameters<
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  > = {
-    readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier:
-      | (() => owl_Ontology.Identifier)
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode;
-    readonly comment?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly label?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-  };
+  readonly prefLabel: readonly (string | Literal)[];
 
-  export const createUnsafe: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
-  ) => owl_Ontology.Discriminated = (parameters) =>
-    create(parameters).unsafeCoerce();
-
-  export type Discriminated = owl_Ontology & {
-    readonly termType: "owl_Ontology";
-  };
-
-  export type Identifier = NamedNode;
-  export namespace Identifier {
-    export const parse = $parseIri;
-  }
-
-  export const isowl_Ontology: $ObjectTypeGuardFunction<
-    owl_Ontology.Discriminated
-  > = (object): object is owl_Ontology.Discriminated =>
-    object.termType === "owl_Ontology";
-
-  export const schema = {
-    kind: "Object",
-    properties: {
-      $identifier: {
-        kind: "Identifier",
-        type: { kind: "Iri" } as const,
-      } as const,
-      $rdfType: {
-        fromRdfType: dataFactory.namedNode(
-          "http://www.w3.org/2002/07/owl#Ontology",
-        ),
-        kind: "RdfType",
-        toRdfTypes: [
-          dataFactory.namedNode("http://www.w3.org/2002/07/owl#Ontology"),
-        ],
-      } as const,
-      comment: {
-        kind: "Shacl",
-        path: $rdfs_comment,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      label: {
-        kind: "Shacl",
-        path: $rdfs_label,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-    },
-  } as const;
-
-  export type Schema = typeof schema;
-
-  export const toRdfResource: $ToRdfResourceFunction<
-    owl_Ontology.Identifier,
-    owl_Ontology
-  > = $wrap_ToRdfResourceFunction<owl_Ontology.Identifier, owl_Ontology>(
-    owl_Ontology._toRdfResource,
-  );
-
-  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
-    owl_Ontology,
-    NamedNode
-  > = (value, options) => [
-    owl_Ontology.toRdfResource(value, {
-      graph: options.graph,
-      resourceSet: options.resourceSet,
-    }).identifier,
-  ];
-
-  export const toStringRecord: $ToStringRecordFunction<
-    Omit<owl_Ontology, "comment">
-  > = (_owlOntology) =>
-    $compactRecord({
-      $identifier: _owlOntology.$identifier().toString(),
-      label:
-        _owlOntology.label.length > 0
-          ? `[${_owlOntology.label.map((item) => item.toString())}]`
-          : undefined,
-    });
-}
-
-export type rdf_Property = {
-  readonly $identifier: () => rdf_Property.Identifier;
-
-  readonly comment: readonly Literal[];
-
-  readonly domain: readonly NamedNode[];
-
-  readonly isDefinedBy: Maybe<NamedNode>;
-
-  readonly label: readonly Literal[];
-
-  readonly range: readonly NamedNode[];
-
-  readonly seeAlso: readonly (NamedNode | Literal)[];
-
-  readonly subPropertyOf: readonly NamedNode[];
+  readonly topConcepts: readonly (NamedNode | skos_Concept.Discriminated)[];
 
   readonly type: readonly NamedNode[];
 };
 
-export namespace rdf_Property {
+export namespace skos_ConceptScheme {
   export const _toRdfResource: $_ToRdfResourceFunction<
-    rdf_Property.Identifier,
-    rdf_Property
+    skos_ConceptScheme.Identifier,
+    skos_ConceptScheme
   > = (parameters) => {
     if (!parameters.ignoreRdfType) {
       parameters.resource.add(
         $rdf_type,
-        rdf_Property.schema.properties.$rdfType.toRdfTypes,
+        skos_ConceptScheme.schema.properties.$rdfType.toRdfTypes,
         parameters.graph,
       );
     }
     parameters.resource.add(
-      owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.domain.path,
-      parameters.object.domain.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.isDefinedBy.path,
-      parameters.object.isDefinedBy.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      owl_Ontology.schema.properties.label.path,
-      parameters.object.label.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.range.path,
-      parameters.object.range.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.seeAlso.path,
-      parameters.object.seeAlso.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.subPropertyOf.path,
-      parameters.object.subPropertyOf.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.type.path,
-      parameters.object.type.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    return parameters.resource;
-  };
-
-  export const $toString: $ToStringFunction<
-    Pick<rdf_Property, "$identifier" | "label">
-  > = (_rdfProperty) =>
-    `rdf_Property(${JSON.stringify(rdf_Property.toStringRecord(_rdfProperty))})`;
-
-  export const create: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: rdf_Property.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, rdf_Property.Discriminated> = (parameters) =>
-    $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }),
-      termType: Right("rdf_Property" as const),
-      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.comment.type,
-          value,
-        ),
-      ),
-      domain: $convertToScalarSet($convertToIri)(parameters.domain, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.domain.type,
-          value,
-        ),
-      ),
-      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          rdf_Property.schema.properties.isDefinedBy.type,
-          value,
-        ),
-      ),
-      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.label.type,
-          value,
-        ),
-      ),
-      range: $convertToScalarSet($convertToIri)(parameters.range, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.range.type,
-          value,
-        ),
-      ),
-      seeAlso: $convertToScalarSet($identityConversionFunction)(
-        parameters.seeAlso,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.seeAlso.type,
-          value,
-        ),
-      ),
-      subPropertyOf: $convertToScalarSet($convertToIri)(
-        parameters.subPropertyOf,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.subPropertyOf.type,
-          value,
-        ),
-      ),
-      type: $convertToScalarSet($convertToIri)(parameters.type, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.type.type,
-          value,
-        ),
-      ),
-    }).map((object) =>
-      $monkeyPatchObject(object, { $toString: rdf_Property.$toString }),
-    );
-
-  export type CreateParameters<
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  > = {
-    readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier:
-      | (() => rdf_Property.Identifier)
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode;
-    readonly comment?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly domain?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly isDefinedBy?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | Maybe<NamedNode>;
-    readonly label?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly range?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
-    readonly subPropertyOf?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly type?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-  };
-
-  export const createUnsafe: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: rdf_Property.CreateParameters<$DefaultNamespaceT>,
-  ) => rdf_Property.Discriminated = (parameters) =>
-    create(parameters).unsafeCoerce();
-
-  export type Discriminated = rdf_Property & {
-    readonly termType: "rdf_Property";
-  };
-
-  export type Identifier = NamedNode;
-  export namespace Identifier {
-    export const parse = $parseIri;
-  }
-
-  export const isrdf_Property: $ObjectTypeGuardFunction<
-    rdf_Property.Discriminated
-  > = (object): object is rdf_Property.Discriminated =>
-    object.termType === "rdf_Property";
-
-  export const schema = {
-    kind: "Object",
-    properties: {
-      $identifier: {
-        kind: "Identifier",
-        type: { kind: "Iri" } as const,
-      } as const,
-      $rdfType: {
-        fromRdfType: $rdf_Property,
-        kind: "RdfType",
-        toRdfTypes: [$rdf_Property],
-      } as const,
-      comment: {
-        kind: "Shacl",
-        path: $rdfs_comment,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      domain: {
-        kind: "Shacl",
-        path: $rdfs_domain,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      isDefinedBy: {
-        kind: "Shacl",
-        path: $rdfs_isDefinedBy,
-        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
-      } as const,
-      label: {
-        kind: "Shacl",
-        path: $rdfs_label,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      range: {
-        kind: "Shacl",
-        path: $rdfs_range,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      seeAlso: {
-        kind: "Shacl",
-        path: $rdfs_seeAlso,
-        type: {
-          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      subPropertyOf: {
-        kind: "Shacl",
-        path: $rdfs_subPropertyOf,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      type: {
-        kind: "Shacl",
-        path: $rdf_type,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-    },
-  } as const;
-
-  export type Schema = typeof schema;
-
-  export const toRdfResource: $ToRdfResourceFunction<
-    rdf_Property.Identifier,
-    rdf_Property
-  > = $wrap_ToRdfResourceFunction<rdf_Property.Identifier, rdf_Property>(
-    rdf_Property._toRdfResource,
-  );
-
-  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
-    rdf_Property,
-    NamedNode
-  > = (value, options) => [
-    rdf_Property.toRdfResource(value, {
-      graph: options.graph,
-      resourceSet: options.resourceSet,
-    }).identifier,
-  ];
-
-  export const toStringRecord: $ToStringRecordFunction<
-    Pick<rdf_Property, "$identifier" | "label">
-  > = (_rdfProperty) =>
-    $compactRecord({
-      $identifier: _rdfProperty.$identifier().toString(),
-      label:
-        _rdfProperty.label.length > 0
-          ? `[${_rdfProperty.label.map((item) => item.toString())}]`
-          : undefined,
-    });
-}
-
-export type rdf_Statement = {
-  readonly $identifier: () => rdf_Statement.Identifier;
-
-  readonly comment: readonly Literal[];
-
-  readonly isDefinedBy: Maybe<NamedNode>;
-
-  readonly label: readonly Literal[];
-
-  readonly object: BlankNode | NamedNode | Literal;
-
-  readonly predicate: NamedNode;
-
-  readonly seeAlso: readonly (NamedNode | Literal)[];
-
-  readonly subject: BlankNode | NamedNode | Literal;
-
-  readonly type: readonly NamedNode[];
-};
-
-export namespace rdf_Statement {
-  export const _toRdfResource: $_ToRdfResourceFunction<
-    rdf_Statement.Identifier,
-    rdf_Statement
-  > = (parameters) => {
-    if (!parameters.ignoreRdfType) {
-      parameters.resource.add(
-        $rdf_type,
-        rdf_Statement.schema.properties.$rdfType.toRdfTypes,
-        parameters.graph,
-      );
-    }
-    parameters.resource.add(
-      owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.isDefinedBy.path,
-      parameters.object.isDefinedBy.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      owl_Ontology.schema.properties.label.path,
-      parameters.object.label.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Statement.schema.properties.object.path,
-      [parameters.object.object],
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Statement.schema.properties.predicate.path,
-      [parameters.object.predicate],
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.seeAlso.path,
-      parameters.object.seeAlso.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Statement.schema.properties.subject.path,
-      [parameters.object.subject],
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.type.path,
-      parameters.object.type.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    return parameters.resource;
-  };
-
-  export const $toString: $ToStringFunction<
-    Pick<rdf_Statement, "$identifier" | "label">
-  > = (_rdfStatement) =>
-    `rdf_Statement(${JSON.stringify(rdf_Statement.toStringRecord(_rdfStatement))})`;
-
-  export const create: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: rdf_Statement.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, rdf_Statement.Discriminated> = (parameters) =>
-    $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }),
-      termType: Right("rdf_Statement" as const),
-      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.comment.type,
-          value,
-        ),
-      ),
-      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          rdf_Property.schema.properties.isDefinedBy.type,
-          value,
-        ),
-      ),
-      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.label.type,
-          value,
-        ),
-      ),
-      object: Either.of(parameters.object),
-      predicate: $convertToIri(parameters.predicate, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }),
-      seeAlso: $convertToScalarSet($identityConversionFunction)(
-        parameters.seeAlso,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.seeAlso.type,
-          value,
-        ),
-      ),
-      subject: Either.of(parameters.subject),
-      type: $convertToScalarSet($convertToIri)(parameters.type, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.type.type,
-          value,
-        ),
-      ),
-    }).map((object) =>
-      $monkeyPatchObject(object, { $toString: rdf_Statement.$toString }),
-    );
-
-  export type CreateParameters<
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  > = {
-    readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier?:
-      | (() => rdf_Statement.Identifier)
-      | BlankNode
-      | NamedNode
-      | (keyof $DefaultNamespaceT & string);
-    readonly comment?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly isDefinedBy?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | Maybe<NamedNode>;
-    readonly label?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly object: BlankNode | NamedNode | Literal;
-    readonly predicate: (keyof $DefaultNamespaceT & string) | NamedNode;
-    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
-    readonly subject: BlankNode | NamedNode | Literal;
-    readonly type?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-  };
-
-  export const createUnsafe: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: rdf_Statement.CreateParameters<$DefaultNamespaceT>,
-  ) => rdf_Statement.Discriminated = (parameters) =>
-    create(parameters).unsafeCoerce();
-
-  export type Discriminated = rdf_Statement & {
-    readonly termType: "rdf_Statement";
-  };
-
-  export type Identifier = BlankNode | NamedNode;
-  export namespace Identifier {
-    export const parse = $parseIdentifier;
-  }
-
-  export const isrdf_Statement: $ObjectTypeGuardFunction<
-    rdf_Statement.Discriminated
-  > = (object): object is rdf_Statement.Discriminated =>
-    object.termType === "rdf_Statement";
-
-  export const schema = {
-    kind: "Object",
-    properties: {
-      $identifier: {
-        kind: "Identifier",
-        type: { kind: "Identifier" } as const,
-      } as const,
-      $rdfType: {
-        fromRdfType: $rdf_Statement,
-        kind: "RdfType",
-        toRdfTypes: [$rdf_Statement],
-      } as const,
-      comment: {
-        kind: "Shacl",
-        path: $rdfs_comment,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      isDefinedBy: {
-        kind: "Shacl",
-        path: $rdfs_isDefinedBy,
-        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
-      } as const,
-      label: {
-        kind: "Shacl",
-        path: $rdfs_label,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      object: {
-        kind: "Shacl",
-        path: $rdf_object,
-        type: {
-          kind: "Term",
-          types: ["BlankNode", "NamedNode", "Literal"],
-        } as const,
-      } as const,
-      predicate: {
-        kind: "Shacl",
-        path: $rdf_predicate,
-        type: { kind: "Iri" } as const,
-      } as const,
-      seeAlso: {
-        kind: "Shacl",
-        path: $rdfs_seeAlso,
-        type: {
-          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      subject: {
-        kind: "Shacl",
-        path: $rdf_subject,
-        type: {
-          kind: "Term",
-          types: ["BlankNode", "NamedNode", "Literal"],
-        } as const,
-      } as const,
-      type: {
-        kind: "Shacl",
-        path: $rdf_type,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-    },
-  } as const;
-
-  export type Schema = typeof schema;
-
-  export const toRdfResource: $ToRdfResourceFunction<
-    rdf_Statement.Identifier,
-    rdf_Statement
-  > = $wrap_ToRdfResourceFunction<rdf_Statement.Identifier, rdf_Statement>(
-    rdf_Statement._toRdfResource,
-  );
-
-  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
-    rdf_Statement,
-    BlankNode | NamedNode
-  > = (value, options) => [
-    rdf_Statement.toRdfResource(value, {
-      graph: options.graph,
-      resourceSet: options.resourceSet,
-    }).identifier,
-  ];
-
-  export const toStringRecord: $ToStringRecordFunction<
-    Pick<rdf_Statement, "$identifier" | "label">
-  > = (_rdfStatement) =>
-    $compactRecord({
-      $identifier: _rdfStatement.$identifier().toString(),
-      label:
-        _rdfStatement.label.length > 0
-          ? `[${_rdfStatement.label.map((item) => item.toString())}]`
-          : undefined,
-    });
-}
-
-export type rdfs_Class = {
-  readonly $identifier: () => rdfs_Class.Identifier;
-
-  readonly comment: readonly Literal[];
-
-  readonly isDefinedBy: Maybe<NamedNode>;
-
-  readonly label: readonly Literal[];
-
-  readonly seeAlso: readonly (NamedNode | Literal)[];
-
-  readonly subClassOf: readonly NamedNode[];
-
-  readonly type: readonly NamedNode[];
-};
-
-export namespace rdfs_Class {
-  export const _toRdfResource: $_ToRdfResourceFunction<
-    rdfs_Class.Identifier,
-    rdfs_Class
-  > = (parameters) => {
-    if (!parameters.ignoreRdfType) {
-      parameters.resource.add(
-        $rdf_type,
-        rdfs_Class.schema.properties.$rdfType.toRdfTypes,
-        parameters.graph,
-      );
-    }
-    parameters.resource.add(
-      owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.isDefinedBy.path,
-      parameters.object.isDefinedBy.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      owl_Ontology.schema.properties.label.path,
-      parameters.object.label.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.seeAlso.path,
-      parameters.object.seeAlso.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdfs_Class.schema.properties.subClassOf.path,
-      parameters.object.subClassOf.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.type.path,
-      parameters.object.type.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    return parameters.resource;
-  };
-
-  export const $toString: $ToStringFunction<
-    Pick<rdfs_Class, "$identifier" | "label">
-  > = (_rdfsClass) =>
-    `rdfs_Class(${JSON.stringify(rdfs_Class.toStringRecord(_rdfsClass))})`;
-
-  export const create: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, rdfs_Class.Discriminated> = (parameters) =>
-    $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }),
-      termType: Right("rdfs_Class" as const),
-      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.comment.type,
-          value,
-        ),
-      ),
-      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          rdf_Property.schema.properties.isDefinedBy.type,
-          value,
-        ),
-      ),
-      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.label.type,
-          value,
-        ),
-      ),
-      seeAlso: $convertToScalarSet($identityConversionFunction)(
-        parameters.seeAlso,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.seeAlso.type,
-          value,
-        ),
-      ),
-      subClassOf: $convertToScalarSet($convertToIri)(parameters.subClassOf, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdfs_Class.schema.properties.subClassOf.type,
-          value,
-        ),
-      ),
-      type: $convertToScalarSet($convertToIri)(parameters.type, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.type.type,
-          value,
-        ),
-      ),
-    }).map((object) =>
-      $monkeyPatchObject(object, { $toString: rdfs_Class.$toString }),
-    );
-
-  export type CreateParameters<
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  > = {
-    readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier:
-      | (() => rdfs_Class.Identifier)
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode;
-    readonly comment?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly isDefinedBy?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | Maybe<NamedNode>;
-    readonly label?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
-    readonly subClassOf?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly type?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-  };
-
-  export const createUnsafe: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
-  ) => rdfs_Class.Discriminated = (parameters) =>
-    create(parameters).unsafeCoerce();
-
-  export type Discriminated = rdfs_Class & { readonly termType: "rdfs_Class" };
-
-  export type Identifier = NamedNode;
-  export namespace Identifier {
-    export const parse = $parseIri;
-  }
-
-  export const isrdfs_Class: $ObjectTypeGuardFunction<
-    rdfs_Class.Discriminated
-  > = (object): object is rdfs_Class.Discriminated =>
-    object.termType === "rdfs_Class";
-
-  export const schema = {
-    kind: "Object",
-    properties: {
-      $identifier: {
-        kind: "Identifier",
-        type: { kind: "Iri" } as const,
-      } as const,
-      $rdfType: {
-        fromRdfType: $rdfs_Class,
-        kind: "RdfType",
-        toRdfTypes: [$rdfs_Class],
-      } as const,
-      comment: {
-        kind: "Shacl",
-        path: $rdfs_comment,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      isDefinedBy: {
-        kind: "Shacl",
-        path: $rdfs_isDefinedBy,
-        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
-      } as const,
-      label: {
-        kind: "Shacl",
-        path: $rdfs_label,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      seeAlso: {
-        kind: "Shacl",
-        path: $rdfs_seeAlso,
-        type: {
-          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      subClassOf: {
-        kind: "Shacl",
-        path: $rdfs_subClassOf,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      type: {
-        kind: "Shacl",
-        path: $rdf_type,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-    },
-  } as const;
-
-  export type Schema = typeof schema;
-
-  export const toRdfResource: $ToRdfResourceFunction<
-    rdfs_Class.Identifier,
-    rdfs_Class
-  > = $wrap_ToRdfResourceFunction<rdfs_Class.Identifier, rdfs_Class>(
-    rdfs_Class._toRdfResource,
-  );
-
-  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
-    rdfs_Class,
-    NamedNode
-  > = (value, options) => [
-    rdfs_Class.toRdfResource(value, {
-      graph: options.graph,
-      resourceSet: options.resourceSet,
-    }).identifier,
-  ];
-
-  export const toStringRecord: $ToStringRecordFunction<
-    Pick<rdfs_Class, "$identifier" | "label">
-  > = (_rdfsClass) =>
-    $compactRecord({
-      $identifier: _rdfsClass.$identifier().toString(),
-      label:
-        _rdfsClass.label.length > 0
-          ? `[${_rdfsClass.label.map((item) => item.toString())}]`
-          : undefined,
-    });
-}
-
-export type sh_NodeShape = {
-  readonly $identifier: () => sh_NodeShape.Identifier;
-
-  readonly and: Maybe<readonly (NamedNode | sh_Shape)[]>;
-
-  readonly class_: readonly NamedNode[];
-
-  readonly closed: Maybe<boolean>;
-
-  readonly comment: readonly Literal[];
-
-  readonly datatype: Maybe<NamedNode>;
-
-  readonly deactivated: Maybe<boolean>;
-
-  readonly discriminantValue: Maybe<string>;
-
-  readonly extern: Maybe<boolean>;
-
-  readonly flags: Maybe<string>;
-
-  readonly fromRdfType: Maybe<NamedNode>;
-
-  readonly hasValues: readonly (NamedNode | Literal)[];
-
-  /**
-   * Whether to ignore this shape in code generation, defaults to false
-   */
-  readonly ignore: boolean;
-
-  readonly ignoredProperties: Maybe<readonly NamedNode[]>;
-
-  readonly in_: Maybe<readonly (NamedNode | Literal)[]>;
-
-  readonly isDefinedBy: Maybe<NamedNode>;
-
-  readonly label: readonly Literal[];
-
-  readonly languageIn: Maybe<readonly string[]>;
-
-  readonly maxExclusive: Maybe<Literal>;
-
-  readonly maxInclusive: Maybe<Literal>;
-
-  readonly maxLength: Maybe<bigint>;
-
-  readonly message: Maybe<string>;
-
-  readonly minExclusive: Maybe<Literal>;
-
-  readonly minInclusive: Maybe<Literal>;
-
-  readonly minLength: Maybe<bigint>;
-
-  readonly mutable: Maybe<boolean>;
-
-  readonly node: Maybe<NamedNode | sh_NodeShape.Discriminated>;
-
-  readonly nodeKind: Maybe<
-    NamedNode<
-      | "http://www.w3.org/ns/shacl#BlankNode"
-      | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
-      | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
-      | "http://www.w3.org/ns/shacl#IRI"
-      | "http://www.w3.org/ns/shacl#IRIOrLiteral"
-      | "http://www.w3.org/ns/shacl#Literal"
-    >
-  >;
-
-  readonly not: readonly (NamedNode | sh_NodeShape.Discriminated)[];
-
-  readonly or: Maybe<readonly (NamedNode | sh_Shape)[]>;
-
-  readonly pattern: Maybe<string>;
-
-  readonly properties: readonly (NamedNode | sh_PropertyShape.Discriminated)[];
-
-  readonly rdfType: Maybe<NamedNode>;
-
-  readonly severity: Maybe<sh_Severity>;
-
-  readonly shaclmateName: Maybe<string>;
-
-  readonly subClassOf: readonly NamedNode[];
-
-  readonly targetClasses: readonly NamedNode[];
-
-  readonly targetNodes: readonly (NamedNode | Literal)[];
-
-  readonly targetObjectsOf: readonly NamedNode[];
-
-  readonly targetSubjectsOf: readonly NamedNode[];
-
-  readonly toRdfTypes: readonly NamedNode[];
-
-  readonly tsImports: readonly string[];
-
-  readonly type: readonly NamedNode[];
-
-  readonly xone: Maybe<readonly (NamedNode | sh_Shape)[]>;
-};
-
-export namespace sh_NodeShape {
-  export const _toRdfResource: $_ToRdfResourceFunction<
-    sh_NodeShape.Identifier,
-    sh_NodeShape
-  > = (parameters) => {
-    if (!parameters.ignoreRdfType) {
-      parameters.resource.add(
-        $rdf_type,
-        sh_NodeShape.schema.properties.$rdfType.toRdfTypes,
-        parameters.graph,
-      );
-    }
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.and.path,
-      parameters.object.and.toList().flatMap((value) => [
-        value.length > 0
-          ? value.reduce(
-              (
-                { currentSubListResource, listResource },
-                item,
-                itemIndex,
-                list,
-              ) => {
-                if (itemIndex === 0) {
-                  currentSubListResource = listResource;
-                } else {
-                  const newSubListResource = parameters.resourceSet.resource(
-                    (() => dataFactory.blankNode())(),
-                  );
-                  currentSubListResource!.add(
-                    $rdf_rest,
-                    newSubListResource.identifier,
-                    parameters.graph,
-                  );
-                  currentSubListResource = newSubListResource;
-                }
-
-                currentSubListResource.add(
-                  $rdf_first,
-                  ((value, _options): (NamedNode | BlankNode)[] => {
-                    if (value["termType"] === "NamedNode") {
-                      return [value];
-                    }
-                    if (
-                      value["termType"] === "sh_NodeShape" ||
-                      value["termType"] === "sh_PropertyShape"
-                    ) {
-                      return sh_Shape.toRdfResourceValues(value, {
-                        graph: _options.graph,
-                        propertyPath: _options.propertyPath,
-                        resource: _options.resource,
-                        resourceSet: _options.resourceSet,
-                      });
-                    }
-
-                    throw new Error("unable to serialize to RDF");
-                  })(item, {
-                    graph: parameters.graph,
-                    propertyPath: $rdf_first,
-                    resource: currentSubListResource,
-                    resourceSet: parameters.resourceSet,
-                  }),
-                  parameters.graph,
-                );
-
-                if (itemIndex + 1 === list.length) {
-                  currentSubListResource.add(
-                    $rdf_rest,
-                    $rdf_nil,
-                    parameters.graph,
-                  );
-                }
-
-                return { currentSubListResource, listResource };
-              },
-              {
-                currentSubListResource: null,
-                listResource: parameters.resourceSet.resource(
-                  (() => dataFactory.blankNode())(),
-                ),
-              } as {
-                currentSubListResource: Resource<BlankNode> | null;
-                listResource: Resource<BlankNode>;
-              },
-            ).listResource.identifier
-          : $rdf_nil,
-      ]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.class_.path,
-      parameters.object.class_.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.closed.path,
-      parameters.object.closed
-        .toList()
-        .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.datatype.path,
-      parameters.object.datatype.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.deactivated.path,
-      parameters.object.deactivated
-        .toList()
-        .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.discriminantValue.path,
-      parameters.object.discriminantValue
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.extern.path,
-      parameters.object.extern
-        .toList()
-        .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.flags.path,
-      parameters.object.flags
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.fromRdfType.path,
-      parameters.object.fromRdfType.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.hasValues.path,
-      parameters.object.hasValues.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.ignore.path,
-      $strictEquals(parameters.object.ignore, false).isLeft()
-        ? [$literalFactory.boolean(parameters.object.ignore, $xsd_boolean)]
-        : [],
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.ignoredProperties.path,
-      parameters.object.ignoredProperties.toList().flatMap((value) => [
-        value.length > 0
-          ? value.reduce(
-              (
-                { currentSubListResource, listResource },
-                item,
-                itemIndex,
-                list,
-              ) => {
-                if (itemIndex === 0) {
-                  currentSubListResource = listResource;
-                } else {
-                  const newSubListResource = parameters.resourceSet.resource(
-                    (() => dataFactory.blankNode())(),
-                  );
-                  currentSubListResource!.add(
-                    $rdf_rest,
-                    newSubListResource.identifier,
-                    parameters.graph,
-                  );
-                  currentSubListResource = newSubListResource;
-                }
-
-                currentSubListResource.add(
-                  $rdf_first,
-                  [item],
-                  parameters.graph,
-                );
-
-                if (itemIndex + 1 === list.length) {
-                  currentSubListResource.add(
-                    $rdf_rest,
-                    $rdf_nil,
-                    parameters.graph,
-                  );
-                }
-
-                return { currentSubListResource, listResource };
-              },
-              {
-                currentSubListResource: null,
-                listResource: parameters.resourceSet.resource(
-                  (() => dataFactory.blankNode())(),
-                ),
-              } as {
-                currentSubListResource: Resource<BlankNode> | null;
-                listResource: Resource<BlankNode>;
-              },
-            ).listResource.identifier
-          : $rdf_nil,
-      ]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.in_.path,
-      parameters.object.in_.toList().flatMap((value) => [
-        value.length > 0
-          ? value.reduce(
-              (
-                { currentSubListResource, listResource },
-                item,
-                itemIndex,
-                list,
-              ) => {
-                if (itemIndex === 0) {
-                  currentSubListResource = listResource;
-                } else {
-                  const newSubListResource = parameters.resourceSet.resource(
-                    (() => dataFactory.blankNode())(),
-                  );
-                  currentSubListResource!.add(
-                    $rdf_rest,
-                    newSubListResource.identifier,
-                    parameters.graph,
-                  );
-                  currentSubListResource = newSubListResource;
-                }
-
-                currentSubListResource.add(
-                  $rdf_first,
-                  [item],
-                  parameters.graph,
-                );
-
-                if (itemIndex + 1 === list.length) {
-                  currentSubListResource.add(
-                    $rdf_rest,
-                    $rdf_nil,
-                    parameters.graph,
-                  );
-                }
-
-                return { currentSubListResource, listResource };
-              },
-              {
-                currentSubListResource: null,
-                listResource: parameters.resourceSet.resource(
-                  (() => dataFactory.blankNode())(),
-                ),
-              } as {
-                currentSubListResource: Resource<BlankNode> | null;
-                listResource: Resource<BlankNode>;
-              },
-            ).listResource.identifier
-          : $rdf_nil,
-      ]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.isDefinedBy.path,
-      parameters.object.isDefinedBy.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      owl_Ontology.schema.properties.label.path,
-      parameters.object.label.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.languageIn.path,
-      parameters.object.languageIn.toList().flatMap((value) => [
-        value.length > 0
-          ? value.reduce(
-              (
-                { currentSubListResource, listResource },
-                item,
-                itemIndex,
-                list,
-              ) => {
-                if (itemIndex === 0) {
-                  currentSubListResource = listResource;
-                } else {
-                  const newSubListResource = parameters.resourceSet.resource(
-                    (() => dataFactory.blankNode())(),
-                  );
-                  currentSubListResource!.add(
-                    $rdf_rest,
-                    newSubListResource.identifier,
-                    parameters.graph,
-                  );
-                  currentSubListResource = newSubListResource;
-                }
-
-                currentSubListResource.add(
-                  $rdf_first,
-                  [$literalFactory.string(item)],
-                  parameters.graph,
-                );
-
-                if (itemIndex + 1 === list.length) {
-                  currentSubListResource.add(
-                    $rdf_rest,
-                    $rdf_nil,
-                    parameters.graph,
-                  );
-                }
-
-                return { currentSubListResource, listResource };
-              },
-              {
-                currentSubListResource: null,
-                listResource: parameters.resourceSet.resource(
-                  (() => dataFactory.blankNode())(),
-                ),
-              } as {
-                currentSubListResource: Resource<BlankNode> | null;
-                listResource: Resource<BlankNode>;
-              },
-            ).listResource.identifier
-          : $rdf_nil,
-      ]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.maxExclusive.path,
-      parameters.object.maxExclusive.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.maxInclusive.path,
-      parameters.object.maxInclusive.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.maxLength.path,
-      parameters.object.maxLength
-        .toList()
-        .flatMap((value) => [$literalFactory.bigint(value, $xsd_integer)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.message.path,
-      parameters.object.message
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.minExclusive.path,
-      parameters.object.minExclusive.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.minInclusive.path,
-      parameters.object.minInclusive.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.minLength.path,
-      parameters.object.minLength
-        .toList()
-        .flatMap((value) => [$literalFactory.bigint(value, $xsd_integer)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.mutable.path,
-      parameters.object.mutable
-        .toList()
-        .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.node.path,
-      parameters.object.node.toList().flatMap((value) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
+      skos_ConceptScheme.schema.properties.altLabel.path,
+      parameters.object.altLabel.flatMap((item) =>
+        ((value, _options): Literal[] => {
+          if (typeof value === "string") {
+            return [$literalFactory.string(value)];
           }
-          if (value["termType"] === "sh_NodeShape") {
-            return sh_NodeShape.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
+          if (typeof value === "object") {
+            return [value];
           }
 
           throw new Error("unable to serialize to RDF");
-        })(value, {
+        })(item, {
           ignoreRdfType: parameters.ignoreRdfType,
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: sh_NodeShape.schema.properties.node.path,
+          propertyPath: skos_ConceptScheme.schema.properties.altLabel.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.nodeKind.path,
-      parameters.object.nodeKind.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.not.path,
-      parameters.object.not.flatMap((item) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+      skos_ConceptScheme.schema.properties.concepts.path,
+      parameters.object.concepts.flatMap((item) =>
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
-          if (value["termType"] === "sh_NodeShape") {
-            return sh_NodeShape.toRdfResourceValues(value, {
+          if (value["termType"] === "skos_Concept") {
+            return skos_Concept.toRdfResourceValues(value, {
               graph: _options.graph,
               propertyPath: _options.propertyPath,
               resource: _options.resource,
@@ -2234,104 +714,91 @@ export namespace sh_NodeShape {
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: sh_NodeShape.schema.properties.not.path,
+          propertyPath: skos_ConceptScheme.schema.properties.concepts.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.or.path,
-      parameters.object.or.toList().flatMap((value) => [
-        value.length > 0
-          ? value.reduce(
-              (
-                { currentSubListResource, listResource },
-                item,
-                itemIndex,
-                list,
-              ) => {
-                if (itemIndex === 0) {
-                  currentSubListResource = listResource;
-                } else {
-                  const newSubListResource = parameters.resourceSet.resource(
-                    (() => dataFactory.blankNode())(),
-                  );
-                  currentSubListResource!.add(
-                    $rdf_rest,
-                    newSubListResource.identifier,
-                    parameters.graph,
-                  );
-                  currentSubListResource = newSubListResource;
-                }
+      skos_ConceptScheme.schema.properties.definition.path,
+      parameters.object.definition.flatMap((item) =>
+        ((value, _options): Literal[] => {
+          if (typeof value === "string") {
+            return [$literalFactory.string(value)];
+          }
+          if (typeof value === "object") {
+            return [value];
+          }
 
-                currentSubListResource.add(
-                  $rdf_first,
-                  ((value, _options): (NamedNode | BlankNode)[] => {
-                    if (value["termType"] === "NamedNode") {
-                      return [value];
-                    }
-                    if (
-                      value["termType"] === "sh_NodeShape" ||
-                      value["termType"] === "sh_PropertyShape"
-                    ) {
-                      return sh_Shape.toRdfResourceValues(value, {
-                        graph: _options.graph,
-                        propertyPath: _options.propertyPath,
-                        resource: _options.resource,
-                        resourceSet: _options.resourceSet,
-                      });
-                    }
-
-                    throw new Error("unable to serialize to RDF");
-                  })(item, {
-                    graph: parameters.graph,
-                    propertyPath: $rdf_first,
-                    resource: currentSubListResource,
-                    resourceSet: parameters.resourceSet,
-                  }),
-                  parameters.graph,
-                );
-
-                if (itemIndex + 1 === list.length) {
-                  currentSubListResource.add(
-                    $rdf_rest,
-                    $rdf_nil,
-                    parameters.graph,
-                  );
-                }
-
-                return { currentSubListResource, listResource };
-              },
-              {
-                currentSubListResource: null,
-                listResource: parameters.resourceSet.resource(
-                  (() => dataFactory.blankNode())(),
-                ),
-              } as {
-                currentSubListResource: Resource<BlankNode> | null;
-                listResource: Resource<BlankNode>;
-              },
-            ).listResource.identifier
-          : $rdf_nil,
-      ]),
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_ConceptScheme.schema.properties.definition.path,
+        }),
+      ),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.pattern.path,
-      parameters.object.pattern
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
+      skos_ConceptScheme.schema.properties.hiddenLabel.path,
+      parameters.object.hiddenLabel.flatMap((item) =>
+        ((value, _options): Literal[] => {
+          if (typeof value === "string") {
+            return [$literalFactory.string(value)];
+          }
+          if (typeof value === "object") {
+            return [value];
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_ConceptScheme.schema.properties.hiddenLabel.path,
+        }),
+      ),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.properties.path,
-      parameters.object.properties.flatMap((item) =>
-        ((value, _options): (NamedNode | BlankNode)[] => {
+      skos_ConceptScheme.schema.properties.notation.path,
+      parameters.object.notation.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.prefLabel.path,
+      parameters.object.prefLabel.flatMap((item) =>
+        ((value, _options): Literal[] => {
+          if (typeof value === "string") {
+            return [$literalFactory.string(value)];
+          }
+          if (typeof value === "object") {
+            return [value];
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_ConceptScheme.schema.properties.prefLabel.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.topConcepts.path,
+      parameters.object.topConcepts.flatMap((item) =>
+        ((value, _options): NamedNode[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
-          if (value["termType"] === "sh_PropertyShape") {
-            return sh_PropertyShape.toRdfResourceValues(value, {
+          if (value["termType"] === "skos_Concept") {
+            return skos_Concept.toRdfResourceValues(value, {
               graph: _options.graph,
               propertyPath: _options.propertyPath,
               resource: _options.resource,
@@ -2345,424 +812,53 @@ export namespace sh_NodeShape {
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: sh_NodeShape.schema.properties.properties.path,
+          propertyPath: skos_ConceptScheme.schema.properties.topConcepts.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.rdfType.path,
-      parameters.object.rdfType.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.severity.path,
-      parameters.object.severity.toList(),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.shaclmateName.path,
-      parameters.object.shaclmateName
-        .toList()
-        .flatMap((value) => [$literalFactory.string(value)]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdfs_Class.schema.properties.subClassOf.path,
-      parameters.object.subClassOf.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.targetClasses.path,
-      parameters.object.targetClasses.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.targetNodes.path,
-      parameters.object.targetNodes.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.targetObjectsOf.path,
-      parameters.object.targetObjectsOf.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.targetSubjectsOf.path,
-      parameters.object.targetSubjectsOf.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.toRdfTypes.path,
-      parameters.object.toRdfTypes.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.tsImports.path,
-      parameters.object.tsImports.flatMap((item) => [
-        $literalFactory.string(item),
-      ]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.type.path,
+      skos_ConceptScheme.schema.properties.type.path,
       parameters.object.type.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      sh_NodeShape.schema.properties.xone.path,
-      parameters.object.xone.toList().flatMap((value) => [
-        value.length > 0
-          ? value.reduce(
-              (
-                { currentSubListResource, listResource },
-                item,
-                itemIndex,
-                list,
-              ) => {
-                if (itemIndex === 0) {
-                  currentSubListResource = listResource;
-                } else {
-                  const newSubListResource = parameters.resourceSet.resource(
-                    (() => dataFactory.blankNode())(),
-                  );
-                  currentSubListResource!.add(
-                    $rdf_rest,
-                    newSubListResource.identifier,
-                    parameters.graph,
-                  );
-                  currentSubListResource = newSubListResource;
-                }
-
-                currentSubListResource.add(
-                  $rdf_first,
-                  ((value, _options): (NamedNode | BlankNode)[] => {
-                    if (value["termType"] === "NamedNode") {
-                      return [value];
-                    }
-                    if (
-                      value["termType"] === "sh_NodeShape" ||
-                      value["termType"] === "sh_PropertyShape"
-                    ) {
-                      return sh_Shape.toRdfResourceValues(value, {
-                        graph: _options.graph,
-                        propertyPath: _options.propertyPath,
-                        resource: _options.resource,
-                        resourceSet: _options.resourceSet,
-                      });
-                    }
-
-                    throw new Error("unable to serialize to RDF");
-                  })(item, {
-                    graph: parameters.graph,
-                    propertyPath: $rdf_first,
-                    resource: currentSubListResource,
-                    resourceSet: parameters.resourceSet,
-                  }),
-                  parameters.graph,
-                );
-
-                if (itemIndex + 1 === list.length) {
-                  currentSubListResource.add(
-                    $rdf_rest,
-                    $rdf_nil,
-                    parameters.graph,
-                  );
-                }
-
-                return { currentSubListResource, listResource };
-              },
-              {
-                currentSubListResource: null,
-                listResource: parameters.resourceSet.resource(
-                  (() => dataFactory.blankNode())(),
-                ),
-              } as {
-                currentSubListResource: Resource<BlankNode> | null;
-                listResource: Resource<BlankNode>;
-              },
-            ).listResource.identifier
-          : $rdf_nil,
-      ]),
       parameters.graph,
     );
     return parameters.resource;
   };
 
   export const $toString: $ToStringFunction<
-    Pick<sh_NodeShape, "$identifier" | "label" | "shaclmateName">
-  > = (_shNodeShape) =>
-    `sh_NodeShape(${JSON.stringify(sh_NodeShape.toStringRecord(_shNodeShape))})`;
+    Pick<skos_ConceptScheme, "$identifier">
+  > = (_skosConceptScheme) =>
+    `skos_ConceptScheme(${JSON.stringify(skos_ConceptScheme.toStringRecord(_skosConceptScheme))})`;
 
   export const create: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters?: sh_NodeShape.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, sh_NodeShape.Discriminated> = (parameters = {}) =>
+    parameters: skos_ConceptScheme.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, skos_ConceptScheme.Discriminated> = (parameters) =>
     $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
         defaultNamespace: parameters.$defaultNamespace,
       }),
-      termType: Right("sh_NodeShape" as const),
-      and: $convertToMaybe(
-        $convertToList(
-          <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            options: { defaultNamespace: $DefaultNamespaceT | undefined },
-          ): Either<Error, NamedNode | sh_Shape> => {
-            switch (typeof value) {
-              case "object":
-                return Either.of(value);
-              case "string":
-                return $convertToIri(value, options);
-              default:
-                value satisfies never;
-                throw new Error("should never reach this point");
-            }
-          },
-        ),
-      )(parameters.and, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.and.type,
-          value,
-        ),
-      ),
-      class_: $convertToScalarSet($convertToIri)(parameters.class_, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.class_.type,
-          value,
-        ),
-      ),
-      closed: $convertToMaybe($identityConversionFunction)(parameters.closed, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.closed.type,
-          value,
-        ),
-      ),
-      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.comment.type,
-          value,
-        ),
-      ),
-      datatype: $convertToMaybe($convertToIri)(parameters.datatype, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.datatype.type,
-          value,
-        ),
-      ),
-      deactivated: $convertToMaybe($identityConversionFunction)(
-        parameters.deactivated,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.deactivated.type,
-          value,
-        ),
-      ),
-      discriminantValue: $convertToMaybe($identityConversionFunction)(
-        parameters.discriminantValue,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.discriminantValue.type,
-          value,
-        ),
-      ),
-      extern: $convertToMaybe($identityConversionFunction)(parameters.extern, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.extern.type,
-          value,
-        ),
-      ),
-      flags: $convertToMaybe($identityConversionFunction)(parameters.flags, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.flags.type,
-          value,
-        ),
-      ),
-      fromRdfType: $convertToMaybe($convertToIri)(parameters.fromRdfType, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.fromRdfType.type,
-          value,
-        ),
-      ),
-      hasValues: $convertToScalarSet($identityConversionFunction)(
-        parameters.hasValues,
+      termType: Right("skos_ConceptScheme" as const),
+      altLabel: $convertToScalarSet($identityConversionFunction)(
+        parameters.altLabel,
         {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.hasValues.type,
+          skos_ConceptScheme.schema.properties.altLabel.type,
           value,
         ),
       ),
-      ignore: $convertWithDefaultValue($identityConversionFunction, false)(
-        parameters.ignore,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ),
-      ignoredProperties: $convertToMaybe($convertToList($convertToIri))(
-        parameters.ignoredProperties,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.ignoredProperties.type,
-          value,
-        ),
-      ),
-      in_: $convertToMaybe($convertToList($identityConversionFunction))(
-        parameters.in_,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.in_.type,
-          value,
-        ),
-      ),
-      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          rdf_Property.schema.properties.isDefinedBy.type,
-          value,
-        ),
-      ),
-      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.label.type,
-          value,
-        ),
-      ),
-      languageIn: $convertToMaybe($convertToList($identityConversionFunction))(
-        parameters.languageIn,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.languageIn.type,
-          value,
-        ),
-      ),
-      maxExclusive: $convertToMaybe($convertToLiteral)(
-        parameters.maxExclusive,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.maxExclusive.type,
-          value,
-        ),
-      ),
-      maxInclusive: $convertToMaybe($convertToLiteral)(
-        parameters.maxInclusive,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.maxInclusive.type,
-          value,
-        ),
-      ),
-      maxLength: $convertToMaybe($convertToBigInt)(parameters.maxLength, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.maxLength.type,
-          value,
-        ),
-      ),
-      message: $convertToMaybe($identityConversionFunction)(
-        parameters.message,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.message.type,
-          value,
-        ),
-      ),
-      minExclusive: $convertToMaybe($convertToLiteral)(
-        parameters.minExclusive,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.minExclusive.type,
-          value,
-        ),
-      ),
-      minInclusive: $convertToMaybe($convertToLiteral)(
-        parameters.minInclusive,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.minInclusive.type,
-          value,
-        ),
-      ),
-      minLength: $convertToMaybe($convertToBigInt)(parameters.minLength, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.minLength.type,
-          value,
-        ),
-      ),
-      mutable: $convertToMaybe($identityConversionFunction)(
-        parameters.mutable,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.mutable.type,
-          value,
-        ),
-      ),
-      node: $convertToMaybe(
+      concepts: $convertToScalarSet(
         <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
           value:
             | NamedNode
-            | sh_NodeShape.Discriminated
+            | skos_Concept.Discriminated
             | (keyof $DefaultNamespaceT & string),
           options: { defaultNamespace: $DefaultNamespaceT | undefined },
-        ): Either<Error, NamedNode | sh_NodeShape.Discriminated> => {
+        ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
@@ -2773,39 +869,63 @@ export namespace sh_NodeShape {
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.node, {
+      )(parameters.concepts, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.node.type,
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.concepts.type,
           value,
         ),
       ),
-      nodeKind: $convertToMaybe(
-        $convertToIriLiteral<
-          | "http://www.w3.org/ns/shacl#BlankNode"
-          | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
-          | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
-          | "http://www.w3.org/ns/shacl#IRI"
-          | "http://www.w3.org/ns/shacl#IRIOrLiteral"
-          | "http://www.w3.org/ns/shacl#Literal"
-        >,
-      )(parameters.nodeKind, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.nodeKind.type,
+      definition: $convertToScalarSet($identityConversionFunction)(
+        parameters.definition,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.definition.type,
           value,
         ),
       ),
-      not: $convertToScalarSet(
+      hiddenLabel: $convertToScalarSet($identityConversionFunction)(
+        parameters.hiddenLabel,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.hiddenLabel.type,
+          value,
+        ),
+      ),
+      notation: $convertToScalarSet($convertToLiteral)(parameters.notation, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.notation.type,
+          value,
+        ),
+      ),
+      prefLabel: $convertToScalarSet($identityConversionFunction)(
+        parameters.prefLabel,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.prefLabel.type,
+          value,
+        ),
+      ),
+      topConcepts: $convertToScalarSet(
         <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
           value:
             | NamedNode
-            | sh_NodeShape.Discriminated
+            | skos_Concept.Discriminated
             | (keyof $DefaultNamespaceT & string),
           options: { defaultNamespace: $DefaultNamespaceT | undefined },
-        ): Either<Error, NamedNode | sh_NodeShape.Discriminated> => {
+        ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
@@ -2816,174 +936,11 @@ export namespace sh_NodeShape {
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.not, {
+      )(parameters.topConcepts, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.not.type,
-          value,
-        ),
-      ),
-      or: $convertToMaybe(
-        $convertToList(
-          <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            options: { defaultNamespace: $DefaultNamespaceT | undefined },
-          ): Either<Error, NamedNode | sh_Shape> => {
-            switch (typeof value) {
-              case "object":
-                return Either.of(value);
-              case "string":
-                return $convertToIri(value, options);
-              default:
-                value satisfies never;
-                throw new Error("should never reach this point");
-            }
-          },
-        ),
-      )(parameters.or, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.or.type,
-          value,
-        ),
-      ),
-      pattern: $convertToMaybe($identityConversionFunction)(
-        parameters.pattern,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.pattern.type,
-          value,
-        ),
-      ),
-      properties: $convertToScalarSet(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | sh_PropertyShape.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          options: { defaultNamespace: $DefaultNamespaceT | undefined },
-        ): Either<Error, NamedNode | sh_PropertyShape.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, options);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.properties, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.properties.type,
-          value,
-        ),
-      ),
-      rdfType: $convertToMaybe($convertToIri)(parameters.rdfType, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.rdfType.type,
-          value,
-        ),
-      ),
-      severity: $convertToMaybe($convertToIriLiteral<sh_Severity["value"]>)(
-        parameters.severity,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.severity.type,
-          value,
-        ),
-      ),
-      shaclmateName: $convertToMaybe($identityConversionFunction)(
-        parameters.shaclmateName,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.shaclmateName.type,
-          value,
-        ),
-      ),
-      subClassOf: $convertToScalarSet($convertToIri)(parameters.subClassOf, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdfs_Class.schema.properties.subClassOf.type,
-          value,
-        ),
-      ),
-      targetClasses: $convertToScalarSet($convertToIri)(
-        parameters.targetClasses,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.targetClasses.type,
-          value,
-        ),
-      ),
-      targetNodes: $convertToScalarSet($identityConversionFunction)(
-        parameters.targetNodes,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.targetNodes.type,
-          value,
-        ),
-      ),
-      targetObjectsOf: $convertToScalarSet($convertToIri)(
-        parameters.targetObjectsOf,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.targetObjectsOf.type,
-          value,
-        ),
-      ),
-      targetSubjectsOf: $convertToScalarSet($convertToIri)(
-        parameters.targetSubjectsOf,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.targetSubjectsOf.type,
-          value,
-        ),
-      ),
-      toRdfTypes: $convertToScalarSet($convertToIri)(parameters.toRdfTypes, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.toRdfTypes.type,
-          value,
-        ),
-      ),
-      tsImports: $convertToScalarSet($identityConversionFunction)(
-        parameters.tsImports,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.tsImports.type,
+          skos_ConceptScheme.schema.properties.topConcepts.type,
           value,
         ),
       ),
@@ -2991,57 +948,35 @@ export namespace sh_NodeShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.type.type,
-          value,
-        ),
-      ),
-      xone: $convertToMaybe(
-        $convertToList(
-          <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
-            options: { defaultNamespace: $DefaultNamespaceT | undefined },
-          ): Either<Error, NamedNode | sh_Shape> => {
-            switch (typeof value) {
-              case "object":
-                return Either.of(value);
-              case "string":
-                return $convertToIri(value, options);
-              default:
-                value satisfies never;
-                throw new Error("should never reach this point");
-            }
-          },
-        ),
-      )(parameters.xone, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.xone.type,
+          skos_ConceptScheme.schema.properties.type.type,
           value,
         ),
       ),
     }).map((object) =>
-      $monkeyPatchObject(object, { $toString: sh_NodeShape.$toString }),
+      $monkeyPatchObject(object, { $toString: skos_ConceptScheme.$toString }),
     );
 
   export type CreateParameters<
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   > = {
     readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier?:
-      | (() => sh_NodeShape.Identifier)
-      | BlankNode
-      | NamedNode
-      | (keyof $DefaultNamespaceT & string);
-    readonly and?:
-      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
-      | Maybe<readonly (NamedNode | sh_Shape)[]>;
-    readonly class_?:
+    readonly $identifier:
+      | (() => skos_ConceptScheme.Identifier)
       | (keyof $DefaultNamespaceT & string)
+      | NamedNode;
+    readonly altLabel?: string | Literal | readonly (string | Literal)[];
+    readonly concepts?:
       | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly closed?: boolean | Maybe<boolean>;
-    readonly comment?:
+      | skos_Concept.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | skos_Concept.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
+    readonly definition?: string | Literal | readonly (string | Literal)[];
+    readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
+    readonly notation?:
       | bigint
       | boolean
       | number
@@ -3049,487 +984,91 @@ export namespace sh_NodeShape {
       | Date
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly datatype?:
-      | (keyof $DefaultNamespaceT & string)
+    readonly prefLabel?: string | Literal | readonly (string | Literal)[];
+    readonly topConcepts?:
       | NamedNode
-      | Maybe<NamedNode>;
-    readonly deactivated?: boolean | Maybe<boolean>;
-    readonly discriminantValue?: string | Maybe<string>;
-    readonly extern?: boolean | Maybe<boolean>;
-    readonly flags?: string | Maybe<string>;
-    readonly fromRdfType?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | Maybe<NamedNode>;
-    readonly hasValues?:
-      | (NamedNode | Literal)
-      | readonly (NamedNode | Literal)[];
-    readonly ignore?: boolean;
-    readonly ignoredProperties?:
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[]
-      | Maybe<readonly NamedNode[]>;
-    readonly in_?:
-      | readonly (NamedNode | Literal)[]
-      | Maybe<readonly (NamedNode | Literal)[]>;
-    readonly isDefinedBy?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | Maybe<NamedNode>;
-    readonly label?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
-    readonly maxExclusive?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | Maybe<Literal>;
-    readonly maxInclusive?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | Maybe<Literal>;
-    readonly maxLength?: bigint | number | string | Maybe<bigint>;
-    readonly message?: string | Maybe<string>;
-    readonly minExclusive?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | Maybe<Literal>;
-    readonly minInclusive?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | Maybe<Literal>;
-    readonly minLength?: bigint | number | string | Maybe<bigint>;
-    readonly mutable?: boolean | Maybe<boolean>;
-    readonly node?:
-      | NamedNode
-      | sh_NodeShape.Discriminated
-      | (keyof $DefaultNamespaceT & string)
-      | Maybe<NamedNode | sh_NodeShape.Discriminated>;
-    readonly nodeKind?:
-      | (
-          | "http://www.w3.org/ns/shacl#BlankNode"
-          | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
-          | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
-          | "http://www.w3.org/ns/shacl#IRI"
-          | "http://www.w3.org/ns/shacl#IRIOrLiteral"
-          | "http://www.w3.org/ns/shacl#Literal"
-        )
-      | NamedNode<
-          | "http://www.w3.org/ns/shacl#BlankNode"
-          | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
-          | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
-          | "http://www.w3.org/ns/shacl#IRI"
-          | "http://www.w3.org/ns/shacl#IRIOrLiteral"
-          | "http://www.w3.org/ns/shacl#Literal"
-        >
-      | Maybe<
-          NamedNode<
-            | "http://www.w3.org/ns/shacl#BlankNode"
-            | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
-            | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
-            | "http://www.w3.org/ns/shacl#IRI"
-            | "http://www.w3.org/ns/shacl#IRIOrLiteral"
-            | "http://www.w3.org/ns/shacl#Literal"
-          >
-        >;
-    readonly not?:
-      | NamedNode
-      | sh_NodeShape.Discriminated
+      | skos_Concept.Discriminated
       | (keyof $DefaultNamespaceT & string)
       | readonly (
           | NamedNode
-          | sh_NodeShape.Discriminated
+          | skos_Concept.Discriminated
           | (keyof $DefaultNamespaceT & string)
         )[];
-    readonly or?:
-      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
-      | Maybe<readonly (NamedNode | sh_Shape)[]>;
-    readonly pattern?: string | Maybe<string>;
-    readonly properties?:
-      | NamedNode
-      | sh_PropertyShape.Discriminated
-      | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | sh_PropertyShape.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
-    readonly rdfType?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | Maybe<NamedNode>;
-    readonly severity?: sh_Severity["value"] | sh_Severity | Maybe<sh_Severity>;
-    readonly shaclmateName?: string | Maybe<string>;
-    readonly subClassOf?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly targetClasses?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly targetNodes?:
-      | (NamedNode | Literal)
-      | readonly (NamedNode | Literal)[];
-    readonly targetObjectsOf?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly targetSubjectsOf?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly toRdfTypes?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly tsImports?: string | readonly string[];
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-    readonly xone?:
-      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
-      | Maybe<readonly (NamedNode | sh_Shape)[]>;
   };
 
   export const createUnsafe: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters?: sh_NodeShape.CreateParameters<$DefaultNamespaceT>,
-  ) => sh_NodeShape.Discriminated = (parameters) =>
+    parameters: skos_ConceptScheme.CreateParameters<$DefaultNamespaceT>,
+  ) => skos_ConceptScheme.Discriminated = (parameters) =>
     create(parameters).unsafeCoerce();
 
-  export type Discriminated = sh_NodeShape & {
-    readonly termType: "sh_NodeShape";
+  export type Discriminated = skos_ConceptScheme & {
+    readonly termType: "skos_ConceptScheme";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = NamedNode;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $parseIri;
   }
 
-  export const issh_NodeShape: $ObjectTypeGuardFunction<
-    sh_NodeShape.Discriminated
-  > = (object): object is sh_NodeShape.Discriminated =>
-    object.termType === "sh_NodeShape";
+  export const isskos_ConceptScheme: $ObjectTypeGuardFunction<
+    skos_ConceptScheme.Discriminated
+  > = (object): object is skos_ConceptScheme.Discriminated =>
+    object.termType === "skos_ConceptScheme";
 
   export const schema = {
     kind: "Object",
     properties: {
       $identifier: {
         kind: "Identifier",
-        type: { kind: "Identifier" } as const,
+        type: { kind: "Iri" } as const,
       } as const,
       $rdfType: {
         fromRdfType: dataFactory.namedNode(
-          "http://www.w3.org/ns/shacl#NodeShape",
+          "http://www.w3.org/2004/02/skos/core#ConceptScheme",
         ),
         kind: "RdfType",
         toRdfTypes: [
-          dataFactory.namedNode("http://www.w3.org/ns/shacl#NodeShape"),
+          dataFactory.namedNode(
+            "http://www.w3.org/2004/02/skos/core#ConceptScheme",
+          ),
         ],
       } as const,
-      and: {
+      altLabel: {
         kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#and"),
-        get type() {
-          return {
-            get itemType() {
-              return {
-                get itemType() {
-                  return {
-                    kind: "DiscriminatedUnion",
-                    members: {
-                      NamedNode: {
-                        discriminantValues: ["NamedNode"],
-                        type: { kind: "Iri" } as const,
-                      },
-                      sh_NodeShape: {
-                        discriminantValues: [
-                          "sh_NodeShape",
-                          "sh_PropertyShape",
-                        ],
-                        type: sh_Shape.schema,
-                      },
-                    },
-                  } as const;
-                },
-                kind: "List",
-              } as const;
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#altLabel",
+        ),
+        type: {
+          itemType: {
+            kind: "DiscriminatedUnion",
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { datatype: $xsd_string, kind: "String" } as const,
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" } as const,
+              },
             },
-            kind: "Option",
-          } as const;
-        },
-      } as const,
-      class_: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#class"),
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      closed: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#closed"),
-        type: {
-          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      comment: {
-        kind: "Shacl",
-        path: $rdfs_comment,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      datatype: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#datatype"),
-        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
-      } as const,
-      deactivated: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#deactivated"),
-        type: {
-          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      discriminantValue: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://purl.org/shaclmate/ontology#discriminantValue",
-        ),
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      extern: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://purl.org/shaclmate/ontology#extern",
-        ),
-        type: {
-          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      flags: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#flags"),
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      fromRdfType: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://purl.org/shaclmate/ontology#fromRdfType",
-        ),
-        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
-      } as const,
-      hasValues: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#hasValue"),
-        type: {
-          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
+          } as const,
           kind: "Set",
         } as const,
       } as const,
-      ignore: {
+      concepts: {
         kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://purl.org/shaclmate/ontology#ignore",
-        ),
-        type: {
-          defaultValue: dataFactory.literal("false", $xsd_boolean),
-          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
-          kind: "DefaultValue",
-        } as const,
-      } as const,
-      ignoredProperties: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/ns/shacl#ignoredProperties",
-        ),
-        type: {
-          itemType: {
-            itemType: { kind: "Iri" } as const,
-            kind: "List",
-          } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      in_: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#in"),
-        type: {
-          itemType: {
-            itemType: {
-              kind: "Term",
-              types: ["NamedNode", "Literal"],
-            } as const,
-            kind: "List",
-          } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      isDefinedBy: {
-        kind: "Shacl",
-        path: $rdfs_isDefinedBy,
-        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
-      } as const,
-      label: {
-        kind: "Shacl",
-        path: $rdfs_label,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      languageIn: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#languageIn"),
-        type: {
-          itemType: {
-            itemType: { datatype: $xsd_string, kind: "String" } as const,
-            kind: "List",
-          } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      maxExclusive: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#maxExclusive"),
-        type: {
-          itemType: { kind: "Literal" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      maxInclusive: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#maxInclusive"),
-        type: {
-          itemType: { kind: "Literal" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      maxLength: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#maxLength"),
-        type: {
-          itemType: { datatype: $xsd_integer, kind: "BigInt" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      message: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#message"),
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      minExclusive: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#minExclusive"),
-        type: {
-          itemType: { kind: "Literal" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      minInclusive: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#minInclusive"),
-        type: {
-          itemType: { kind: "Literal" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      minLength: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#minLength"),
-        type: {
-          itemType: { datatype: $xsd_integer, kind: "BigInt" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      mutable: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://purl.org/shaclmate/ontology#mutable",
-        ),
-        type: {
-          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      node: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#node"),
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  sh_NodeShape: {
-                    discriminantValues: ["sh_NodeShape"],
-                    type: sh_NodeShape.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Option",
-          } as const;
+        path: {
+          path: dataFactory.namedNode(
+            "http://www.w3.org/2004/02/skos/core#inScheme",
+          ),
+          termType: "InversePath",
         },
-      } as const,
-      nodeKind: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#nodeKind"),
-        type: {
-          itemType: {
-            in: [
-              dataFactory.namedNode("http://www.w3.org/ns/shacl#BlankNode"),
-              dataFactory.namedNode(
-                "http://www.w3.org/ns/shacl#BlankNodeOrIRI",
-              ),
-              dataFactory.namedNode(
-                "http://www.w3.org/ns/shacl#BlankNodeOrLiteral",
-              ),
-              dataFactory.namedNode("http://www.w3.org/ns/shacl#IRI"),
-              dataFactory.namedNode("http://www.w3.org/ns/shacl#IRIOrLiteral"),
-              dataFactory.namedNode("http://www.w3.org/ns/shacl#Literal"),
-            ] as const,
-            kind: "Iri",
-          } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      not: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#not"),
         get type() {
           return {
             get itemType() {
@@ -3540,9 +1079,9 @@ export namespace sh_NodeShape {
                     discriminantValues: ["NamedNode"],
                     type: { kind: "Iri" } as const,
                   },
-                  sh_NodeShape: {
-                    discriminantValues: ["sh_NodeShape"],
-                    type: sh_NodeShape.schema,
+                  skos_Concept: {
+                    discriminantValues: ["skos_Concept"],
+                    type: skos_Concept.schema,
                   },
                 },
               } as const;
@@ -3551,49 +1090,87 @@ export namespace sh_NodeShape {
           } as const;
         },
       } as const,
-      or: {
+      definition: {
         kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#or"),
-        get type() {
-          return {
-            get itemType() {
-              return {
-                get itemType() {
-                  return {
-                    kind: "DiscriminatedUnion",
-                    members: {
-                      NamedNode: {
-                        discriminantValues: ["NamedNode"],
-                        type: { kind: "Iri" } as const,
-                      },
-                      sh_NodeShape: {
-                        discriminantValues: [
-                          "sh_NodeShape",
-                          "sh_PropertyShape",
-                        ],
-                        type: sh_Shape.schema,
-                      },
-                    },
-                  } as const;
-                },
-                kind: "List",
-              } as const;
-            },
-            kind: "Option",
-          } as const;
-        },
-      } as const,
-      pattern: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#pattern"),
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#definition",
+        ),
         type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
+          itemType: {
+            kind: "DiscriminatedUnion",
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { datatype: $xsd_string, kind: "String" } as const,
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" } as const,
+              },
+            },
+          } as const,
+          kind: "Set",
         } as const,
       } as const,
-      properties: {
+      hiddenLabel: {
         kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#property"),
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#hiddenLabel",
+        ),
+        type: {
+          itemType: {
+            kind: "DiscriminatedUnion",
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { datatype: $xsd_string, kind: "String" } as const,
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" } as const,
+              },
+            },
+          } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      notation: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#notation",
+        ),
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      prefLabel: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#prefLabel",
+        ),
+        type: {
+          itemType: {
+            kind: "DiscriminatedUnion",
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { datatype: $xsd_string, kind: "String" } as const,
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" } as const,
+              },
+            },
+          } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      topConcepts: {
+        kind: "Shacl",
+        path: {
+          path: dataFactory.namedNode(
+            "http://www.w3.org/2004/02/skos/core#topConceptOf",
+          ),
+          termType: "InversePath",
+        },
         get type() {
           return {
             get itemType() {
@@ -3604,9 +1181,9 @@ export namespace sh_NodeShape {
                     discriminantValues: ["NamedNode"],
                     type: { kind: "Iri" } as const,
                   },
-                  sh_PropertyShape: {
-                    discriminantValues: ["sh_PropertyShape"],
-                    type: sh_PropertyShape.schema,
+                  skos_Concept: {
+                    discriminantValues: ["skos_Concept"],
+                    type: skos_Concept.schema,
                   },
                 },
               } as const;
@@ -3614,332 +1191,530 @@ export namespace sh_NodeShape {
             kind: "Set",
           } as const;
         },
-      } as const,
-      rdfType: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://purl.org/shaclmate/ontology#rdfType",
-        ),
-        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
-      } as const,
-      severity: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#severity"),
-        get type() {
-          return {
-            get itemType() {
-              return sh_Severity.schema;
-            },
-            kind: "Option",
-          } as const;
-        },
-      } as const,
-      shaclmateName: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#name"),
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Option",
-        } as const,
-      } as const,
-      subClassOf: {
-        kind: "Shacl",
-        path: $rdfs_subClassOf,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      targetClasses: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#targetClass"),
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      targetNodes: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#targetNode"),
-        type: {
-          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      targetObjectsOf: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/ns/shacl#targetObjectsOf",
-        ),
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      targetSubjectsOf: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/ns/shacl#targetSubjectsOf",
-        ),
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      toRdfTypes: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://purl.org/shaclmate/ontology#toRdfType",
-        ),
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-      tsImports: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://purl.org/shaclmate/ontology#tsImport",
-        ),
-        type: {
-          itemType: { datatype: $xsd_string, kind: "String" } as const,
-          kind: "Set",
-        } as const,
       } as const,
       type: {
         kind: "Shacl",
         path: $rdf_type,
         type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
       } as const,
-      xone: {
-        kind: "Shacl",
-        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#xone"),
-        get type() {
-          return {
-            get itemType() {
-              return {
-                get itemType() {
-                  return {
-                    kind: "DiscriminatedUnion",
-                    members: {
-                      NamedNode: {
-                        discriminantValues: ["NamedNode"],
-                        type: { kind: "Iri" } as const,
-                      },
-                      sh_NodeShape: {
-                        discriminantValues: [
-                          "sh_NodeShape",
-                          "sh_PropertyShape",
-                        ],
-                        type: sh_Shape.schema,
-                      },
-                    },
-                  } as const;
-                },
-                kind: "List",
-              } as const;
-            },
-            kind: "Option",
-          } as const;
-        },
-      } as const,
     },
   } as const;
 
   export type Schema = typeof schema;
 
   export const toRdfResource: $ToRdfResourceFunction<
-    sh_NodeShape.Identifier,
-    sh_NodeShape
-  > = $wrap_ToRdfResourceFunction<sh_NodeShape.Identifier, sh_NodeShape>(
-    sh_NodeShape._toRdfResource,
-  );
-
-  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
-    sh_NodeShape,
-    BlankNode | NamedNode
-  > = (value, options) => [
-    sh_NodeShape.toRdfResource(value, {
-      graph: options.graph,
-      resourceSet: options.resourceSet,
-    }).identifier,
-  ];
-
-  export const toStringRecord: $ToStringRecordFunction<
-    Pick<sh_NodeShape, "$identifier" | "label" | "shaclmateName">
-  > = (_shNodeShape) =>
-    $compactRecord({
-      $identifier: _shNodeShape.$identifier().toString(),
-      label:
-        _shNodeShape.label.length > 0
-          ? `[${_shNodeShape.label.map((item) => item.toString())}]`
-          : undefined,
-      shaclmateName: _shNodeShape.shaclmateName
-        .map((item) => item.toString())
-        .extract(),
-    });
-}
-
-export type sh_PropertyGroup = {
-  readonly $identifier: () => sh_PropertyGroup.Identifier;
-
-  readonly comment: readonly Literal[];
-
-  readonly label: readonly Literal[];
-};
-
-export namespace sh_PropertyGroup {
-  export const _toRdfResource: $_ToRdfResourceFunction<
-    sh_PropertyGroup.Identifier,
-    sh_PropertyGroup
-  > = (parameters) => {
-    if (!parameters.ignoreRdfType) {
-      parameters.resource.add(
-        $rdf_type,
-        sh_PropertyGroup.schema.properties.$rdfType.toRdfTypes,
-        parameters.graph,
-      );
-    }
-    parameters.resource.add(
-      owl_Ontology.schema.properties.comment.path,
-      parameters.object.comment.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      owl_Ontology.schema.properties.label.path,
-      parameters.object.label.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    return parameters.resource;
-  };
-
-  export const $toString: $ToStringFunction<
-    Omit<sh_PropertyGroup, "comment">
-  > = (_shPropertyGroup) =>
-    `sh_PropertyGroup(${JSON.stringify(sh_PropertyGroup.toStringRecord(_shPropertyGroup))})`;
-
-  export const create: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters?: sh_PropertyGroup.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, sh_PropertyGroup.Discriminated> = (parameters = {}) =>
-    $sequenceRecord({
-      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }),
-      termType: Right("sh_PropertyGroup" as const),
-      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.comment.type,
-          value,
-        ),
-      ),
-      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.label.type,
-          value,
-        ),
-      ),
-    }).map((object) =>
-      $monkeyPatchObject(object, { $toString: sh_PropertyGroup.$toString }),
-    );
-
-  export type CreateParameters<
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  > = {
-    readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier?:
-      | (() => sh_PropertyGroup.Identifier)
-      | BlankNode
-      | NamedNode
-      | (keyof $DefaultNamespaceT & string);
-    readonly comment?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly label?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-  };
-
-  export const createUnsafe: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters?: sh_PropertyGroup.CreateParameters<$DefaultNamespaceT>,
-  ) => sh_PropertyGroup.Discriminated = (parameters) =>
-    create(parameters).unsafeCoerce();
-
-  export type Discriminated = sh_PropertyGroup & {
-    readonly termType: "sh_PropertyGroup";
-  };
-
-  export type Identifier = BlankNode | NamedNode;
-  export namespace Identifier {
-    export const parse = $parseIdentifier;
-  }
-
-  export const issh_PropertyGroup: $ObjectTypeGuardFunction<
-    sh_PropertyGroup.Discriminated
-  > = (object): object is sh_PropertyGroup.Discriminated =>
-    object.termType === "sh_PropertyGroup";
-
-  export const schema = {
-    kind: "Object",
-    properties: {
-      $identifier: {
-        kind: "Identifier",
-        type: { kind: "Identifier" } as const,
-      } as const,
-      $rdfType: {
-        fromRdfType: dataFactory.namedNode(
-          "http://www.w3.org/ns/shacl#PropertyGroup",
-        ),
-        kind: "RdfType",
-        toRdfTypes: [
-          dataFactory.namedNode("http://www.w3.org/ns/shacl#PropertyGroup"),
-        ],
-      } as const,
-      comment: {
-        kind: "Shacl",
-        path: $rdfs_comment,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      label: {
-        kind: "Shacl",
-        path: $rdfs_label,
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-    },
-  } as const;
-
-  export type Schema = typeof schema;
-
-  export const toRdfResource: $ToRdfResourceFunction<
-    sh_PropertyGroup.Identifier,
-    sh_PropertyGroup
+    skos_ConceptScheme.Identifier,
+    skos_ConceptScheme
   > = $wrap_ToRdfResourceFunction<
-    sh_PropertyGroup.Identifier,
-    sh_PropertyGroup
-  >(sh_PropertyGroup._toRdfResource);
+    skos_ConceptScheme.Identifier,
+    skos_ConceptScheme
+  >(skos_ConceptScheme._toRdfResource);
 
   export const toRdfResourceValues: $ToRdfResourceValuesFunction<
-    sh_PropertyGroup,
-    BlankNode | NamedNode
+    skos_ConceptScheme,
+    NamedNode
   > = (value, options) => [
-    sh_PropertyGroup.toRdfResource(value, {
+    skos_ConceptScheme.toRdfResource(value, {
       graph: options.graph,
       resourceSet: options.resourceSet,
     }).identifier,
   ];
 
   export const toStringRecord: $ToStringRecordFunction<
-    Omit<sh_PropertyGroup, "comment">
-  > = (_shPropertyGroup) =>
+    Pick<skos_ConceptScheme, "$identifier">
+  > = (_skosConceptScheme) =>
     $compactRecord({
-      $identifier: _shPropertyGroup.$identifier().toString(),
-      label:
-        _shPropertyGroup.label.length > 0
-          ? `[${_shPropertyGroup.label.map((item) => item.toString())}]`
-          : undefined,
+      $identifier: _skosConceptScheme.$identifier().toString(),
     });
+}
+
+export type skos_Concept = {
+  readonly $identifier: () => skos_Concept.Identifier;
+
+  readonly altLabel: readonly (string | Literal)[];
+
+  readonly broader: readonly (NamedNode | skos_Concept.Discriminated)[];
+
+  readonly definition: readonly (string | Literal)[];
+
+  readonly hiddenLabel: readonly (string | Literal)[];
+
+  readonly notation: readonly Literal[];
+
+  readonly prefLabel: readonly (string | Literal)[];
+
+  readonly type: readonly NamedNode[];
+};
+
+export namespace skos_Concept {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    skos_Concept.Identifier,
+    skos_Concept
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        skos_Concept.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.altLabel.path,
+      parameters.object.altLabel.flatMap((item) =>
+        ((value, _options): Literal[] => {
+          if (typeof value === "string") {
+            return [$literalFactory.string(value)];
+          }
+          if (typeof value === "object") {
+            return [value];
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_ConceptScheme.schema.properties.altLabel.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_Concept.schema.properties.broader.path,
+      parameters.object.broader.flatMap((item) =>
+        ((value, _options): NamedNode[] => {
+          if (value["termType"] === "NamedNode") {
+            return [value];
+          }
+          if (value["termType"] === "skos_Concept") {
+            return skos_Concept.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_Concept.schema.properties.broader.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.definition.path,
+      parameters.object.definition.flatMap((item) =>
+        ((value, _options): Literal[] => {
+          if (typeof value === "string") {
+            return [$literalFactory.string(value)];
+          }
+          if (typeof value === "object") {
+            return [value];
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_ConceptScheme.schema.properties.definition.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.hiddenLabel.path,
+      parameters.object.hiddenLabel.flatMap((item) =>
+        ((value, _options): Literal[] => {
+          if (typeof value === "string") {
+            return [$literalFactory.string(value)];
+          }
+          if (typeof value === "object") {
+            return [value];
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_ConceptScheme.schema.properties.hiddenLabel.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.notation.path,
+      parameters.object.notation.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.prefLabel.path,
+      parameters.object.prefLabel.flatMap((item) =>
+        ((value, _options): Literal[] => {
+          if (typeof value === "string") {
+            return [$literalFactory.string(value)];
+          }
+          if (typeof value === "object") {
+            return [value];
+          }
+
+          throw new Error("unable to serialize to RDF");
+        })(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: skos_ConceptScheme.schema.properties.prefLabel.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<skos_Concept, "$identifier">
+  > = (_skosConcept) =>
+    `skos_Concept(${JSON.stringify(skos_Concept.toStringRecord(_skosConcept))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: skos_Concept.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, skos_Concept.Discriminated> = (parameters) =>
+    $sequenceRecord({
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("skos_Concept" as const),
+      altLabel: $convertToScalarSet($identityConversionFunction)(
+        parameters.altLabel,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.altLabel.type,
+          value,
+        ),
+      ),
+      broader: $convertToScalarSet(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | skos_Concept.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
+        ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, options);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.broader, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_Concept.schema.properties.broader.type,
+          value,
+        ),
+      ),
+      definition: $convertToScalarSet($identityConversionFunction)(
+        parameters.definition,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.definition.type,
+          value,
+        ),
+      ),
+      hiddenLabel: $convertToScalarSet($identityConversionFunction)(
+        parameters.hiddenLabel,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.hiddenLabel.type,
+          value,
+        ),
+      ),
+      notation: $convertToScalarSet($convertToLiteral)(parameters.notation, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.notation.type,
+          value,
+        ),
+      ),
+      prefLabel: $convertToScalarSet($identityConversionFunction)(
+        parameters.prefLabel,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.prefLabel.type,
+          value,
+        ),
+      ),
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.type.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: skos_Concept.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier:
+      | (() => skos_Concept.Identifier)
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode;
+    readonly altLabel?: string | Literal | readonly (string | Literal)[];
+    readonly broader?:
+      | NamedNode
+      | skos_Concept.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | skos_Concept.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
+    readonly definition?: string | Literal | readonly (string | Literal)[];
+    readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
+    readonly notation?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly prefLabel?: string | Literal | readonly (string | Literal)[];
+    readonly type?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: skos_Concept.CreateParameters<$DefaultNamespaceT>,
+  ) => skos_Concept.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = skos_Concept & {
+    readonly termType: "skos_Concept";
+  };
+
+  export type Identifier = NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIri;
+  }
+
+  export const isskos_Concept: $ObjectTypeGuardFunction<
+    skos_Concept.Discriminated
+  > = (object): object is skos_Concept.Discriminated =>
+    object.termType === "skos_Concept";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Iri" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#Concept",
+        ),
+        kind: "RdfType",
+        toRdfTypes: [
+          dataFactory.namedNode("http://www.w3.org/2004/02/skos/core#Concept"),
+        ],
+      } as const,
+      altLabel: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#altLabel",
+        ),
+        type: {
+          itemType: {
+            kind: "DiscriminatedUnion",
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { datatype: $xsd_string, kind: "String" } as const,
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" } as const,
+              },
+            },
+          } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      broader: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#broader",
+        ),
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  skos_Concept: {
+                    discriminantValues: ["skos_Concept"],
+                    type: skos_Concept.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Set",
+          } as const;
+        },
+      } as const,
+      definition: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#definition",
+        ),
+        type: {
+          itemType: {
+            kind: "DiscriminatedUnion",
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { datatype: $xsd_string, kind: "String" } as const,
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" } as const,
+              },
+            },
+          } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      hiddenLabel: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#hiddenLabel",
+        ),
+        type: {
+          itemType: {
+            kind: "DiscriminatedUnion",
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { datatype: $xsd_string, kind: "String" } as const,
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" } as const,
+              },
+            },
+          } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      notation: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#notation",
+        ),
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      prefLabel: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/2004/02/skos/core#prefLabel",
+        ),
+        type: {
+          itemType: {
+            kind: "DiscriminatedUnion",
+            members: {
+              string: {
+                discriminantValues: ["string"],
+                type: { datatype: $xsd_string, kind: "String" } as const,
+              },
+              object: {
+                discriminantValues: ["object"],
+                type: { kind: "LangString" } as const,
+              },
+            },
+          } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      type: {
+        kind: "Shacl",
+        path: $rdf_type,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    skos_Concept.Identifier,
+    skos_Concept
+  > = $wrap_ToRdfResourceFunction<skos_Concept.Identifier, skos_Concept>(
+    skos_Concept._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    skos_Concept,
+    NamedNode
+  > = (value, options) => [
+    skos_Concept.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<skos_Concept, "$identifier">
+  > = (_skosConcept) =>
+    $compactRecord({ $identifier: _skosConcept.$identifier().toString() });
 }
 
 export type sh_PropertyShape = {
@@ -4076,7 +1851,7 @@ export namespace sh_PropertyShape {
       );
     }
     parameters.resource.add(
-      sh_NodeShape.schema.properties.and.path,
+      sh_PropertyShape.schema.properties.and.path,
       parameters.object.and.toList().flatMap((value) => [
         value.length > 0
           ? value.reduce(
@@ -4153,22 +1928,22 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.class_.path,
+      sh_PropertyShape.schema.properties.class_.path,
       parameters.object.class_.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      owl_Ontology.schema.properties.comment.path,
+      sh_PropertyShape.schema.properties.comment.path,
       parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.datatype.path,
+      sh_PropertyShape.schema.properties.datatype.path,
       parameters.object.datatype.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.deactivated.path,
+      sh_PropertyShape.schema.properties.deactivated.path,
       parameters.object.deactivated
         .toList()
         .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
@@ -4204,7 +1979,7 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.flags.path,
+      sh_PropertyShape.schema.properties.flags.path,
       parameters.object.flags
         .toList()
         .flatMap((value) => [$literalFactory.string(value)]),
@@ -4238,19 +2013,19 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.hasValues.path,
+      sh_PropertyShape.schema.properties.hasValues.path,
       parameters.object.hasValues.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.ignore.path,
+      sh_PropertyShape.schema.properties.ignore.path,
       $strictEquals(parameters.object.ignore, false).isLeft()
         ? [$literalFactory.boolean(parameters.object.ignore, $xsd_boolean)]
         : [],
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.in_.path,
+      sh_PropertyShape.schema.properties.in_.path,
       parameters.object.in_.toList().flatMap((value) => [
         value.length > 0
           ? value.reduce(
@@ -4305,17 +2080,17 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      rdf_Property.schema.properties.isDefinedBy.path,
+      sh_PropertyShape.schema.properties.isDefinedBy.path,
       parameters.object.isDefinedBy.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      owl_Ontology.schema.properties.label.path,
+      sh_PropertyShape.schema.properties.label.path,
       parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.languageIn.path,
+      sh_PropertyShape.schema.properties.languageIn.path,
       parameters.object.languageIn.toList().flatMap((value) => [
         value.length > 0
           ? value.reduce(
@@ -4387,24 +2162,24 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.maxExclusive.path,
+      sh_PropertyShape.schema.properties.maxExclusive.path,
       parameters.object.maxExclusive.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.maxInclusive.path,
+      sh_PropertyShape.schema.properties.maxInclusive.path,
       parameters.object.maxInclusive.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.maxLength.path,
+      sh_PropertyShape.schema.properties.maxLength.path,
       parameters.object.maxLength
         .toList()
         .flatMap((value) => [$literalFactory.bigint(value, $xsd_integer)]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.message.path,
+      sh_PropertyShape.schema.properties.message.path,
       parameters.object.message
         .toList()
         .flatMap((value) => [$literalFactory.string(value)]),
@@ -4418,24 +2193,24 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.minExclusive.path,
+      sh_PropertyShape.schema.properties.minExclusive.path,
       parameters.object.minExclusive.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.minInclusive.path,
+      sh_PropertyShape.schema.properties.minInclusive.path,
       parameters.object.minInclusive.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.minLength.path,
+      sh_PropertyShape.schema.properties.minLength.path,
       parameters.object.minLength
         .toList()
         .flatMap((value) => [$literalFactory.bigint(value, $xsd_integer)]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.mutable.path,
+      sh_PropertyShape.schema.properties.mutable.path,
       parameters.object.mutable
         .toList()
         .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
@@ -4449,7 +2224,7 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.node.path,
+      sh_PropertyShape.schema.properties.node.path,
       parameters.object.node.toList().flatMap((value) =>
         ((value, _options): (NamedNode | BlankNode)[] => {
           if (value["termType"] === "NamedNode") {
@@ -4470,18 +2245,18 @@ export namespace sh_PropertyShape {
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: sh_NodeShape.schema.properties.node.path,
+          propertyPath: sh_PropertyShape.schema.properties.node.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.nodeKind.path,
+      sh_PropertyShape.schema.properties.nodeKind.path,
       parameters.object.nodeKind.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.not.path,
+      sh_PropertyShape.schema.properties.not.path,
       parameters.object.not.flatMap((item) =>
         ((value, _options): (NamedNode | BlankNode)[] => {
           if (value["termType"] === "NamedNode") {
@@ -4502,13 +2277,13 @@ export namespace sh_PropertyShape {
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: sh_NodeShape.schema.properties.not.path,
+          propertyPath: sh_PropertyShape.schema.properties.not.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.or.path,
+      sh_PropertyShape.schema.properties.or.path,
       parameters.object.or.toList().flatMap((value) => [
         value.length > 0
           ? value.reduce(
@@ -4603,7 +2378,7 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.pattern.path,
+      sh_PropertyShape.schema.properties.pattern.path,
       parameters.object.pattern
         .toList()
         .flatMap((value) => [$literalFactory.string(value)]),
@@ -4641,34 +2416,34 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.severity.path,
+      sh_PropertyShape.schema.properties.severity.path,
       parameters.object.severity.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.shaclmateName.path,
+      sh_PropertyShape.schema.properties.shaclmateName.path,
       parameters.object.shaclmateName
         .toList()
         .flatMap((value) => [$literalFactory.string(value)]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.targetClasses.path,
+      sh_PropertyShape.schema.properties.targetClasses.path,
       parameters.object.targetClasses.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.targetNodes.path,
+      sh_PropertyShape.schema.properties.targetNodes.path,
       parameters.object.targetNodes.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.targetObjectsOf.path,
+      sh_PropertyShape.schema.properties.targetObjectsOf.path,
       parameters.object.targetObjectsOf.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.targetSubjectsOf.path,
+      sh_PropertyShape.schema.properties.targetSubjectsOf.path,
       parameters.object.targetSubjectsOf.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -4680,7 +2455,7 @@ export namespace sh_PropertyShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_NodeShape.schema.properties.xone.path,
+      sh_PropertyShape.schema.properties.xone.path,
       parameters.object.xone.toList().flatMap((value) => [
         value.length > 0
           ? value.reduce(
@@ -4798,7 +2573,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.and.type,
+          sh_PropertyShape.schema.properties.and.type,
           value,
         ),
       ),
@@ -4806,7 +2581,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.class_.type,
+          sh_PropertyShape.schema.properties.class_.type,
           value,
         ),
       ),
@@ -4814,7 +2589,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.comment.type,
+          sh_PropertyShape.schema.properties.comment.type,
           value,
         ),
       ),
@@ -4822,7 +2597,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.datatype.type,
+          sh_PropertyShape.schema.properties.datatype.type,
           value,
         ),
       ),
@@ -4833,7 +2608,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.deactivated.type,
+          sh_PropertyShape.schema.properties.deactivated.type,
           value,
         ),
       ),
@@ -4885,7 +2660,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.flags.type,
+          sh_PropertyShape.schema.properties.flags.type,
           value,
         ),
       ),
@@ -4922,7 +2697,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.hasValues.type,
+          sh_PropertyShape.schema.properties.hasValues.type,
           value,
         ),
       ),
@@ -4939,7 +2714,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.in_.type,
+          sh_PropertyShape.schema.properties.in_.type,
           value,
         ),
       ),
@@ -4947,7 +2722,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          rdf_Property.schema.properties.isDefinedBy.type,
+          sh_PropertyShape.schema.properties.isDefinedBy.type,
           value,
         ),
       ),
@@ -4955,7 +2730,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          owl_Ontology.schema.properties.label.type,
+          sh_PropertyShape.schema.properties.label.type,
           value,
         ),
       ),
@@ -4966,7 +2741,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.languageIn.type,
+          sh_PropertyShape.schema.properties.languageIn.type,
           value,
         ),
       ),
@@ -5004,7 +2779,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.maxExclusive.type,
+          sh_PropertyShape.schema.properties.maxExclusive.type,
           value,
         ),
       ),
@@ -5015,7 +2790,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.maxInclusive.type,
+          sh_PropertyShape.schema.properties.maxInclusive.type,
           value,
         ),
       ),
@@ -5023,7 +2798,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.maxLength.type,
+          sh_PropertyShape.schema.properties.maxLength.type,
           value,
         ),
       ),
@@ -5034,7 +2809,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.message.type,
+          sh_PropertyShape.schema.properties.message.type,
           value,
         ),
       ),
@@ -5053,7 +2828,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.minExclusive.type,
+          sh_PropertyShape.schema.properties.minExclusive.type,
           value,
         ),
       ),
@@ -5064,7 +2839,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.minInclusive.type,
+          sh_PropertyShape.schema.properties.minInclusive.type,
           value,
         ),
       ),
@@ -5072,7 +2847,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.minLength.type,
+          sh_PropertyShape.schema.properties.minLength.type,
           value,
         ),
       ),
@@ -5083,7 +2858,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.mutable.type,
+          sh_PropertyShape.schema.properties.mutable.type,
           value,
         ),
       ),
@@ -5117,7 +2892,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.node.type,
+          sh_PropertyShape.schema.properties.node.type,
           value,
         ),
       ),
@@ -5134,7 +2909,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.nodeKind.type,
+          sh_PropertyShape.schema.properties.nodeKind.type,
           value,
         ),
       ),
@@ -5160,7 +2935,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.not.type,
+          sh_PropertyShape.schema.properties.not.type,
           value,
         ),
       ),
@@ -5185,7 +2960,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.or.type,
+          sh_PropertyShape.schema.properties.or.type,
           value,
         ),
       ),
@@ -5205,7 +2980,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.pattern.type,
+          sh_PropertyShape.schema.properties.pattern.type,
           value,
         ),
       ),
@@ -5267,7 +3042,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.severity.type,
+          sh_PropertyShape.schema.properties.severity.type,
           value,
         ),
       ),
@@ -5278,7 +3053,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateMaybe($identityValidationFunction)(
-          sh_NodeShape.schema.properties.shaclmateName.type,
+          sh_PropertyShape.schema.properties.shaclmateName.type,
           value,
         ),
       ),
@@ -5289,7 +3064,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.targetClasses.type,
+          sh_PropertyShape.schema.properties.targetClasses.type,
           value,
         ),
       ),
@@ -5300,7 +3075,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.targetNodes.type,
+          sh_PropertyShape.schema.properties.targetNodes.type,
           value,
         ),
       ),
@@ -5311,7 +3086,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.targetObjectsOf.type,
+          sh_PropertyShape.schema.properties.targetObjectsOf.type,
           value,
         ),
       ),
@@ -5322,7 +3097,7 @@ export namespace sh_PropertyShape {
         },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          sh_NodeShape.schema.properties.targetSubjectsOf.type,
+          sh_PropertyShape.schema.properties.targetSubjectsOf.type,
           value,
         ),
       ),
@@ -5358,7 +3133,7 @@ export namespace sh_PropertyShape {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($validateArray($identityValidationFunction))(
-          sh_NodeShape.schema.properties.xone.type,
+          sh_PropertyShape.schema.properties.xone.type,
           value,
         ),
       ),
@@ -6188,87 +3963,528 @@ export namespace sh_PropertyShape {
     });
 }
 
-export type sh_Severity = NamedNode<
-  (typeof sh_Severity.schema)["inValues"][number]
->;
+export type sh_NodeShape = {
+  readonly $identifier: () => sh_NodeShape.Identifier;
 
-export namespace sh_Severity {
-  const inValues = [
-    "http://www.w3.org/ns/shacl#Info",
-    "http://www.w3.org/ns/shacl#Warning",
-    "http://www.w3.org/ns/shacl#Violation",
-  ] as const;
+  readonly and: Maybe<readonly (NamedNode | sh_Shape)[]>;
 
-  export const schema = {
-    in: inValues.map((inValue) => dataFactory.namedNode(inValue)),
-    inValues,
-    kind: "Iri",
-  } as const;
+  readonly class_: readonly NamedNode[];
 
-  export type Schema = typeof schema;
-}
+  readonly closed: Maybe<boolean>;
 
-export type skos_Concept = {
-  readonly $identifier: () => skos_Concept.Identifier;
+  readonly comment: readonly Literal[];
 
-  readonly altLabel: readonly (string | Literal)[];
+  readonly datatype: Maybe<NamedNode>;
 
-  readonly broader: readonly (NamedNode | skos_Concept.Discriminated)[];
+  readonly deactivated: Maybe<boolean>;
 
-  readonly definition: readonly (string | Literal)[];
+  readonly discriminantValue: Maybe<string>;
 
-  readonly hiddenLabel: readonly (string | Literal)[];
+  readonly extern: Maybe<boolean>;
 
-  readonly notation: readonly Literal[];
+  readonly flags: Maybe<string>;
 
-  readonly prefLabel: readonly (string | Literal)[];
+  readonly fromRdfType: Maybe<NamedNode>;
+
+  readonly hasValues: readonly (NamedNode | Literal)[];
+
+  /**
+   * Whether to ignore this shape in code generation, defaults to false
+   */
+  readonly ignore: boolean;
+
+  readonly ignoredProperties: Maybe<readonly NamedNode[]>;
+
+  readonly in_: Maybe<readonly (NamedNode | Literal)[]>;
+
+  readonly isDefinedBy: Maybe<NamedNode>;
+
+  readonly label: readonly Literal[];
+
+  readonly languageIn: Maybe<readonly string[]>;
+
+  readonly maxExclusive: Maybe<Literal>;
+
+  readonly maxInclusive: Maybe<Literal>;
+
+  readonly maxLength: Maybe<bigint>;
+
+  readonly message: Maybe<string>;
+
+  readonly minExclusive: Maybe<Literal>;
+
+  readonly minInclusive: Maybe<Literal>;
+
+  readonly minLength: Maybe<bigint>;
+
+  readonly mutable: Maybe<boolean>;
+
+  readonly node: Maybe<NamedNode | sh_NodeShape.Discriminated>;
+
+  readonly nodeKind: Maybe<
+    NamedNode<
+      | "http://www.w3.org/ns/shacl#BlankNode"
+      | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
+      | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
+      | "http://www.w3.org/ns/shacl#IRI"
+      | "http://www.w3.org/ns/shacl#IRIOrLiteral"
+      | "http://www.w3.org/ns/shacl#Literal"
+    >
+  >;
+
+  readonly not: readonly (NamedNode | sh_NodeShape.Discriminated)[];
+
+  readonly or: Maybe<readonly (NamedNode | sh_Shape)[]>;
+
+  readonly pattern: Maybe<string>;
+
+  readonly properties: readonly (NamedNode | sh_PropertyShape.Discriminated)[];
+
+  readonly rdfType: Maybe<NamedNode>;
+
+  readonly severity: Maybe<sh_Severity>;
+
+  readonly shaclmateName: Maybe<string>;
+
+  readonly subClassOf: readonly NamedNode[];
+
+  readonly targetClasses: readonly NamedNode[];
+
+  readonly targetNodes: readonly (NamedNode | Literal)[];
+
+  readonly targetObjectsOf: readonly NamedNode[];
+
+  readonly targetSubjectsOf: readonly NamedNode[];
+
+  readonly toRdfTypes: readonly NamedNode[];
+
+  readonly tsImports: readonly string[];
 
   readonly type: readonly NamedNode[];
+
+  readonly xone: Maybe<readonly (NamedNode | sh_Shape)[]>;
 };
 
-export namespace skos_Concept {
+export namespace sh_NodeShape {
   export const _toRdfResource: $_ToRdfResourceFunction<
-    skos_Concept.Identifier,
-    skos_Concept
+    sh_NodeShape.Identifier,
+    sh_NodeShape
   > = (parameters) => {
     if (!parameters.ignoreRdfType) {
       parameters.resource.add(
         $rdf_type,
-        skos_Concept.schema.properties.$rdfType.toRdfTypes,
+        sh_NodeShape.schema.properties.$rdfType.toRdfTypes,
         parameters.graph,
       );
     }
     parameters.resource.add(
-      skos_Concept.schema.properties.altLabel.path,
-      parameters.object.altLabel.flatMap((item) =>
-        ((value, _options): Literal[] => {
-          if (typeof value === "string") {
-            return [$literalFactory.string(value)];
-          }
-          if (typeof value === "object") {
+      sh_PropertyShape.schema.properties.and.path,
+      parameters.object.and.toList().flatMap((value) => [
+        value.length > 0
+          ? value.reduce(
+              (
+                { currentSubListResource, listResource },
+                item,
+                itemIndex,
+                list,
+              ) => {
+                if (itemIndex === 0) {
+                  currentSubListResource = listResource;
+                } else {
+                  const newSubListResource = parameters.resourceSet.resource(
+                    (() => dataFactory.blankNode())(),
+                  );
+                  currentSubListResource!.add(
+                    $rdf_rest,
+                    newSubListResource.identifier,
+                    parameters.graph,
+                  );
+                  currentSubListResource = newSubListResource;
+                }
+
+                currentSubListResource.add(
+                  $rdf_first,
+                  ((value, _options): (NamedNode | BlankNode)[] => {
+                    if (value["termType"] === "NamedNode") {
+                      return [value];
+                    }
+                    if (
+                      value["termType"] === "sh_NodeShape" ||
+                      value["termType"] === "sh_PropertyShape"
+                    ) {
+                      return sh_Shape.toRdfResourceValues(value, {
+                        graph: _options.graph,
+                        propertyPath: _options.propertyPath,
+                        resource: _options.resource,
+                        resourceSet: _options.resourceSet,
+                      });
+                    }
+
+                    throw new Error("unable to serialize to RDF");
+                  })(item, {
+                    graph: parameters.graph,
+                    propertyPath: $rdf_first,
+                    resource: currentSubListResource,
+                    resourceSet: parameters.resourceSet,
+                  }),
+                  parameters.graph,
+                );
+
+                if (itemIndex + 1 === list.length) {
+                  currentSubListResource.add(
+                    $rdf_rest,
+                    $rdf_nil,
+                    parameters.graph,
+                  );
+                }
+
+                return { currentSubListResource, listResource };
+              },
+              {
+                currentSubListResource: null,
+                listResource: parameters.resourceSet.resource(
+                  (() => dataFactory.blankNode())(),
+                ),
+              } as {
+                currentSubListResource: Resource<BlankNode> | null;
+                listResource: Resource<BlankNode>;
+              },
+            ).listResource.identifier
+          : $rdf_nil,
+      ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.class_.path,
+      parameters.object.class_.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.closed.path,
+      parameters.object.closed
+        .toList()
+        .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.datatype.path,
+      parameters.object.datatype.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.deactivated.path,
+      parameters.object.deactivated
+        .toList()
+        .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.discriminantValue.path,
+      parameters.object.discriminantValue
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.extern.path,
+      parameters.object.extern
+        .toList()
+        .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.flags.path,
+      parameters.object.flags
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.fromRdfType.path,
+      parameters.object.fromRdfType.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.hasValues.path,
+      parameters.object.hasValues.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.ignore.path,
+      $strictEquals(parameters.object.ignore, false).isLeft()
+        ? [$literalFactory.boolean(parameters.object.ignore, $xsd_boolean)]
+        : [],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.ignoredProperties.path,
+      parameters.object.ignoredProperties.toList().flatMap((value) => [
+        value.length > 0
+          ? value.reduce(
+              (
+                { currentSubListResource, listResource },
+                item,
+                itemIndex,
+                list,
+              ) => {
+                if (itemIndex === 0) {
+                  currentSubListResource = listResource;
+                } else {
+                  const newSubListResource = parameters.resourceSet.resource(
+                    (() => dataFactory.blankNode())(),
+                  );
+                  currentSubListResource!.add(
+                    $rdf_rest,
+                    newSubListResource.identifier,
+                    parameters.graph,
+                  );
+                  currentSubListResource = newSubListResource;
+                }
+
+                currentSubListResource.add(
+                  $rdf_first,
+                  [item],
+                  parameters.graph,
+                );
+
+                if (itemIndex + 1 === list.length) {
+                  currentSubListResource.add(
+                    $rdf_rest,
+                    $rdf_nil,
+                    parameters.graph,
+                  );
+                }
+
+                return { currentSubListResource, listResource };
+              },
+              {
+                currentSubListResource: null,
+                listResource: parameters.resourceSet.resource(
+                  (() => dataFactory.blankNode())(),
+                ),
+              } as {
+                currentSubListResource: Resource<BlankNode> | null;
+                listResource: Resource<BlankNode>;
+              },
+            ).listResource.identifier
+          : $rdf_nil,
+      ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.in_.path,
+      parameters.object.in_.toList().flatMap((value) => [
+        value.length > 0
+          ? value.reduce(
+              (
+                { currentSubListResource, listResource },
+                item,
+                itemIndex,
+                list,
+              ) => {
+                if (itemIndex === 0) {
+                  currentSubListResource = listResource;
+                } else {
+                  const newSubListResource = parameters.resourceSet.resource(
+                    (() => dataFactory.blankNode())(),
+                  );
+                  currentSubListResource!.add(
+                    $rdf_rest,
+                    newSubListResource.identifier,
+                    parameters.graph,
+                  );
+                  currentSubListResource = newSubListResource;
+                }
+
+                currentSubListResource.add(
+                  $rdf_first,
+                  [item],
+                  parameters.graph,
+                );
+
+                if (itemIndex + 1 === list.length) {
+                  currentSubListResource.add(
+                    $rdf_rest,
+                    $rdf_nil,
+                    parameters.graph,
+                  );
+                }
+
+                return { currentSubListResource, listResource };
+              },
+              {
+                currentSubListResource: null,
+                listResource: parameters.resourceSet.resource(
+                  (() => dataFactory.blankNode())(),
+                ),
+              } as {
+                currentSubListResource: Resource<BlankNode> | null;
+                listResource: Resource<BlankNode>;
+              },
+            ).listResource.identifier
+          : $rdf_nil,
+      ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.isDefinedBy.path,
+      parameters.object.isDefinedBy.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.languageIn.path,
+      parameters.object.languageIn.toList().flatMap((value) => [
+        value.length > 0
+          ? value.reduce(
+              (
+                { currentSubListResource, listResource },
+                item,
+                itemIndex,
+                list,
+              ) => {
+                if (itemIndex === 0) {
+                  currentSubListResource = listResource;
+                } else {
+                  const newSubListResource = parameters.resourceSet.resource(
+                    (() => dataFactory.blankNode())(),
+                  );
+                  currentSubListResource!.add(
+                    $rdf_rest,
+                    newSubListResource.identifier,
+                    parameters.graph,
+                  );
+                  currentSubListResource = newSubListResource;
+                }
+
+                currentSubListResource.add(
+                  $rdf_first,
+                  [$literalFactory.string(item)],
+                  parameters.graph,
+                );
+
+                if (itemIndex + 1 === list.length) {
+                  currentSubListResource.add(
+                    $rdf_rest,
+                    $rdf_nil,
+                    parameters.graph,
+                  );
+                }
+
+                return { currentSubListResource, listResource };
+              },
+              {
+                currentSubListResource: null,
+                listResource: parameters.resourceSet.resource(
+                  (() => dataFactory.blankNode())(),
+                ),
+              } as {
+                currentSubListResource: Resource<BlankNode> | null;
+                listResource: Resource<BlankNode>;
+              },
+            ).listResource.identifier
+          : $rdf_nil,
+      ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.maxExclusive.path,
+      parameters.object.maxExclusive.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.maxInclusive.path,
+      parameters.object.maxInclusive.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.maxLength.path,
+      parameters.object.maxLength
+        .toList()
+        .flatMap((value) => [$literalFactory.bigint(value, $xsd_integer)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.message.path,
+      parameters.object.message
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.minExclusive.path,
+      parameters.object.minExclusive.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.minInclusive.path,
+      parameters.object.minInclusive.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.minLength.path,
+      parameters.object.minLength
+        .toList()
+        .flatMap((value) => [$literalFactory.bigint(value, $xsd_integer)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.mutable.path,
+      parameters.object.mutable
+        .toList()
+        .flatMap((value) => [$literalFactory.boolean(value, $xsd_boolean)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.node.path,
+      parameters.object.node.toList().flatMap((value) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
             return [value];
+          }
+          if (value["termType"] === "sh_NodeShape") {
+            return sh_NodeShape.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
           }
 
           throw new Error("unable to serialize to RDF");
-        })(item, {
+        })(value, {
           ignoreRdfType: parameters.ignoreRdfType,
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.altLabel.path,
+          propertyPath: sh_PropertyShape.schema.properties.node.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
-      skos_Concept.schema.properties.broader.path,
-      parameters.object.broader.flatMap((item) =>
-        ((value, _options): NamedNode[] => {
+      sh_PropertyShape.schema.properties.nodeKind.path,
+      parameters.object.nodeKind.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.not.path,
+      parameters.object.not.flatMap((item) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
           if (value["termType"] === "NamedNode") {
             return [value];
           }
-          if (value["termType"] === "skos_Concept") {
-            return skos_Concept.toRdfResourceValues(value, {
+          if (value["termType"] === "sh_NodeShape") {
+            return sh_NodeShape.toRdfResourceValues(value, {
               graph: _options.graph,
               propertyPath: _options.propertyPath,
               resource: _options.resource,
@@ -6282,20 +4498,109 @@ export namespace skos_Concept {
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.broader.path,
+          propertyPath: sh_PropertyShape.schema.properties.not.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
-      skos_Concept.schema.properties.definition.path,
-      parameters.object.definition.flatMap((item) =>
-        ((value, _options): Literal[] => {
-          if (typeof value === "string") {
-            return [$literalFactory.string(value)];
-          }
-          if (typeof value === "object") {
+      sh_PropertyShape.schema.properties.or.path,
+      parameters.object.or.toList().flatMap((value) => [
+        value.length > 0
+          ? value.reduce(
+              (
+                { currentSubListResource, listResource },
+                item,
+                itemIndex,
+                list,
+              ) => {
+                if (itemIndex === 0) {
+                  currentSubListResource = listResource;
+                } else {
+                  const newSubListResource = parameters.resourceSet.resource(
+                    (() => dataFactory.blankNode())(),
+                  );
+                  currentSubListResource!.add(
+                    $rdf_rest,
+                    newSubListResource.identifier,
+                    parameters.graph,
+                  );
+                  currentSubListResource = newSubListResource;
+                }
+
+                currentSubListResource.add(
+                  $rdf_first,
+                  ((value, _options): (NamedNode | BlankNode)[] => {
+                    if (value["termType"] === "NamedNode") {
+                      return [value];
+                    }
+                    if (
+                      value["termType"] === "sh_NodeShape" ||
+                      value["termType"] === "sh_PropertyShape"
+                    ) {
+                      return sh_Shape.toRdfResourceValues(value, {
+                        graph: _options.graph,
+                        propertyPath: _options.propertyPath,
+                        resource: _options.resource,
+                        resourceSet: _options.resourceSet,
+                      });
+                    }
+
+                    throw new Error("unable to serialize to RDF");
+                  })(item, {
+                    graph: parameters.graph,
+                    propertyPath: $rdf_first,
+                    resource: currentSubListResource,
+                    resourceSet: parameters.resourceSet,
+                  }),
+                  parameters.graph,
+                );
+
+                if (itemIndex + 1 === list.length) {
+                  currentSubListResource.add(
+                    $rdf_rest,
+                    $rdf_nil,
+                    parameters.graph,
+                  );
+                }
+
+                return { currentSubListResource, listResource };
+              },
+              {
+                currentSubListResource: null,
+                listResource: parameters.resourceSet.resource(
+                  (() => dataFactory.blankNode())(),
+                ),
+              } as {
+                currentSubListResource: Resource<BlankNode> | null;
+                listResource: Resource<BlankNode>;
+              },
+            ).listResource.identifier
+          : $rdf_nil,
+      ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.pattern.path,
+      parameters.object.pattern
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.properties.path,
+      parameters.object.properties.flatMap((item) =>
+        ((value, _options): (NamedNode | BlankNode)[] => {
+          if (value["termType"] === "NamedNode") {
             return [value];
+          }
+          if (value["termType"] === "sh_PropertyShape") {
+            return sh_PropertyShape.toRdfResourceValues(value, {
+              graph: _options.graph,
+              propertyPath: _options.propertyPath,
+              resource: _options.resource,
+              resourceSet: _options.resourceSet,
+            });
           }
 
           throw new Error("unable to serialize to RDF");
@@ -6304,102 +4609,424 @@ export namespace skos_Concept {
           graph: parameters.graph,
           resource: parameters.resource,
           resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.definition.path,
+          propertyPath: sh_NodeShape.schema.properties.properties.path,
         }),
       ),
       parameters.graph,
     );
     parameters.resource.add(
-      skos_Concept.schema.properties.hiddenLabel.path,
-      parameters.object.hiddenLabel.flatMap((item) =>
-        ((value, _options): Literal[] => {
-          if (typeof value === "string") {
-            return [$literalFactory.string(value)];
-          }
-          if (typeof value === "object") {
-            return [value];
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.hiddenLabel.path,
-        }),
-      ),
+      sh_NodeShape.schema.properties.rdfType.path,
+      parameters.object.rdfType.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      skos_Concept.schema.properties.notation.path,
-      parameters.object.notation.flatMap((item) => [item]),
+      sh_PropertyShape.schema.properties.severity.path,
+      parameters.object.severity.toList(),
       parameters.graph,
     );
     parameters.resource.add(
-      skos_Concept.schema.properties.prefLabel.path,
-      parameters.object.prefLabel.flatMap((item) =>
-        ((value, _options): Literal[] => {
-          if (typeof value === "string") {
-            return [$literalFactory.string(value)];
-          }
-          if (typeof value === "object") {
-            return [value];
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.prefLabel.path,
-        }),
-      ),
+      sh_PropertyShape.schema.properties.shaclmateName.path,
+      parameters.object.shaclmateName
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
       parameters.graph,
     );
     parameters.resource.add(
-      rdf_Property.schema.properties.type.path,
+      sh_NodeShape.schema.properties.subClassOf.path,
+      parameters.object.subClassOf.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.targetClasses.path,
+      parameters.object.targetClasses.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.targetNodes.path,
+      parameters.object.targetNodes.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.targetObjectsOf.path,
+      parameters.object.targetObjectsOf.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.targetSubjectsOf.path,
+      parameters.object.targetSubjectsOf.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.toRdfTypes.path,
+      parameters.object.toRdfTypes.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.tsImports.path,
+      parameters.object.tsImports.flatMap((item) => [
+        $literalFactory.string(item),
+      ]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.type.path,
       parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.xone.path,
+      parameters.object.xone.toList().flatMap((value) => [
+        value.length > 0
+          ? value.reduce(
+              (
+                { currentSubListResource, listResource },
+                item,
+                itemIndex,
+                list,
+              ) => {
+                if (itemIndex === 0) {
+                  currentSubListResource = listResource;
+                } else {
+                  const newSubListResource = parameters.resourceSet.resource(
+                    (() => dataFactory.blankNode())(),
+                  );
+                  currentSubListResource!.add(
+                    $rdf_rest,
+                    newSubListResource.identifier,
+                    parameters.graph,
+                  );
+                  currentSubListResource = newSubListResource;
+                }
+
+                currentSubListResource.add(
+                  $rdf_first,
+                  ((value, _options): (NamedNode | BlankNode)[] => {
+                    if (value["termType"] === "NamedNode") {
+                      return [value];
+                    }
+                    if (
+                      value["termType"] === "sh_NodeShape" ||
+                      value["termType"] === "sh_PropertyShape"
+                    ) {
+                      return sh_Shape.toRdfResourceValues(value, {
+                        graph: _options.graph,
+                        propertyPath: _options.propertyPath,
+                        resource: _options.resource,
+                        resourceSet: _options.resourceSet,
+                      });
+                    }
+
+                    throw new Error("unable to serialize to RDF");
+                  })(item, {
+                    graph: parameters.graph,
+                    propertyPath: $rdf_first,
+                    resource: currentSubListResource,
+                    resourceSet: parameters.resourceSet,
+                  }),
+                  parameters.graph,
+                );
+
+                if (itemIndex + 1 === list.length) {
+                  currentSubListResource.add(
+                    $rdf_rest,
+                    $rdf_nil,
+                    parameters.graph,
+                  );
+                }
+
+                return { currentSubListResource, listResource };
+              },
+              {
+                currentSubListResource: null,
+                listResource: parameters.resourceSet.resource(
+                  (() => dataFactory.blankNode())(),
+                ),
+              } as {
+                currentSubListResource: Resource<BlankNode> | null;
+                listResource: Resource<BlankNode>;
+              },
+            ).listResource.identifier
+          : $rdf_nil,
+      ]),
       parameters.graph,
     );
     return parameters.resource;
   };
 
   export const $toString: $ToStringFunction<
-    Pick<skos_Concept, "$identifier">
-  > = (_skosConcept) =>
-    `skos_Concept(${JSON.stringify(skos_Concept.toStringRecord(_skosConcept))})`;
+    Pick<sh_NodeShape, "$identifier" | "label" | "shaclmateName">
+  > = (_shNodeShape) =>
+    `sh_NodeShape(${JSON.stringify(sh_NodeShape.toStringRecord(_shNodeShape))})`;
 
   export const create: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters: skos_Concept.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, skos_Concept.Discriminated> = (parameters) =>
+    parameters?: sh_NodeShape.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, sh_NodeShape.Discriminated> = (parameters = {}) =>
     $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
         defaultNamespace: parameters.$defaultNamespace,
       }),
-      termType: Right("skos_Concept" as const),
-      altLabel: $convertToScalarSet($identityConversionFunction)(
-        parameters.altLabel,
+      termType: Right("sh_NodeShape" as const),
+      and: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, options);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters.and, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($validateArray($identityValidationFunction))(
+          sh_PropertyShape.schema.properties.and.type,
+          value,
+        ),
+      ),
+      class_: $convertToScalarSet($convertToIri)(parameters.class_, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.class_.type,
+          value,
+        ),
+      ),
+      closed: $convertToMaybe($identityConversionFunction)(parameters.closed, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.closed.type,
+          value,
+        ),
+      ),
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      datatype: $convertToMaybe($convertToIri)(parameters.datatype, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.datatype.type,
+          value,
+        ),
+      ),
+      deactivated: $convertToMaybe($identityConversionFunction)(
+        parameters.deactivated,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.deactivated.type,
+          value,
+        ),
+      ),
+      discriminantValue: $convertToMaybe($identityConversionFunction)(
+        parameters.discriminantValue,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.discriminantValue.type,
+          value,
+        ),
+      ),
+      extern: $convertToMaybe($identityConversionFunction)(parameters.extern, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.extern.type,
+          value,
+        ),
+      ),
+      flags: $convertToMaybe($identityConversionFunction)(parameters.flags, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.flags.type,
+          value,
+        ),
+      ),
+      fromRdfType: $convertToMaybe($convertToIri)(parameters.fromRdfType, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.fromRdfType.type,
+          value,
+        ),
+      ),
+      hasValues: $convertToScalarSet($identityConversionFunction)(
+        parameters.hasValues,
         {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.altLabel.type,
+          sh_PropertyShape.schema.properties.hasValues.type,
           value,
         ),
       ),
-      broader: $convertToScalarSet(
+      ignore: $convertWithDefaultValue($identityConversionFunction, false)(
+        parameters.ignore,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ),
+      ignoredProperties: $convertToMaybe($convertToList($convertToIri))(
+        parameters.ignoredProperties,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($validateArray($identityValidationFunction))(
+          sh_NodeShape.schema.properties.ignoredProperties.type,
+          value,
+        ),
+      ),
+      in_: $convertToMaybe($convertToList($identityConversionFunction))(
+        parameters.in_,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($validateArray($identityValidationFunction))(
+          sh_PropertyShape.schema.properties.in_.type,
+          value,
+        ),
+      ),
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.isDefinedBy.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.label.type,
+          value,
+        ),
+      ),
+      languageIn: $convertToMaybe($convertToList($identityConversionFunction))(
+        parameters.languageIn,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($validateArray($identityValidationFunction))(
+          sh_PropertyShape.schema.properties.languageIn.type,
+          value,
+        ),
+      ),
+      maxExclusive: $convertToMaybe($convertToLiteral)(
+        parameters.maxExclusive,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.maxExclusive.type,
+          value,
+        ),
+      ),
+      maxInclusive: $convertToMaybe($convertToLiteral)(
+        parameters.maxInclusive,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.maxInclusive.type,
+          value,
+        ),
+      ),
+      maxLength: $convertToMaybe($convertToBigInt)(parameters.maxLength, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.maxLength.type,
+          value,
+        ),
+      ),
+      message: $convertToMaybe($identityConversionFunction)(
+        parameters.message,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.message.type,
+          value,
+        ),
+      ),
+      minExclusive: $convertToMaybe($convertToLiteral)(
+        parameters.minExclusive,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.minExclusive.type,
+          value,
+        ),
+      ),
+      minInclusive: $convertToMaybe($convertToLiteral)(
+        parameters.minInclusive,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.minInclusive.type,
+          value,
+        ),
+      ),
+      minLength: $convertToMaybe($convertToBigInt)(parameters.minLength, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.minLength.type,
+          value,
+        ),
+      ),
+      mutable: $convertToMaybe($identityConversionFunction)(
+        parameters.mutable,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.mutable.type,
+          value,
+        ),
+      ),
+      node: $convertToMaybe(
         <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
           value:
             | NamedNode
-            | skos_Concept.Discriminated
+            | sh_NodeShape.Discriminated
             | (keyof $DefaultNamespaceT & string),
           options: { defaultNamespace: $DefaultNamespaceT | undefined },
-        ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
+        ): Either<Error, NamedNode | sh_NodeShape.Discriminated> => {
           switch (typeof value) {
             case "object":
               return Either.of(value);
@@ -6410,52 +5037,217 @@ export namespace skos_Concept {
               throw new Error("should never reach this point");
           }
         },
-      )(parameters.broader, {
+      )(parameters.node, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.node.type,
+          value,
+        ),
+      ),
+      nodeKind: $convertToMaybe(
+        $convertToIriLiteral<
+          | "http://www.w3.org/ns/shacl#BlankNode"
+          | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
+          | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
+          | "http://www.w3.org/ns/shacl#IRI"
+          | "http://www.w3.org/ns/shacl#IRIOrLiteral"
+          | "http://www.w3.org/ns/shacl#Literal"
+        >,
+      )(parameters.nodeKind, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.nodeKind.type,
+          value,
+        ),
+      ),
+      not: $convertToScalarSet(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | sh_NodeShape.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
+        ): Either<Error, NamedNode | sh_NodeShape.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, options);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
+        },
+      )(parameters.not, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.broader.type,
+          sh_PropertyShape.schema.properties.not.type,
           value,
         ),
       ),
-      definition: $convertToScalarSet($identityConversionFunction)(
-        parameters.definition,
+      or: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, options);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters.or, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($validateArray($identityValidationFunction))(
+          sh_PropertyShape.schema.properties.or.type,
+          value,
+        ),
+      ),
+      pattern: $convertToMaybe($identityConversionFunction)(
+        parameters.pattern,
         {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.definition.type,
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.pattern.type,
           value,
         ),
       ),
-      hiddenLabel: $convertToScalarSet($identityConversionFunction)(
-        parameters.hiddenLabel,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
+      properties: $convertToScalarSet(
+        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+          value:
+            | NamedNode
+            | sh_PropertyShape.Discriminated
+            | (keyof $DefaultNamespaceT & string),
+          options: { defaultNamespace: $DefaultNamespaceT | undefined },
+        ): Either<Error, NamedNode | sh_PropertyShape.Discriminated> => {
+          switch (typeof value) {
+            case "object":
+              return Either.of(value);
+            case "string":
+              return $convertToIri(value, options);
+            default:
+              value satisfies never;
+              throw new Error("should never reach this point");
+          }
         },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.hiddenLabel.type,
-          value,
-        ),
-      ),
-      notation: $convertToScalarSet($convertToLiteral)(parameters.notation, {
+      )(parameters.properties, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.notation.type,
+          sh_NodeShape.schema.properties.properties.type,
           value,
         ),
       ),
-      prefLabel: $convertToScalarSet($identityConversionFunction)(
-        parameters.prefLabel,
+      rdfType: $convertToMaybe($convertToIri)(parameters.rdfType, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_NodeShape.schema.properties.rdfType.type,
+          value,
+        ),
+      ),
+      severity: $convertToMaybe($convertToIriLiteral<sh_Severity["value"]>)(
+        parameters.severity,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.severity.type,
+          value,
+        ),
+      ),
+      shaclmateName: $convertToMaybe($identityConversionFunction)(
+        parameters.shaclmateName,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.shaclmateName.type,
+          value,
+        ),
+      ),
+      subClassOf: $convertToScalarSet($convertToIri)(parameters.subClassOf, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_NodeShape.schema.properties.subClassOf.type,
+          value,
+        ),
+      ),
+      targetClasses: $convertToScalarSet($convertToIri)(
+        parameters.targetClasses,
         {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
         $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.prefLabel.type,
+          sh_PropertyShape.schema.properties.targetClasses.type,
+          value,
+        ),
+      ),
+      targetNodes: $convertToScalarSet($identityConversionFunction)(
+        parameters.targetNodes,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.targetNodes.type,
+          value,
+        ),
+      ),
+      targetObjectsOf: $convertToScalarSet($convertToIri)(
+        parameters.targetObjectsOf,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.targetObjectsOf.type,
+          value,
+        ),
+      ),
+      targetSubjectsOf: $convertToScalarSet($convertToIri)(
+        parameters.targetSubjectsOf,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.targetSubjectsOf.type,
+          value,
+        ),
+      ),
+      toRdfTypes: $convertToScalarSet($convertToIri)(parameters.toRdfTypes, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_NodeShape.schema.properties.toRdfTypes.type,
+          value,
+        ),
+      ),
+      tsImports: $convertToScalarSet($identityConversionFunction)(
+        parameters.tsImports,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_NodeShape.schema.properties.tsImports.type,
           value,
         ),
       ),
@@ -6463,35 +5255,57 @@ export namespace skos_Concept {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.type.type,
+          skos_ConceptScheme.schema.properties.type.type,
+          value,
+        ),
+      ),
+      xone: $convertToMaybe(
+        $convertToList(
+          <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
+            value: NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string),
+            options: { defaultNamespace: $DefaultNamespaceT | undefined },
+          ): Either<Error, NamedNode | sh_Shape> => {
+            switch (typeof value) {
+              case "object":
+                return Either.of(value);
+              case "string":
+                return $convertToIri(value, options);
+              default:
+                value satisfies never;
+                throw new Error("should never reach this point");
+            }
+          },
+        ),
+      )(parameters.xone, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($validateArray($identityValidationFunction))(
+          sh_PropertyShape.schema.properties.xone.type,
           value,
         ),
       ),
     }).map((object) =>
-      $monkeyPatchObject(object, { $toString: skos_Concept.$toString }),
+      $monkeyPatchObject(object, { $toString: sh_NodeShape.$toString }),
     );
 
   export type CreateParameters<
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   > = {
     readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier:
-      | (() => skos_Concept.Identifier)
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode;
-    readonly altLabel?: string | Literal | readonly (string | Literal)[];
-    readonly broader?:
+    readonly $identifier?:
+      | (() => sh_NodeShape.Identifier)
+      | BlankNode
       | NamedNode
-      | skos_Concept.Discriminated
+      | (keyof $DefaultNamespaceT & string);
+    readonly and?:
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
+      | Maybe<readonly (NamedNode | sh_Shape)[]>;
+    readonly class_?:
       | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | skos_Concept.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
-    readonly definition?: string | Literal | readonly (string | Literal)[];
-    readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
-    readonly notation?:
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly closed?: boolean | Maybe<boolean>;
+    readonly comment?:
       | bigint
       | boolean
       | number
@@ -6499,77 +5313,441 @@ export namespace skos_Concept {
       | Date
       | Literal
       | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly prefLabel?: string | Literal | readonly (string | Literal)[];
+    readonly datatype?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | Maybe<NamedNode>;
+    readonly deactivated?: boolean | Maybe<boolean>;
+    readonly discriminantValue?: string | Maybe<string>;
+    readonly extern?: boolean | Maybe<boolean>;
+    readonly flags?: string | Maybe<string>;
+    readonly fromRdfType?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | Maybe<NamedNode>;
+    readonly hasValues?:
+      | (NamedNode | Literal)
+      | readonly (NamedNode | Literal)[];
+    readonly ignore?: boolean;
+    readonly ignoredProperties?:
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[]
+      | Maybe<readonly NamedNode[]>;
+    readonly in_?:
+      | readonly (NamedNode | Literal)[]
+      | Maybe<readonly (NamedNode | Literal)[]>;
+    readonly isDefinedBy?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | Maybe<NamedNode>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly languageIn?: readonly string[] | Maybe<readonly string[]>;
+    readonly maxExclusive?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | Maybe<Literal>;
+    readonly maxInclusive?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | Maybe<Literal>;
+    readonly maxLength?: bigint | number | string | Maybe<bigint>;
+    readonly message?: string | Maybe<string>;
+    readonly minExclusive?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | Maybe<Literal>;
+    readonly minInclusive?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | Maybe<Literal>;
+    readonly minLength?: bigint | number | string | Maybe<bigint>;
+    readonly mutable?: boolean | Maybe<boolean>;
+    readonly node?:
+      | NamedNode
+      | sh_NodeShape.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | Maybe<NamedNode | sh_NodeShape.Discriminated>;
+    readonly nodeKind?:
+      | (
+          | "http://www.w3.org/ns/shacl#BlankNode"
+          | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
+          | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
+          | "http://www.w3.org/ns/shacl#IRI"
+          | "http://www.w3.org/ns/shacl#IRIOrLiteral"
+          | "http://www.w3.org/ns/shacl#Literal"
+        )
+      | NamedNode<
+          | "http://www.w3.org/ns/shacl#BlankNode"
+          | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
+          | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
+          | "http://www.w3.org/ns/shacl#IRI"
+          | "http://www.w3.org/ns/shacl#IRIOrLiteral"
+          | "http://www.w3.org/ns/shacl#Literal"
+        >
+      | Maybe<
+          NamedNode<
+            | "http://www.w3.org/ns/shacl#BlankNode"
+            | "http://www.w3.org/ns/shacl#BlankNodeOrIRI"
+            | "http://www.w3.org/ns/shacl#BlankNodeOrLiteral"
+            | "http://www.w3.org/ns/shacl#IRI"
+            | "http://www.w3.org/ns/shacl#IRIOrLiteral"
+            | "http://www.w3.org/ns/shacl#Literal"
+          >
+        >;
+    readonly not?:
+      | NamedNode
+      | sh_NodeShape.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_NodeShape.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
+    readonly or?:
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
+      | Maybe<readonly (NamedNode | sh_Shape)[]>;
+    readonly pattern?: string | Maybe<string>;
+    readonly properties?:
+      | NamedNode
+      | sh_PropertyShape.Discriminated
+      | (keyof $DefaultNamespaceT & string)
+      | readonly (
+          | NamedNode
+          | sh_PropertyShape.Discriminated
+          | (keyof $DefaultNamespaceT & string)
+        )[];
+    readonly rdfType?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | Maybe<NamedNode>;
+    readonly severity?: sh_Severity["value"] | sh_Severity | Maybe<sh_Severity>;
+    readonly shaclmateName?: string | Maybe<string>;
+    readonly subClassOf?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly targetClasses?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly targetNodes?:
+      | (NamedNode | Literal)
+      | readonly (NamedNode | Literal)[];
+    readonly targetObjectsOf?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly targetSubjectsOf?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly toRdfTypes?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly tsImports?: string | readonly string[];
     readonly type?:
       | (keyof $DefaultNamespaceT & string)
       | NamedNode
       | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly xone?:
+      | readonly (NamedNode | sh_Shape | (keyof $DefaultNamespaceT & string))[]
+      | Maybe<readonly (NamedNode | sh_Shape)[]>;
   };
 
   export const createUnsafe: <
     $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
   >(
-    parameters: skos_Concept.CreateParameters<$DefaultNamespaceT>,
-  ) => skos_Concept.Discriminated = (parameters) =>
+    parameters?: sh_NodeShape.CreateParameters<$DefaultNamespaceT>,
+  ) => sh_NodeShape.Discriminated = (parameters) =>
     create(parameters).unsafeCoerce();
 
-  export type Discriminated = skos_Concept & {
-    readonly termType: "skos_Concept";
+  export type Discriminated = sh_NodeShape & {
+    readonly termType: "sh_NodeShape";
   };
 
-  export type Identifier = NamedNode;
+  export type Identifier = BlankNode | NamedNode;
   export namespace Identifier {
-    export const parse = $parseIri;
+    export const parse = $parseIdentifier;
   }
 
-  export const isskos_Concept: $ObjectTypeGuardFunction<
-    skos_Concept.Discriminated
-  > = (object): object is skos_Concept.Discriminated =>
-    object.termType === "skos_Concept";
+  export const issh_NodeShape: $ObjectTypeGuardFunction<
+    sh_NodeShape.Discriminated
+  > = (object): object is sh_NodeShape.Discriminated =>
+    object.termType === "sh_NodeShape";
 
   export const schema = {
     kind: "Object",
     properties: {
       $identifier: {
         kind: "Identifier",
-        type: { kind: "Iri" } as const,
+        type: { kind: "Identifier" } as const,
       } as const,
       $rdfType: {
         fromRdfType: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#Concept",
+          "http://www.w3.org/ns/shacl#NodeShape",
         ),
         kind: "RdfType",
         toRdfTypes: [
-          dataFactory.namedNode("http://www.w3.org/2004/02/skos/core#Concept"),
+          dataFactory.namedNode("http://www.w3.org/ns/shacl#NodeShape"),
         ],
       } as const,
-      altLabel: {
+      and: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#and"),
+        get type() {
+          return {
+            get itemType() {
+              return {
+                get itemType() {
+                  return {
+                    kind: "DiscriminatedUnion",
+                    members: {
+                      NamedNode: {
+                        discriminantValues: ["NamedNode"],
+                        type: { kind: "Iri" } as const,
+                      },
+                      sh_NodeShape: {
+                        discriminantValues: [
+                          "sh_NodeShape",
+                          "sh_PropertyShape",
+                        ],
+                        type: sh_Shape.schema,
+                      },
+                    },
+                  } as const;
+                },
+                kind: "List",
+              } as const;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      class_: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#class"),
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      closed: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#closed"),
+        type: {
+          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      datatype: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#datatype"),
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
+      } as const,
+      deactivated: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#deactivated"),
+        type: {
+          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      discriminantValue: {
         kind: "Shacl",
         path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#altLabel",
+          "http://purl.org/shaclmate/ontology#discriminantValue",
         ),
         type: {
-          itemType: {
-            kind: "DiscriminatedUnion",
-            members: {
-              string: {
-                discriminantValues: ["string"],
-                type: { datatype: $xsd_string, kind: "String" } as const,
-              },
-              object: {
-                discriminantValues: ["object"],
-                type: { kind: "LangString" } as const,
-              },
-            },
-          } as const,
+          itemType: { datatype: $xsd_string, kind: "String" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      extern: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#extern",
+        ),
+        type: {
+          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      flags: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#flags"),
+        type: {
+          itemType: { datatype: $xsd_string, kind: "String" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      fromRdfType: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#fromRdfType",
+        ),
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
+      } as const,
+      hasValues: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#hasValue"),
+        type: {
+          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
           kind: "Set",
         } as const,
       } as const,
-      broader: {
+      ignore: {
         kind: "Shacl",
         path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#broader",
+          "http://purl.org/shaclmate/ontology#ignore",
         ),
+        type: {
+          defaultValue: dataFactory.literal("false", $xsd_boolean),
+          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
+          kind: "DefaultValue",
+        } as const,
+      } as const,
+      ignoredProperties: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/ns/shacl#ignoredProperties",
+        ),
+        type: {
+          itemType: {
+            itemType: { kind: "Iri" } as const,
+            kind: "List",
+          } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      in_: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#in"),
+        type: {
+          itemType: {
+            itemType: {
+              kind: "Term",
+              types: ["NamedNode", "Literal"],
+            } as const,
+            kind: "List",
+          } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      isDefinedBy: {
+        kind: "Shacl",
+        path: $rdfs_isDefinedBy,
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      languageIn: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#languageIn"),
+        type: {
+          itemType: {
+            itemType: { datatype: $xsd_string, kind: "String" } as const,
+            kind: "List",
+          } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      maxExclusive: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#maxExclusive"),
+        type: {
+          itemType: { kind: "Literal" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      maxInclusive: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#maxInclusive"),
+        type: {
+          itemType: { kind: "Literal" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      maxLength: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#maxLength"),
+        type: {
+          itemType: { datatype: $xsd_integer, kind: "BigInt" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      message: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#message"),
+        type: {
+          itemType: { datatype: $xsd_string, kind: "String" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      minExclusive: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#minExclusive"),
+        type: {
+          itemType: { kind: "Literal" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      minInclusive: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#minInclusive"),
+        type: {
+          itemType: { kind: "Literal" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      minLength: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#minLength"),
+        type: {
+          itemType: { datatype: $xsd_integer, kind: "BigInt" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      mutable: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#mutable",
+        ),
+        type: {
+          itemType: { datatype: $xsd_boolean, kind: "Boolean" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      node: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#node"),
         get type() {
           return {
             get itemType() {
@@ -6580,9 +5758,55 @@ export namespace skos_Concept {
                     discriminantValues: ["NamedNode"],
                     type: { kind: "Iri" } as const,
                   },
-                  skos_Concept: {
-                    discriminantValues: ["skos_Concept"],
-                    type: skos_Concept.schema,
+                  sh_NodeShape: {
+                    discriminantValues: ["sh_NodeShape"],
+                    type: sh_NodeShape.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      nodeKind: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#nodeKind"),
+        type: {
+          itemType: {
+            in: [
+              dataFactory.namedNode("http://www.w3.org/ns/shacl#BlankNode"),
+              dataFactory.namedNode(
+                "http://www.w3.org/ns/shacl#BlankNodeOrIRI",
+              ),
+              dataFactory.namedNode(
+                "http://www.w3.org/ns/shacl#BlankNodeOrLiteral",
+              ),
+              dataFactory.namedNode("http://www.w3.org/ns/shacl#IRI"),
+              dataFactory.namedNode("http://www.w3.org/ns/shacl#IRIOrLiteral"),
+              dataFactory.namedNode("http://www.w3.org/ns/shacl#Literal"),
+            ] as const,
+            kind: "Iri",
+          } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      not: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#not"),
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  sh_NodeShape: {
+                    discriminantValues: ["sh_NodeShape"],
+                    type: sh_NodeShape.schema,
                   },
                 },
               } as const;
@@ -6591,76 +5815,143 @@ export namespace skos_Concept {
           } as const;
         },
       } as const,
-      definition: {
+      or: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#or"),
+        get type() {
+          return {
+            get itemType() {
+              return {
+                get itemType() {
+                  return {
+                    kind: "DiscriminatedUnion",
+                    members: {
+                      NamedNode: {
+                        discriminantValues: ["NamedNode"],
+                        type: { kind: "Iri" } as const,
+                      },
+                      sh_NodeShape: {
+                        discriminantValues: [
+                          "sh_NodeShape",
+                          "sh_PropertyShape",
+                        ],
+                        type: sh_Shape.schema,
+                      },
+                    },
+                  } as const;
+                },
+                kind: "List",
+              } as const;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      pattern: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#pattern"),
+        type: {
+          itemType: { datatype: $xsd_string, kind: "String" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      properties: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#property"),
+        get type() {
+          return {
+            get itemType() {
+              return {
+                kind: "DiscriminatedUnion",
+                members: {
+                  NamedNode: {
+                    discriminantValues: ["NamedNode"],
+                    type: { kind: "Iri" } as const,
+                  },
+                  sh_PropertyShape: {
+                    discriminantValues: ["sh_PropertyShape"],
+                    type: sh_PropertyShape.schema,
+                  },
+                },
+              } as const;
+            },
+            kind: "Set",
+          } as const;
+        },
+      } as const,
+      rdfType: {
         kind: "Shacl",
         path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#definition",
+          "http://purl.org/shaclmate/ontology#rdfType",
         ),
-        type: {
-          itemType: {
-            kind: "DiscriminatedUnion",
-            members: {
-              string: {
-                discriminantValues: ["string"],
-                type: { datatype: $xsd_string, kind: "String" } as const,
-              },
-              object: {
-                discriminantValues: ["object"],
-                type: { kind: "LangString" } as const,
-              },
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
+      } as const,
+      severity: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#severity"),
+        get type() {
+          return {
+            get itemType() {
+              return sh_Severity.schema;
             },
-          } as const,
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      shaclmateName: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#name"),
+        type: {
+          itemType: { datatype: $xsd_string, kind: "String" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      subClassOf: {
+        kind: "Shacl",
+        path: $rdfs_subClassOf,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      targetClasses: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#targetClass"),
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      targetNodes: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#targetNode"),
+        type: {
+          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
           kind: "Set",
         } as const,
       } as const,
-      hiddenLabel: {
+      targetObjectsOf: {
         kind: "Shacl",
         path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#hiddenLabel",
+          "http://www.w3.org/ns/shacl#targetObjectsOf",
+        ),
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      targetSubjectsOf: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://www.w3.org/ns/shacl#targetSubjectsOf",
+        ),
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      toRdfTypes: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#toRdfType",
+        ),
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      tsImports: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#tsImport",
         ),
         type: {
-          itemType: {
-            kind: "DiscriminatedUnion",
-            members: {
-              string: {
-                discriminantValues: ["string"],
-                type: { datatype: $xsd_string, kind: "String" } as const,
-              },
-              object: {
-                discriminantValues: ["object"],
-                type: { kind: "LangString" } as const,
-              },
-            },
-          } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      notation: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#notation",
-        ),
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      prefLabel: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#prefLabel",
-        ),
-        type: {
-          itemType: {
-            kind: "DiscriminatedUnion",
-            members: {
-              string: {
-                discriminantValues: ["string"],
-                type: { datatype: $xsd_string, kind: "String" } as const,
-              },
-              object: {
-                discriminantValues: ["object"],
-                type: { kind: "LangString" } as const,
-              },
-            },
-          } as const,
+          itemType: { datatype: $xsd_string, kind: "String" } as const,
           kind: "Set",
         } as const,
       } as const,
@@ -6669,621 +5960,72 @@ export namespace skos_Concept {
         path: $rdf_type,
         type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
       } as const,
+      xone: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://www.w3.org/ns/shacl#xone"),
+        get type() {
+          return {
+            get itemType() {
+              return {
+                get itemType() {
+                  return {
+                    kind: "DiscriminatedUnion",
+                    members: {
+                      NamedNode: {
+                        discriminantValues: ["NamedNode"],
+                        type: { kind: "Iri" } as const,
+                      },
+                      sh_NodeShape: {
+                        discriminantValues: [
+                          "sh_NodeShape",
+                          "sh_PropertyShape",
+                        ],
+                        type: sh_Shape.schema,
+                      },
+                    },
+                  } as const;
+                },
+                kind: "List",
+              } as const;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
     },
   } as const;
 
   export type Schema = typeof schema;
 
   export const toRdfResource: $ToRdfResourceFunction<
-    skos_Concept.Identifier,
-    skos_Concept
-  > = $wrap_ToRdfResourceFunction<skos_Concept.Identifier, skos_Concept>(
-    skos_Concept._toRdfResource,
+    sh_NodeShape.Identifier,
+    sh_NodeShape
+  > = $wrap_ToRdfResourceFunction<sh_NodeShape.Identifier, sh_NodeShape>(
+    sh_NodeShape._toRdfResource,
   );
 
   export const toRdfResourceValues: $ToRdfResourceValuesFunction<
-    skos_Concept,
-    NamedNode
+    sh_NodeShape,
+    BlankNode | NamedNode
   > = (value, options) => [
-    skos_Concept.toRdfResource(value, {
+    sh_NodeShape.toRdfResource(value, {
       graph: options.graph,
       resourceSet: options.resourceSet,
     }).identifier,
   ];
 
   export const toStringRecord: $ToStringRecordFunction<
-    Pick<skos_Concept, "$identifier">
-  > = (_skosConcept) =>
-    $compactRecord({ $identifier: _skosConcept.$identifier().toString() });
-}
-
-export type skos_ConceptScheme = {
-  readonly $identifier: () => skos_ConceptScheme.Identifier;
-
-  readonly altLabel: readonly (string | Literal)[];
-
-  readonly concepts: readonly (NamedNode | skos_Concept.Discriminated)[];
-
-  readonly definition: readonly (string | Literal)[];
-
-  readonly hiddenLabel: readonly (string | Literal)[];
-
-  readonly notation: readonly Literal[];
-
-  readonly prefLabel: readonly (string | Literal)[];
-
-  readonly topConcepts: readonly (NamedNode | skos_Concept.Discriminated)[];
-
-  readonly type: readonly NamedNode[];
-};
-
-export namespace skos_ConceptScheme {
-  export const _toRdfResource: $_ToRdfResourceFunction<
-    skos_ConceptScheme.Identifier,
-    skos_ConceptScheme
-  > = (parameters) => {
-    if (!parameters.ignoreRdfType) {
-      parameters.resource.add(
-        $rdf_type,
-        skos_ConceptScheme.schema.properties.$rdfType.toRdfTypes,
-        parameters.graph,
-      );
-    }
-    parameters.resource.add(
-      skos_Concept.schema.properties.altLabel.path,
-      parameters.object.altLabel.flatMap((item) =>
-        ((value, _options): Literal[] => {
-          if (typeof value === "string") {
-            return [$literalFactory.string(value)];
-          }
-          if (typeof value === "object") {
-            return [value];
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.altLabel.path,
-        }),
-      ),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      skos_ConceptScheme.schema.properties.concepts.path,
-      parameters.object.concepts.flatMap((item) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "skos_Concept") {
-            return skos_Concept.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: skos_ConceptScheme.schema.properties.concepts.path,
-        }),
-      ),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      skos_Concept.schema.properties.definition.path,
-      parameters.object.definition.flatMap((item) =>
-        ((value, _options): Literal[] => {
-          if (typeof value === "string") {
-            return [$literalFactory.string(value)];
-          }
-          if (typeof value === "object") {
-            return [value];
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.definition.path,
-        }),
-      ),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      skos_Concept.schema.properties.hiddenLabel.path,
-      parameters.object.hiddenLabel.flatMap((item) =>
-        ((value, _options): Literal[] => {
-          if (typeof value === "string") {
-            return [$literalFactory.string(value)];
-          }
-          if (typeof value === "object") {
-            return [value];
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.hiddenLabel.path,
-        }),
-      ),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      skos_Concept.schema.properties.notation.path,
-      parameters.object.notation.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      skos_Concept.schema.properties.prefLabel.path,
-      parameters.object.prefLabel.flatMap((item) =>
-        ((value, _options): Literal[] => {
-          if (typeof value === "string") {
-            return [$literalFactory.string(value)];
-          }
-          if (typeof value === "object") {
-            return [value];
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: skos_Concept.schema.properties.prefLabel.path,
-        }),
-      ),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      skos_ConceptScheme.schema.properties.topConcepts.path,
-      parameters.object.topConcepts.flatMap((item) =>
-        ((value, _options): NamedNode[] => {
-          if (value["termType"] === "NamedNode") {
-            return [value];
-          }
-          if (value["termType"] === "skos_Concept") {
-            return skos_Concept.toRdfResourceValues(value, {
-              graph: _options.graph,
-              propertyPath: _options.propertyPath,
-              resource: _options.resource,
-              resourceSet: _options.resourceSet,
-            });
-          }
-
-          throw new Error("unable to serialize to RDF");
-        })(item, {
-          ignoreRdfType: parameters.ignoreRdfType,
-          graph: parameters.graph,
-          resource: parameters.resource,
-          resourceSet: parameters.resourceSet,
-          propertyPath: skos_ConceptScheme.schema.properties.topConcepts.path,
-        }),
-      ),
-      parameters.graph,
-    );
-    parameters.resource.add(
-      rdf_Property.schema.properties.type.path,
-      parameters.object.type.flatMap((item) => [item]),
-      parameters.graph,
-    );
-    return parameters.resource;
-  };
-
-  export const $toString: $ToStringFunction<
-    Pick<skos_ConceptScheme, "$identifier">
-  > = (_skosConceptScheme) =>
-    `skos_ConceptScheme(${JSON.stringify(skos_ConceptScheme.toStringRecord(_skosConceptScheme))})`;
-
-  export const create: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: skos_ConceptScheme.CreateParameters<$DefaultNamespaceT>,
-  ) => Either<Error, skos_ConceptScheme.Discriminated> = (parameters) =>
-    $sequenceRecord({
-      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }),
-      termType: Right("skos_ConceptScheme" as const),
-      altLabel: $convertToScalarSet($identityConversionFunction)(
-        parameters.altLabel,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.altLabel.type,
-          value,
-        ),
-      ),
-      concepts: $convertToScalarSet(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | skos_Concept.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          options: { defaultNamespace: $DefaultNamespaceT | undefined },
-        ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, options);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.concepts, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_ConceptScheme.schema.properties.concepts.type,
-          value,
-        ),
-      ),
-      definition: $convertToScalarSet($identityConversionFunction)(
-        parameters.definition,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.definition.type,
-          value,
-        ),
-      ),
-      hiddenLabel: $convertToScalarSet($identityConversionFunction)(
-        parameters.hiddenLabel,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.hiddenLabel.type,
-          value,
-        ),
-      ),
-      notation: $convertToScalarSet($convertToLiteral)(parameters.notation, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.notation.type,
-          value,
-        ),
-      ),
-      prefLabel: $convertToScalarSet($identityConversionFunction)(
-        parameters.prefLabel,
-        {
-          defaultNamespace: parameters.$defaultNamespace,
-        },
-      ).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_Concept.schema.properties.prefLabel.type,
-          value,
-        ),
-      ),
-      topConcepts: $convertToScalarSet(
-        <$DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder>(
-          value:
-            | NamedNode
-            | skos_Concept.Discriminated
-            | (keyof $DefaultNamespaceT & string),
-          options: { defaultNamespace: $DefaultNamespaceT | undefined },
-        ): Either<Error, NamedNode | skos_Concept.Discriminated> => {
-          switch (typeof value) {
-            case "object":
-              return Either.of(value);
-            case "string":
-              return $convertToIri(value, options);
-            default:
-              value satisfies never;
-              throw new Error("should never reach this point");
-          }
-        },
-      )(parameters.topConcepts, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          skos_ConceptScheme.schema.properties.topConcepts.type,
-          value,
-        ),
-      ),
-      type: $convertToScalarSet($convertToIri)(parameters.type, {
-        defaultNamespace: parameters.$defaultNamespace,
-      }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          rdf_Property.schema.properties.type.type,
-          value,
-        ),
-      ),
-    }).map((object) =>
-      $monkeyPatchObject(object, { $toString: skos_ConceptScheme.$toString }),
-    );
-
-  export type CreateParameters<
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  > = {
-    readonly $defaultNamespace?: $DefaultNamespaceT;
-    readonly $identifier:
-      | (() => skos_ConceptScheme.Identifier)
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode;
-    readonly altLabel?: string | Literal | readonly (string | Literal)[];
-    readonly concepts?:
-      | NamedNode
-      | skos_Concept.Discriminated
-      | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | skos_Concept.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
-    readonly definition?: string | Literal | readonly (string | Literal)[];
-    readonly hiddenLabel?: string | Literal | readonly (string | Literal)[];
-    readonly notation?:
-      | bigint
-      | boolean
-      | number
-      | string
-      | Date
-      | Literal
-      | readonly (bigint | boolean | number | string | Date | Literal)[];
-    readonly prefLabel?: string | Literal | readonly (string | Literal)[];
-    readonly topConcepts?:
-      | NamedNode
-      | skos_Concept.Discriminated
-      | (keyof $DefaultNamespaceT & string)
-      | readonly (
-          | NamedNode
-          | skos_Concept.Discriminated
-          | (keyof $DefaultNamespaceT & string)
-        )[];
-    readonly type?:
-      | (keyof $DefaultNamespaceT & string)
-      | NamedNode
-      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
-  };
-
-  export const createUnsafe: <
-    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
-  >(
-    parameters: skos_ConceptScheme.CreateParameters<$DefaultNamespaceT>,
-  ) => skos_ConceptScheme.Discriminated = (parameters) =>
-    create(parameters).unsafeCoerce();
-
-  export type Discriminated = skos_ConceptScheme & {
-    readonly termType: "skos_ConceptScheme";
-  };
-
-  export type Identifier = NamedNode;
-  export namespace Identifier {
-    export const parse = $parseIri;
-  }
-
-  export const isskos_ConceptScheme: $ObjectTypeGuardFunction<
-    skos_ConceptScheme.Discriminated
-  > = (object): object is skos_ConceptScheme.Discriminated =>
-    object.termType === "skos_ConceptScheme";
-
-  export const schema = {
-    kind: "Object",
-    properties: {
-      $identifier: {
-        kind: "Identifier",
-        type: { kind: "Iri" } as const,
-      } as const,
-      $rdfType: {
-        fromRdfType: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#ConceptScheme",
-        ),
-        kind: "RdfType",
-        toRdfTypes: [
-          dataFactory.namedNode(
-            "http://www.w3.org/2004/02/skos/core#ConceptScheme",
-          ),
-        ],
-      } as const,
-      altLabel: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#altLabel",
-        ),
-        type: {
-          itemType: {
-            kind: "DiscriminatedUnion",
-            members: {
-              string: {
-                discriminantValues: ["string"],
-                type: { datatype: $xsd_string, kind: "String" } as const,
-              },
-              object: {
-                discriminantValues: ["object"],
-                type: { kind: "LangString" } as const,
-              },
-            },
-          } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      concepts: {
-        kind: "Shacl",
-        path: {
-          path: dataFactory.namedNode(
-            "http://www.w3.org/2004/02/skos/core#inScheme",
-          ),
-          termType: "InversePath",
-        },
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  skos_Concept: {
-                    discriminantValues: ["skos_Concept"],
-                    type: skos_Concept.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Set",
-          } as const;
-        },
-      } as const,
-      definition: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#definition",
-        ),
-        type: {
-          itemType: {
-            kind: "DiscriminatedUnion",
-            members: {
-              string: {
-                discriminantValues: ["string"],
-                type: { datatype: $xsd_string, kind: "String" } as const,
-              },
-              object: {
-                discriminantValues: ["object"],
-                type: { kind: "LangString" } as const,
-              },
-            },
-          } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      hiddenLabel: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#hiddenLabel",
-        ),
-        type: {
-          itemType: {
-            kind: "DiscriminatedUnion",
-            members: {
-              string: {
-                discriminantValues: ["string"],
-                type: { datatype: $xsd_string, kind: "String" } as const,
-              },
-              object: {
-                discriminantValues: ["object"],
-                type: { kind: "LangString" } as const,
-              },
-            },
-          } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      notation: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#notation",
-        ),
-        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
-      } as const,
-      prefLabel: {
-        kind: "Shacl",
-        path: dataFactory.namedNode(
-          "http://www.w3.org/2004/02/skos/core#prefLabel",
-        ),
-        type: {
-          itemType: {
-            kind: "DiscriminatedUnion",
-            members: {
-              string: {
-                discriminantValues: ["string"],
-                type: { datatype: $xsd_string, kind: "String" } as const,
-              },
-              object: {
-                discriminantValues: ["object"],
-                type: { kind: "LangString" } as const,
-              },
-            },
-          } as const,
-          kind: "Set",
-        } as const,
-      } as const,
-      topConcepts: {
-        kind: "Shacl",
-        path: {
-          path: dataFactory.namedNode(
-            "http://www.w3.org/2004/02/skos/core#topConceptOf",
-          ),
-          termType: "InversePath",
-        },
-        get type() {
-          return {
-            get itemType() {
-              return {
-                kind: "DiscriminatedUnion",
-                members: {
-                  NamedNode: {
-                    discriminantValues: ["NamedNode"],
-                    type: { kind: "Iri" } as const,
-                  },
-                  skos_Concept: {
-                    discriminantValues: ["skos_Concept"],
-                    type: skos_Concept.schema,
-                  },
-                },
-              } as const;
-            },
-            kind: "Set",
-          } as const;
-        },
-      } as const,
-      type: {
-        kind: "Shacl",
-        path: $rdf_type,
-        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
-      } as const,
-    },
-  } as const;
-
-  export type Schema = typeof schema;
-
-  export const toRdfResource: $ToRdfResourceFunction<
-    skos_ConceptScheme.Identifier,
-    skos_ConceptScheme
-  > = $wrap_ToRdfResourceFunction<
-    skos_ConceptScheme.Identifier,
-    skos_ConceptScheme
-  >(skos_ConceptScheme._toRdfResource);
-
-  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
-    skos_ConceptScheme,
-    NamedNode
-  > = (value, options) => [
-    skos_ConceptScheme.toRdfResource(value, {
-      graph: options.graph,
-      resourceSet: options.resourceSet,
-    }).identifier,
-  ];
-
-  export const toStringRecord: $ToStringRecordFunction<
-    Pick<skos_ConceptScheme, "$identifier">
-  > = (_skosConceptScheme) =>
+    Pick<sh_NodeShape, "$identifier" | "label" | "shaclmateName">
+  > = (_shNodeShape) =>
     $compactRecord({
-      $identifier: _skosConceptScheme.$identifier().toString(),
+      $identifier: _shNodeShape.$identifier().toString(),
+      label:
+        _shNodeShape.label.length > 0
+          ? `[${_shNodeShape.label.map((item) => item.toString())}]`
+          : undefined,
+      shaclmateName: _shNodeShape.shaclmateName
+        .map((item) => item.toString())
+        .extract(),
     });
 }
 
@@ -7366,6 +6108,1264 @@ export namespace sh_Shape {
 
     throw new Error("unable to serialize to RDF");
   };
+}
+
+export type sh_Severity = NamedNode<
+  (typeof sh_Severity.schema)["inValues"][number]
+>;
+
+export namespace sh_Severity {
+  const inValues = [
+    "http://www.w3.org/ns/shacl#Info",
+    "http://www.w3.org/ns/shacl#Warning",
+    "http://www.w3.org/ns/shacl#Violation",
+  ] as const;
+
+  export const schema = {
+    in: inValues.map((inValue) => dataFactory.namedNode(inValue)),
+    inValues,
+    kind: "Iri",
+  } as const;
+
+  export type Schema = typeof schema;
+}
+
+export type sh_PropertyGroup = {
+  readonly $identifier: () => sh_PropertyGroup.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly label: readonly Literal[];
+};
+
+export namespace sh_PropertyGroup {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    sh_PropertyGroup.Identifier,
+    sh_PropertyGroup
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        sh_PropertyGroup.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Omit<sh_PropertyGroup, "comment">
+  > = (_shPropertyGroup) =>
+    `sh_PropertyGroup(${JSON.stringify(sh_PropertyGroup.toStringRecord(_shPropertyGroup))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: sh_PropertyGroup.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, sh_PropertyGroup.Discriminated> = (parameters = {}) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("sh_PropertyGroup" as const),
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.label.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: sh_PropertyGroup.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => sh_PropertyGroup.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: sh_PropertyGroup.CreateParameters<$DefaultNamespaceT>,
+  ) => sh_PropertyGroup.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = sh_PropertyGroup & {
+    readonly termType: "sh_PropertyGroup";
+  };
+
+  export type Identifier = BlankNode | NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIdentifier;
+  }
+
+  export const issh_PropertyGroup: $ObjectTypeGuardFunction<
+    sh_PropertyGroup.Discriminated
+  > = (object): object is sh_PropertyGroup.Discriminated =>
+    object.termType === "sh_PropertyGroup";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: dataFactory.namedNode(
+          "http://www.w3.org/ns/shacl#PropertyGroup",
+        ),
+        kind: "RdfType",
+        toRdfTypes: [
+          dataFactory.namedNode("http://www.w3.org/ns/shacl#PropertyGroup"),
+        ],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    sh_PropertyGroup.Identifier,
+    sh_PropertyGroup
+  > = $wrap_ToRdfResourceFunction<
+    sh_PropertyGroup.Identifier,
+    sh_PropertyGroup
+  >(sh_PropertyGroup._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    sh_PropertyGroup,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    sh_PropertyGroup.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Omit<sh_PropertyGroup, "comment">
+  > = (_shPropertyGroup) =>
+    $compactRecord({
+      $identifier: _shPropertyGroup.$identifier().toString(),
+      label:
+        _shPropertyGroup.label.length > 0
+          ? `[${_shPropertyGroup.label.map((item) => item.toString())}]`
+          : undefined,
+    });
+}
+
+export type rdfs_Class = {
+  readonly $identifier: () => rdfs_Class.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly isDefinedBy: Maybe<NamedNode>;
+
+  readonly label: readonly Literal[];
+
+  readonly seeAlso: readonly (NamedNode | Literal)[];
+
+  readonly subClassOf: readonly NamedNode[];
+
+  readonly type: readonly NamedNode[];
+};
+
+export namespace rdfs_Class {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    rdfs_Class.Identifier,
+    rdfs_Class
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        rdfs_Class.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.isDefinedBy.path,
+      parameters.object.isDefinedBy.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdfs_Class.schema.properties.seeAlso.path,
+      parameters.object.seeAlso.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_NodeShape.schema.properties.subClassOf.path,
+      parameters.object.subClassOf.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<rdfs_Class, "$identifier" | "label">
+  > = (_rdfsClass) =>
+    `rdfs_Class(${JSON.stringify(rdfs_Class.toStringRecord(_rdfsClass))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, rdfs_Class.Discriminated> = (parameters) =>
+    $sequenceRecord({
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("rdfs_Class" as const),
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.isDefinedBy.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.label.type,
+          value,
+        ),
+      ),
+      seeAlso: $convertToScalarSet($identityConversionFunction)(
+        parameters.seeAlso,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdfs_Class.schema.properties.seeAlso.type,
+          value,
+        ),
+      ),
+      subClassOf: $convertToScalarSet($convertToIri)(parameters.subClassOf, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_NodeShape.schema.properties.subClassOf.type,
+          value,
+        ),
+      ),
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.type.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: rdfs_Class.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier:
+      | (() => rdfs_Class.Identifier)
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode;
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly isDefinedBy?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | Maybe<NamedNode>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
+    readonly subClassOf?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly type?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: rdfs_Class.CreateParameters<$DefaultNamespaceT>,
+  ) => rdfs_Class.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = rdfs_Class & { readonly termType: "rdfs_Class" };
+
+  export type Identifier = NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIri;
+  }
+
+  export const isrdfs_Class: $ObjectTypeGuardFunction<
+    rdfs_Class.Discriminated
+  > = (object): object is rdfs_Class.Discriminated =>
+    object.termType === "rdfs_Class";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Iri" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: $rdfs_Class,
+        kind: "RdfType",
+        toRdfTypes: [$rdfs_Class],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      isDefinedBy: {
+        kind: "Shacl",
+        path: $rdfs_isDefinedBy,
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      seeAlso: {
+        kind: "Shacl",
+        path: $rdfs_seeAlso,
+        type: {
+          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      subClassOf: {
+        kind: "Shacl",
+        path: $rdfs_subClassOf,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      type: {
+        kind: "Shacl",
+        path: $rdf_type,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    rdfs_Class.Identifier,
+    rdfs_Class
+  > = $wrap_ToRdfResourceFunction<rdfs_Class.Identifier, rdfs_Class>(
+    rdfs_Class._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    rdfs_Class,
+    NamedNode
+  > = (value, options) => [
+    rdfs_Class.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<rdfs_Class, "$identifier" | "label">
+  > = (_rdfsClass) =>
+    $compactRecord({
+      $identifier: _rdfsClass.$identifier().toString(),
+      label:
+        _rdfsClass.label.length > 0
+          ? `[${_rdfsClass.label.map((item) => item.toString())}]`
+          : undefined,
+    });
+}
+
+export type rdf_Statement = {
+  readonly $identifier: () => rdf_Statement.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly isDefinedBy: Maybe<NamedNode>;
+
+  readonly label: readonly Literal[];
+
+  readonly object: BlankNode | NamedNode | Literal;
+
+  readonly predicate: NamedNode;
+
+  readonly seeAlso: readonly (NamedNode | Literal)[];
+
+  readonly subject: BlankNode | NamedNode | Literal;
+
+  readonly type: readonly NamedNode[];
+};
+
+export namespace rdf_Statement {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    rdf_Statement.Identifier,
+    rdf_Statement
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        rdf_Statement.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.isDefinedBy.path,
+      parameters.object.isDefinedBy.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Statement.schema.properties.object.path,
+      [parameters.object.object],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Statement.schema.properties.predicate.path,
+      [parameters.object.predicate],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdfs_Class.schema.properties.seeAlso.path,
+      parameters.object.seeAlso.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Statement.schema.properties.subject.path,
+      [parameters.object.subject],
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<rdf_Statement, "$identifier" | "label">
+  > = (_rdfStatement) =>
+    `rdf_Statement(${JSON.stringify(rdf_Statement.toStringRecord(_rdfStatement))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: rdf_Statement.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, rdf_Statement.Discriminated> = (parameters) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("rdf_Statement" as const),
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.isDefinedBy.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.label.type,
+          value,
+        ),
+      ),
+      object: Either.of(parameters.object),
+      predicate: $convertToIri(parameters.predicate, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      seeAlso: $convertToScalarSet($identityConversionFunction)(
+        parameters.seeAlso,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdfs_Class.schema.properties.seeAlso.type,
+          value,
+        ),
+      ),
+      subject: Either.of(parameters.subject),
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.type.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: rdf_Statement.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => rdf_Statement.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly isDefinedBy?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | Maybe<NamedNode>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly object: BlankNode | NamedNode | Literal;
+    readonly predicate: (keyof $DefaultNamespaceT & string) | NamedNode;
+    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
+    readonly subject: BlankNode | NamedNode | Literal;
+    readonly type?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: rdf_Statement.CreateParameters<$DefaultNamespaceT>,
+  ) => rdf_Statement.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = rdf_Statement & {
+    readonly termType: "rdf_Statement";
+  };
+
+  export type Identifier = BlankNode | NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIdentifier;
+  }
+
+  export const isrdf_Statement: $ObjectTypeGuardFunction<
+    rdf_Statement.Discriminated
+  > = (object): object is rdf_Statement.Discriminated =>
+    object.termType === "rdf_Statement";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: $rdf_Statement,
+        kind: "RdfType",
+        toRdfTypes: [$rdf_Statement],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      isDefinedBy: {
+        kind: "Shacl",
+        path: $rdfs_isDefinedBy,
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      object: {
+        kind: "Shacl",
+        path: $rdf_object,
+        type: {
+          kind: "Term",
+          types: ["BlankNode", "NamedNode", "Literal"],
+        } as const,
+      } as const,
+      predicate: {
+        kind: "Shacl",
+        path: $rdf_predicate,
+        type: { kind: "Iri" } as const,
+      } as const,
+      seeAlso: {
+        kind: "Shacl",
+        path: $rdfs_seeAlso,
+        type: {
+          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      subject: {
+        kind: "Shacl",
+        path: $rdf_subject,
+        type: {
+          kind: "Term",
+          types: ["BlankNode", "NamedNode", "Literal"],
+        } as const,
+      } as const,
+      type: {
+        kind: "Shacl",
+        path: $rdf_type,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    rdf_Statement.Identifier,
+    rdf_Statement
+  > = $wrap_ToRdfResourceFunction<rdf_Statement.Identifier, rdf_Statement>(
+    rdf_Statement._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    rdf_Statement,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    rdf_Statement.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<rdf_Statement, "$identifier" | "label">
+  > = (_rdfStatement) =>
+    $compactRecord({
+      $identifier: _rdfStatement.$identifier().toString(),
+      label:
+        _rdfStatement.label.length > 0
+          ? `[${_rdfStatement.label.map((item) => item.toString())}]`
+          : undefined,
+    });
+}
+
+export type rdf_Property = {
+  readonly $identifier: () => rdf_Property.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly domain: readonly NamedNode[];
+
+  readonly isDefinedBy: Maybe<NamedNode>;
+
+  readonly label: readonly Literal[];
+
+  readonly range: readonly NamedNode[];
+
+  readonly seeAlso: readonly (NamedNode | Literal)[];
+
+  readonly subPropertyOf: readonly NamedNode[];
+
+  readonly type: readonly NamedNode[];
+};
+
+export namespace rdf_Property {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    rdf_Property.Identifier,
+    rdf_Property
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        rdf_Property.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.domain.path,
+      parameters.object.domain.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.isDefinedBy.path,
+      parameters.object.isDefinedBy.toList(),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.range.path,
+      parameters.object.range.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdfs_Class.schema.properties.seeAlso.path,
+      parameters.object.seeAlso.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      rdf_Property.schema.properties.subPropertyOf.path,
+      parameters.object.subPropertyOf.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      skos_ConceptScheme.schema.properties.type.path,
+      parameters.object.type.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<rdf_Property, "$identifier" | "label">
+  > = (_rdfProperty) =>
+    `rdf_Property(${JSON.stringify(rdf_Property.toStringRecord(_rdfProperty))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: rdf_Property.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, rdf_Property.Discriminated> = (parameters) =>
+    $sequenceRecord({
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("rdf_Property" as const),
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      domain: $convertToScalarSet($convertToIri)(parameters.domain, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.domain.type,
+          value,
+        ),
+      ),
+      isDefinedBy: $convertToMaybe($convertToIri)(parameters.isDefinedBy, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.isDefinedBy.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.label.type,
+          value,
+        ),
+      ),
+      range: $convertToScalarSet($convertToIri)(parameters.range, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.range.type,
+          value,
+        ),
+      ),
+      seeAlso: $convertToScalarSet($identityConversionFunction)(
+        parameters.seeAlso,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdfs_Class.schema.properties.seeAlso.type,
+          value,
+        ),
+      ),
+      subPropertyOf: $convertToScalarSet($convertToIri)(
+        parameters.subPropertyOf,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          rdf_Property.schema.properties.subPropertyOf.type,
+          value,
+        ),
+      ),
+      type: $convertToScalarSet($convertToIri)(parameters.type, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          skos_ConceptScheme.schema.properties.type.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: rdf_Property.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier:
+      | (() => rdf_Property.Identifier)
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode;
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly domain?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly isDefinedBy?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | Maybe<NamedNode>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly range?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly seeAlso?: (NamedNode | Literal) | readonly (NamedNode | Literal)[];
+    readonly subPropertyOf?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+    readonly type?:
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode
+      | readonly ((keyof $DefaultNamespaceT & string) | NamedNode)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: rdf_Property.CreateParameters<$DefaultNamespaceT>,
+  ) => rdf_Property.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = rdf_Property & {
+    readonly termType: "rdf_Property";
+  };
+
+  export type Identifier = NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIri;
+  }
+
+  export const isrdf_Property: $ObjectTypeGuardFunction<
+    rdf_Property.Discriminated
+  > = (object): object is rdf_Property.Discriminated =>
+    object.termType === "rdf_Property";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Iri" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: $rdf_Property,
+        kind: "RdfType",
+        toRdfTypes: [$rdf_Property],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      domain: {
+        kind: "Shacl",
+        path: $rdfs_domain,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      isDefinedBy: {
+        kind: "Shacl",
+        path: $rdfs_isDefinedBy,
+        type: { itemType: { kind: "Iri" } as const, kind: "Option" } as const,
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      range: {
+        kind: "Shacl",
+        path: $rdfs_range,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      seeAlso: {
+        kind: "Shacl",
+        path: $rdfs_seeAlso,
+        type: {
+          itemType: { kind: "Term", types: ["NamedNode", "Literal"] } as const,
+          kind: "Set",
+        } as const,
+      } as const,
+      subPropertyOf: {
+        kind: "Shacl",
+        path: $rdfs_subPropertyOf,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+      type: {
+        kind: "Shacl",
+        path: $rdf_type,
+        type: { itemType: { kind: "Iri" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    rdf_Property.Identifier,
+    rdf_Property
+  > = $wrap_ToRdfResourceFunction<rdf_Property.Identifier, rdf_Property>(
+    rdf_Property._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    rdf_Property,
+    NamedNode
+  > = (value, options) => [
+    rdf_Property.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<rdf_Property, "$identifier" | "label">
+  > = (_rdfProperty) =>
+    $compactRecord({
+      $identifier: _rdfProperty.$identifier().toString(),
+      label:
+        _rdfProperty.label.length > 0
+          ? `[${_rdfProperty.label.map((item) => item.toString())}]`
+          : undefined,
+    });
+}
+
+export type owl_Ontology = {
+  readonly $identifier: () => owl_Ontology.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly label: readonly Literal[];
+};
+
+export namespace owl_Ontology {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    owl_Ontology.Identifier,
+    owl_Ontology
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        owl_Ontology.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      sh_PropertyShape.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<Omit<owl_Ontology, "comment">> = (
+    _owlOntology,
+  ) =>
+    `owl_Ontology(${JSON.stringify(owl_Ontology.toStringRecord(_owlOntology))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, owl_Ontology.Discriminated> = (parameters) =>
+    $sequenceRecord({
+      $identifier: $convertToIriIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("owl_Ontology" as const),
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateArray($identityValidationFunction)(
+          sh_PropertyShape.schema.properties.label.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: owl_Ontology.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier:
+      | (() => owl_Ontology.Identifier)
+      | (keyof $DefaultNamespaceT & string)
+      | NamedNode;
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: owl_Ontology.CreateParameters<$DefaultNamespaceT>,
+  ) => owl_Ontology.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = owl_Ontology & {
+    readonly termType: "owl_Ontology";
+  };
+
+  export type Identifier = NamedNode;
+  export namespace Identifier {
+    export const parse = $parseIri;
+  }
+
+  export const isowl_Ontology: $ObjectTypeGuardFunction<
+    owl_Ontology.Discriminated
+  > = (object): object is owl_Ontology.Discriminated =>
+    object.termType === "owl_Ontology";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Iri" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: dataFactory.namedNode(
+          "http://www.w3.org/2002/07/owl#Ontology",
+        ),
+        kind: "RdfType",
+        toRdfTypes: [
+          dataFactory.namedNode("http://www.w3.org/2002/07/owl#Ontology"),
+        ],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    owl_Ontology.Identifier,
+    owl_Ontology
+  > = $wrap_ToRdfResourceFunction<owl_Ontology.Identifier, owl_Ontology>(
+    owl_Ontology._toRdfResource,
+  );
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    owl_Ontology,
+    NamedNode
+  > = (value, options) => [
+    owl_Ontology.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Omit<owl_Ontology, "comment">
+  > = (_owlOntology) =>
+    $compactRecord({
+      $identifier: _owlOntology.$identifier().toString(),
+      label:
+        _owlOntology.label.length > 0
+          ? `[${_owlOntology.label.map((item) => item.toString())}]`
+          : undefined,
+    });
 }
 
 export type $Object =
