@@ -11,3 +11,4 @@ rdfx:OwlOntology
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
     sh:property rdfx:rdfsComment, rdfx:rdfsLabel .
+

@@ -34,7 +34,7 @@ rdfx:rdfsLabel
     sh:nodeKind sh:Literal ;
     sh:path rdfs:label .
 
-rdfx:rdfxRange
+rdfx:rdfsRange
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:range .
