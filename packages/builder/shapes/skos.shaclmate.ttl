@@ -11,6 +11,7 @@ rdfx:SkosConcept
     shaclmate:name "skos_Concept" ;
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
+    shaclmate:rdfType skos:Concept ;
     sh:property rdfx:SkosConcept-broader, rdfx:rdfType, rdfx:skosAltLabel, rdfx:skosDefinition, rdfx:skosHiddenLabel, rdfx:skosNotation, rdfx:skosPrefLabel .
 
 rdfx:SkosConcept-broader
@@ -28,6 +29,7 @@ rdfx:SkosConcept-broader
 rdfx:SkosConceptScheme
     shaclmate:name "skos_ConceptScheme" ;
     a owl:Class, sh:NodeShape ;
+    shaclmate:rdfType skos:ConceptScheme ;
     sh:nodeKind sh:IRI ;
     sh:property rdfx:SkosConceptScheme-concepts, rdfx:SkosConceptScheme-topConcepts, rdfx:rdfType, rdfx:skosAltLabel, rdfx:skosDefinition, rdfx:skosHiddenLabel, rdfx:skosNotation, rdfx:skosPrefLabel .
 

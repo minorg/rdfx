@@ -10,11 +10,13 @@ rdfx:RdfProperty
     shaclmate:name "rdf_Property" ;
     a rdfs:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
+    shaclmate:rdfType rdf:Property ;
     sh:property rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsDomain, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfx:rdfsRange, rdfx:rdfsSeeAlso, rdfx:rdfsSubPropertyOf .
 
 rdfx:RdfStatement
     shaclmate:name "rdf_Statement" ;
     a rdfs:Class, sh:NodeShape ;
+    shaclmate:rdfType rdf:Statement ;
     sh:property rdfx:rdfObject, rdfx:rdfPredicate, rdfx:rdfSubject, rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfx:rdfsSeeAlso .
 
 rdfx:rdfObject

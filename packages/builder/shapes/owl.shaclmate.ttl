@@ -10,5 +10,6 @@ rdfx:OwlOntology
     shaclmate:name "owl_Ontology" ;
     a owl:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
+    shaclmate:rdfType owl:Ontology ;
     sh:property rdfx:rdfsComment, rdfx:rdfsLabel .
 

@@ -10,6 +10,7 @@ rdfx:RdfsClass
     shaclmate:name "rdfs_Class" ;
     a rdfs:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
+    shaclmate:rdfType rdfs:Class ;
     sh:property rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfx:rdfsSeeAlso, rdfx:rdfsSubClassOf .
 
 rdfx:rdfsComment
