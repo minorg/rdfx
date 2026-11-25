@@ -1,41 +1,42 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdfx: <http://purl.org/rdfx/builder/ontology#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-rdf:Property
+rdfx:RdfProperty
     shaclmate:name "rdf_Property" ;
     a rdfs:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
-    sh:property rdf:type, rdfs:comment, rdfs:domain, rdfs:isDefinedBy, rdfs:label, rdfs:range, rdfs:seeAlso, rdfs:subPropertyOf .
+    sh:property rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsDomain, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfx:rdfsRange, rdfx:rdfsSeeAlso, rdfx:rdfsSubPropertyOf .
 
-rdf:Statement
+rdfx:RdfStatement
     shaclmate:name "rdf_Statement" ;
     a rdfs:Class, sh:NodeShape ;
-    sh:property rdf:object, rdf:predicate, rdf:subject, rdf:type, rdfs:comment, rdfs:isDefinedBy, rdfs:label, rdfs:seeAlso .
+    sh:property rdfx:rdfObject, rdfx:rdfPredicate, rdfx:rdfSubject, rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfx:rdfsSeeAlso .
 
-rdf:object
+rdfx:rdfObject
     a sh:PropertyShape ;
     sh:maxCount 1 ;
     sh:minCount 1 ;
     sh:path rdf:object .
 
-rdf:predicate
+rdfx:rdfPredicate
     a sh:PropertyShape ;
     sh:maxCount 1 ;
     sh:minCount 1 ;
     sh:nodeKind sh:IRI ;
     sh:path rdf:predicate .
 
-rdf:subject
+rdfx:rdfSubject
     a sh:PropertyShape ;
     sh:maxCount 1 ;
     sh:minCount 1 ;
     sh:path rdf:subject .
 
-rdf:type
+rdfx:rdfType
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdf:type .

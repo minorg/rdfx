@@ -1,54 +1,55 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdfx: <http://purl.org/rdfx/builder/ontology#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-rdfs:Class
+rdfx:RdfsClass
     shaclmate:name "rdfs_Class" ;
     a rdfs:Class, sh:NodeShape ;
     sh:nodeKind sh:IRI ;
-    sh:property rdf:type, rdfs:comment, rdfs:isDefinedBy, rdfs:label, rdfs:seeAlso, rdfs:subClassOf .
+    sh:property rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfx:rdfsSeeAlso, rdfx:rdfsSubClassOf .
 
-rdfs:comment
+rdfx:rdfsComment
     a sh:PropertyShape ;
     sh:nodeKind sh:Literal ;
     sh:path rdfs:comment .
 
-rdfs:domain
+rdfx:rdfsDomain
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:domain .
 
-rdfs:isDefinedBy
+rdfx:rdfsIsDefinedBy
     a sh:PropertyShape ;
     sh:maxCount 1 ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:isDefinedBy .
 
-rdfs:label
+rdfx:rdfsLabel
     shaclmate:display true ;
     a sh:PropertyShape ;
     sh:nodeKind sh:Literal ;
     sh:path rdfs:label .
 
-rdfs:range
+rdfx:rdfxRange
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:range .
 
-rdfs:seeAlso
+rdfx:rdfsSeeAlso
     a sh:PropertyShape ;
     sh:nodeKind sh:IRIOrLiteral ;
     sh:path rdfs:seeAlso .
 
-rdfs:subClassOf
+rdfx:rdfsSubClassOf
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:subClassOf .
 
-rdfs:subPropertyOf
+rdfx:rdfsSubPropertyOf
     a sh:PropertyShape ;
     sh:nodeKind sh:IRI ;
     sh:path rdfs:subPropertyOf .
