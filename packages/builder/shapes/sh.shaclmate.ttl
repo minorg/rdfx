@@ -1,13 +1,15 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdfx: <http://purl.org/rdfx/builder/ontology#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix shaclmate: <http://purl.org/shaclmate/ontology#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 rdfx:ShBaseShape
     shaclmate:name "sh_BaseShape" ;
-    sh:property rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfs:subClassOf, rdfx:ShShape-and, rdfx:ShShape-class, rdfx:ShShape-datatype, rdfx:ShShape-deactivated, rdfx:ShShape-flags, rdfx:ShShape-hasValue, rdfx:ShShape-ignore, rdfx:ShShape-in, rdfx:ShShape-languageIn, rdfx:ShShape-maxExclusive, rdfx:ShShape-maxInclusive, rdfx:ShShape-maxLength, rdfx:ShShape-message, rdfx:ShShape-minExclusive, rdfx:ShShape-minInclusive, rdfx:ShShape-minLength, rdfx:ShShape-mutable, rdfx:ShShape-node, rdfx:ShShape-nodeKind, rdfx:ShShape-not, rdfx:ShShape-or, rdfx:ShShape-pattern, rdfx:ShShape-severity, rdfx:ShShape-shaclmateName, rdfx:ShShape-targetClass, rdfx:ShShape-targetNode, rdfx:ShShape-targetObjectsOf, rdfx:ShShape-targetSubjectsOf, rdfx:ShShape-xone
+    a sh:NodeShape ;
+    sh:property rdfx:ShShape-and, rdfx:ShShape-class, rdfx:ShShape-datatype, rdfx:ShShape-deactivated, rdfx:ShShape-flags, rdfx:ShShape-hasValue, rdfx:ShShape-ignore, rdfx:ShShape-in, rdfx:ShShape-languageIn, rdfx:ShShape-maxExclusive, rdfx:ShShape-maxInclusive, rdfx:ShShape-maxLength, rdfx:ShShape-message, rdfx:ShShape-minExclusive, rdfx:ShShape-minInclusive, rdfx:ShShape-minLength, rdfx:ShShape-mutable, rdfx:ShShape-node, rdfx:ShShape-nodeKind, rdfx:ShShape-not, rdfx:ShShape-or, rdfx:ShShape-pattern, rdfx:ShShape-severity, rdfx:ShShape-shaclmateName, rdfx:ShShape-targetClass, rdfx:ShShape-targetNode, rdfx:ShShape-targetObjectsOf, rdfx:ShShape-targetSubjectsOf, rdfx:ShShape-xone, rdfx:rdfType, rdfx:rdfsComment, rdfx:rdfsIsDefinedBy, rdfx:rdfsLabel, rdfs:subClassOf .
 
 rdfx:ShInList
     a sh:NodeShape ;
@@ -49,69 +51,11 @@ rdfx:ShIriList
         ]
     ) .
 
-rdfx:ShPropertyPath
-    shaclmate:extern true ;
-    shaclmate:name "$PropertyPath" ;
-    a sh:NodeShape ;
-    rdfs:comment "Extern PropertyPath since shaclmate is not sophisticated enough to deal with all property path variants yet" .
-
-rdfx:ShShapeList
-    a sh:NodeShape ;
-    sh:xone ([
-            sh:hasValue ( )
-        ]
-        [
-            sh:property [
-                sh:maxCount 1 ;
-                sh:minCount 1 ;
-                sh:path rdf:first ;
-                sh:xone ([
-                        sh:nodeKind sh:IRI
-                    ]
-                    [
-                        sh:node sh:Shape
-                    ]
-                )
-            ], [
-                sh:maxCount 1 ;
-                sh:minCount 1 ;
-                sh:node rdfx:ShShapeList ;
-                sh:path rdf:rest
-            ]
-        ]
-    ) .
-
-rdfx:ShStringList
-    a sh:NodeShape ;
-    sh:xone ([
-            sh:hasValue ( )
-        ]
-        [
-            sh:property [
-                sh:datatype xsd:string ;
-                sh:maxCount 1 ;
-                sh:minCount 1 ;
-                sh:path rdf:first
-            ], [
-                sh:maxCount 1 ;
-                sh:minCount 1 ;
-                sh:node rdfx:ShStringList ;
-                sh:path rdf:rest
-            ]
-        ]
-    ) .
-
 rdfx:ShNodeShape
     shaclmate:name "sh_NodeShape" ;
-    sh:and (
-        rdfx:ShBaseShape 
+    sh:and (rdfx:ShBaseShape
         rdfx:ShNodeShapeSpecificProperties
     ) .
-
-rdfx:ShNodeShapeSpecificProperties
-    shaclmate:name "sh_NodeShapeSpecificProperties" ;
-    a sh:NodeShape ;
-    sh:property rdfx:ShNodeShape-closed, rdfx:ShNodeShape-discriminantValue, rdfx:ShNodeShape-extern, rdfx:ShNodeShape-fromRdfType, rdfx:ShNodeShape-ignoredProperties, rdfx:ShNodeShape-property, rdfx:ShNodeShape-rdfType, rdfx:ShNodeShape-toRdfType, rdfx:ShNodeShape-tsImport .
 
 rdfx:ShNodeShape-closed
     a sh:PropertyShape ;
@@ -173,22 +117,27 @@ rdfx:ShNodeShape-tsImport
     sh:name "tsImports" ;
     sh:path shaclmate:tsImport .
 
+rdfx:ShNodeShapeSpecificProperties
+    shaclmate:name "sh_NodeShapeSpecificProperties" ;
+    a sh:NodeShape ;
+    sh:property rdfx:ShNodeShape-closed, rdfx:ShNodeShape-discriminantValue, rdfx:ShNodeShape-extern, rdfx:ShNodeShape-fromRdfType, rdfx:ShNodeShape-ignoredProperties, rdfx:ShNodeShape-property, rdfx:ShNodeShape-rdfType, rdfx:ShNodeShape-toRdfType, rdfx:ShNodeShape-tsImport .
+
 rdfx:ShPropertyGroup
     shaclmate:name "sh_PropertyGroup" ;
     a sh:NodeShape ;
     sh:property rdfx:rdfsComment, rdfx:rdfsLabel .
 
+rdfx:ShPropertyPath
+    shaclmate:extern true ;
+    shaclmate:name "$PropertyPath" ;
+    a sh:NodeShape ;
+    rdfs:comment "Extern PropertyPath since shaclmate is not sophisticated enough to deal with all property path variants yet" .
+
 rdfx:ShPropertyShape
     shaclmate:name "sh_PropertyShape" ;
-    sh:and (
-        rdfx:ShBaseShape 
+    sh:and (rdfx:ShBaseShape
         rdfx:ShPropertyShapeSpecificProperties
     ) .
-
-rdfx:ShPropertyShapeSpecificProperties
-    shaclmate:name "sh_PropertyShapeSpecificProperties" ;
-    a sh:NodeShape ;
-    sh:property rdfx:ShPropertyShape-defaultValue, rdfx:ShPropertyShape-description, rdfx:ShPropertyShape-disjoint, rdfx:ShPropertyShape-display, rdfx:ShPropertyShape-equals, rdfx:ShPropertyShape-group, rdfx:ShPropertyShape-lessThan, rdfx:ShPropertyShape-lessThanOrEquals, rdfx:ShPropertyShape-maxCount, rdfx:ShPropertyShape-minCount, rdfx:ShPropertyShape-name, rdfx:ShPropertyShape-order, rdfx:ShPropertyShape-path, rdfx:ShPropertyShape-qualifiedMaxCount, rdfx:ShPropertyShape-qualifiedMinCount, rdfx:ShPropertyShape-qualifiedValueShape, rdfx:ShPropertyShape-qualifiedValueShapesDisjoint, rdfx:ShPropertyShape-resolve, rdfx:ShPropertyShape-uniqueLang .
 
 rdfx:ShPropertyShape-defaultValue
     a sh:PropertyShape ;
@@ -222,8 +171,8 @@ rdfx:ShPropertyShape-equals
 
 rdfx:ShPropertyShape-group
     a sh:PropertyShape ;
-    sh:path sh:group ;
     sh:name "groups" ;
+    sh:path sh:group ;
     sh:xone ([
             sh:nodeKind sh:IRI
         ]
@@ -311,6 +260,11 @@ rdfx:ShPropertyShape-uniqueLang
     sh:datatype xsd:boolean ;
     sh:maxCount 1 ;
     sh:path sh:uniqueLang .
+
+rdfx:ShPropertyShapeSpecificProperties
+    shaclmate:name "sh_PropertyShapeSpecificProperties" ;
+    a sh:NodeShape ;
+    sh:property rdfx:ShPropertyShape-defaultValue, rdfx:ShPropertyShape-description, rdfx:ShPropertyShape-disjoint, rdfx:ShPropertyShape-display, rdfx:ShPropertyShape-equals, rdfx:ShPropertyShape-group, rdfx:ShPropertyShape-lessThan, rdfx:ShPropertyShape-lessThanOrEquals, rdfx:ShPropertyShape-maxCount, rdfx:ShPropertyShape-minCount, rdfx:ShPropertyShape-name, rdfx:ShPropertyShape-order, rdfx:ShPropertyShape-path, rdfx:ShPropertyShape-qualifiedMaxCount, rdfx:ShPropertyShape-qualifiedMinCount, rdfx:ShPropertyShape-qualifiedValueShape, rdfx:ShPropertyShape-qualifiedValueShapesDisjoint, rdfx:ShPropertyShape-resolve, rdfx:ShPropertyShape-uniqueLang .
 
 rdfx:ShSeverity
     shaclmate:name "sh_Severity" ;
@@ -521,4 +475,50 @@ rdfx:ShShape-xone
     sh:maxCount 1 ;
     sh:node rdfx:ShShapeList ;
     sh:path sh:xone .
+
+rdfx:ShShapeList
+    a sh:NodeShape ;
+    sh:xone ([
+            sh:hasValue ( )
+        ]
+        [
+            sh:property [
+                sh:maxCount 1 ;
+                sh:minCount 1 ;
+                sh:path rdf:first ;
+                sh:xone ([
+                        sh:nodeKind sh:IRI
+                    ]
+                    [
+                        sh:node sh:Shape
+                    ]
+                )
+            ], [
+                sh:maxCount 1 ;
+                sh:minCount 1 ;
+                sh:node rdfx:ShShapeList ;
+                sh:path rdf:rest
+            ]
+        ]
+    ) .
+
+rdfx:ShStringList
+    a sh:NodeShape ;
+    sh:xone ([
+            sh:hasValue ( )
+        ]
+        [
+            sh:property [
+                sh:datatype xsd:string ;
+                sh:maxCount 1 ;
+                sh:minCount 1 ;
+                sh:path rdf:first
+            ], [
+                sh:maxCount 1 ;
+                sh:minCount 1 ;
+                sh:node rdfx:ShStringList ;
+                sh:path rdf:rest
+            ]
+        ]
+    ) .
 
