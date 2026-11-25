@@ -80,50 +80,50 @@ describe("sh", () => {
     const propertyShape = sh.PropertyShape("property");
 
     describe("$identifier", () => {
-      it("blank node", () => {
+      it("blank node", async () => {
         const nodeShape = sh.NodeShape(dataFactory.blankNode());
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.$identifier().termType).toStrictEqual("BlankNode");
       });
 
-      it("IRI", () => {
+      it("IRI", async () => {
         const nodeShape = sh.NodeShape(exTbox.Class);
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.$identifier()).toEqualRdfTerm(exTbox.Class);
       });
 
-      it("string", () => {
+      it("string", async () => {
         const nodeShape = sh.NodeShape("Class");
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.$identifier()).toEqualRdfTerm(exTbox.Class);
       });
 
-      it("undefined", () => {
+      it("undefined", async () => {
         const nodeShape = sh.NodeShape(undefined);
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.$identifier().termType).toStrictEqual("BlankNode");
       });
     });
 
     describe("implicitClassTarget", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const nodeShape = sh.NodeShape("Class");
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.type).toHaveLength(0);
       });
 
-      it("true", () => {
+      it("true", async () => {
         const nodeShape = sh.NodeShape("Class", { implicitClassTarget: true });
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.type).toEqualRdfTermArray([rdfs.Class]);
       });
 
-      it("with other types", () => {
+      it("with other types", async () => {
         const nodeShape = sh.NodeShape("Class", {
           implicitClassTarget: true,
           type: [exTbox.XoneMember1],
         });
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(
           nodeShape.type.some((type) => type.equals(rdfs.Class)),
         ).toStrictEqual(true);
@@ -134,33 +134,33 @@ describe("sh", () => {
     });
 
     describe("in", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const nodeShape = sh.NodeShape("Class", {});
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.in_.extract()).toBeUndefined();
       });
 
-      it("primitive", () => {
+      it("primitive", async () => {
         const nodeShape = sh.NodeShape("Class", {
           in_: ["test"],
         });
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.in_.extract()).toEqualRdfTermArray([
           dataFactory.literal("test"),
         ]);
       });
 
-      it("IRI", () => {
+      it("IRI", async () => {
         const nodeShape = sh.NodeShape("Class", { in_: [exCbox.LeafConcept] });
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.in_.extract()).toEqualRdfTermArray([
           exCbox.LeafConcept,
         ]);
       });
 
-      it("skos:ConceptScheme", () => {
+      it("skos:ConceptScheme", async () => {
         const nodeShape = sh.NodeShape("Class", { in_: conceptScheme });
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.in_.extract()).toEqualRdfTermArray([
           exCbox.LeafConcept,
           exCbox.TopConcept,
@@ -169,33 +169,33 @@ describe("sh", () => {
     });
 
     describe("properties", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const nodeShape = sh.NodeShape("Class", {});
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.properties).toHaveLength(0);
       });
 
-      it("[IRI]", () => {
+      it("[IRI]", async () => {
         const nodeShape = sh.NodeShape("Class", {
           properties: [exTbox.property],
         });
-        expectValidShapes(nodeShape, propertyShape);
+        await expectValidShapes(nodeShape, propertyShape);
         expect(nodeShape.properties).toEqualRdfTermArray([exTbox.property]);
       });
 
-      it("[string]", () => {
+      it("[string]", async () => {
         const nodeShape = sh.NodeShape("Class", {
           properties: ["property"],
         });
-        expectValidShapes(nodeShape, propertyShape);
+        await expectValidShapes(nodeShape, propertyShape);
         expect(nodeShape.properties).toEqualRdfTermArray([exTbox.property]);
       });
 
-      it("[PropertyShape]", () => {
+      it("[PropertyShape]", async () => {
         const nodeShape = sh.NodeShape("Class", {
           properties: [sh.PropertyShape("property")],
         });
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.properties).toHaveLength(1);
         expect(nodeShape.properties[0].termType).toStrictEqual(
           "sh_PropertyShape",
@@ -206,13 +206,13 @@ describe("sh", () => {
       });
 
       describe("Record", () => {
-        it("identifier undefined, path undefined", () => {
+        it("identifier undefined, path undefined", async () => {
           const nodeShape = sh.NodeShape("Class", {
             properties: {
               test: {},
             },
           });
-          expectValidShapes(nodeShape);
+          await expectValidShapes(nodeShape);
           expect(nodeShape.properties).toHaveLength(1);
           expect(nodeShape.properties[0].termType).toStrictEqual(
             "sh_PropertyShape",
@@ -226,7 +226,7 @@ describe("sh", () => {
           );
         });
 
-        it("identifier defined, path undefined", () => {
+        it("identifier defined, path undefined", async () => {
           const nodeShape = sh.NodeShape("Class", {
             properties: {
               test: {
@@ -234,7 +234,7 @@ describe("sh", () => {
               },
             },
           });
-          expectValidShapes(nodeShape);
+          await expectValidShapes(nodeShape);
           expect(nodeShape.properties).toHaveLength(1);
           expect(nodeShape.properties[0].termType).toStrictEqual(
             "sh_PropertyShape",
@@ -246,7 +246,7 @@ describe("sh", () => {
           );
         });
 
-        it("identifier undefined, path defined", () => {
+        it("identifier undefined, path defined", async () => {
           const nodeShape = sh.NodeShape("Class", {
             properties: {
               test: {
@@ -254,7 +254,7 @@ describe("sh", () => {
               },
             },
           });
-          expectValidShapes(nodeShape);
+          await expectValidShapes(nodeShape);
           expect(nodeShape.properties).toHaveLength(1);
           expect(nodeShape.properties[0].termType).toStrictEqual(
             "sh_PropertyShape",
@@ -266,7 +266,7 @@ describe("sh", () => {
           expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
         });
 
-        it("identifier defined, path defined", () => {
+        it("identifier defined, path defined", async () => {
           const nodeShape = sh.NodeShape("Class", {
             properties: {
               test: {
@@ -275,7 +275,7 @@ describe("sh", () => {
               },
             },
           });
-          expectValidShapes(nodeShape);
+          await expectValidShapes(nodeShape);
           expect(nodeShape.properties).toHaveLength(1);
           expect(nodeShape.properties[0].termType).toStrictEqual(
             "sh_PropertyShape",
@@ -285,13 +285,13 @@ describe("sh", () => {
           expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
         });
 
-        it("name from key", () => {
+        it("name from key", async () => {
           const nodeShape = sh.NodeShape("Class", {
             properties: {
               test: {},
             },
           });
-          expectValidShapes(nodeShape);
+          await expectValidShapes(nodeShape);
           expect(nodeShape.properties).toHaveLength(1);
           expect(nodeShape.properties[0].termType).toStrictEqual(
             "sh_PropertyShape",
@@ -305,13 +305,13 @@ describe("sh", () => {
           ).toBeUndefined();
         });
 
-        it("explicit name", () => {
+        it("explicit name", async () => {
           const nodeShape = sh.NodeShape("Class", {
             properties: {
               test: { name: "test2" },
             },
           });
-          expectValidShapes(nodeShape);
+          await expectValidShapes(nodeShape);
           expect(nodeShape.properties).toHaveLength(1);
           expect(nodeShape.properties[0].termType).toStrictEqual(
             "sh_PropertyShape",
@@ -321,13 +321,13 @@ describe("sh", () => {
           expect(propertyShape.shaclmateName.extract()).toBeUndefined();
         });
 
-        it("explicit shaclmateName", () => {
+        it("explicit shaclmateName", async () => {
           const nodeShape = sh.NodeShape("Class", {
             properties: {
               test: { shaclmateName: "test2" },
             },
           });
-          expectValidShapes(nodeShape);
+          await expectValidShapes(nodeShape);
           expect(nodeShape.properties).toHaveLength(1);
           expect(nodeShape.properties[0].termType).toStrictEqual(
             "sh_PropertyShape",
@@ -340,21 +340,21 @@ describe("sh", () => {
     });
 
     describe("type", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const nodeShape = sh.NodeShape("Class", {});
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.type).toHaveLength(0);
       });
 
-      it("IRI", () => {
+      it("IRI", async () => {
         const nodeShape = sh.NodeShape("Class", { type: owl.Class });
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.type).toEqualRdfTermArray([owl.Class]);
       });
 
-      it("string", () => {
+      it("string", async () => {
         const nodeShape = sh.NodeShape("Class", { type: "XoneMember1" });
-        expectValidShapes(nodeShape);
+        await expectValidShapes(nodeShape);
         expect(nodeShape.type).toEqualRdfTermArray([exTbox.XoneMember1]);
       });
     });
@@ -362,105 +362,105 @@ describe("sh", () => {
 
   describe("PropertyShape", () => {
     describe("$identifier", () => {
-      it("blank node", () => {
+      it("blank node", async () => {
         const propertyShape = sh.PropertyShape(dataFactory.blankNode(), {
           path: exTbox.property,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.$identifier().termType).toStrictEqual("BlankNode");
         expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
       });
 
-      it("IRI", () => {
+      it("IRI", async () => {
         const propertyShape = sh.PropertyShape(exTbox.property);
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.$identifier()).toEqualRdfTerm(exTbox.property);
       });
 
-      it("string", () => {
+      it("string", async () => {
         const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.$identifier()).toEqualRdfTerm(exTbox.property);
       });
 
-      it("undefined", () => {
+      it("undefined", async () => {
         const propertyShape = sh.PropertyShape(undefined, {
           path: exTbox.property,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.$identifier().termType).toStrictEqual("BlankNode");
         expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
       });
     });
 
     describe("cardinality", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const propertyShape = sh.PropertyShape("property", {});
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toBeUndefined();
         expect(propertyShape.minCount.extract()).toBeUndefined();
       });
 
-      it("optional", () => {
+      it("optional", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "optional",
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
         expect(propertyShape.minCount.extract()).toBeUndefined();
       });
 
-      it("required", () => {
+      it("required", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
         expect(propertyShape.minCount.extract()).toStrictEqual(1n);
       });
 
-      it("set", () => {
+      it("set", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "set",
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toBeUndefined();
         expect(propertyShape.minCount.extract()).toBeUndefined();
       });
     });
 
     describe("in", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.in_.extract()).toBeUndefined();
       });
 
-      it("primitive", () => {
+      it("primitive", async () => {
         const propertyShape = sh.PropertyShape("property", {
           in_: ["test"],
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.in_.extract()).toEqualRdfTermArray([
           dataFactory.literal("test"),
         ]);
       });
 
-      it("IRI", () => {
+      it("IRI", async () => {
         const propertyShape = sh.PropertyShape("property", {
           in_: [exCbox.LeafConcept],
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.in_.extract()).toEqualRdfTermArray([
           exCbox.LeafConcept,
         ]);
       });
 
-      it("skos:ConceptScheme", () => {
+      it("skos:ConceptScheme", async () => {
         const propertyShape = sh.PropertyShape("property", {
           in_: conceptScheme,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.in_.extract()).toEqualRdfTermArray([
           exCbox.LeafConcept,
           exCbox.TopConcept,
@@ -469,115 +469,115 @@ describe("sh", () => {
     });
 
     describe("maxCount", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toBeUndefined();
       });
 
-      it("with optional cardinality", () => {
+      it("with optional cardinality", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "optional",
           maxCount: 2n,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
         expect(propertyShape.minCount.extract()).toBeUndefined();
       });
 
-      it("with required cardinality", () => {
+      it("with required cardinality", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
           maxCount: 10n,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
         expect(propertyShape.minCount.extract()).toStrictEqual(1n);
       });
 
-      it("with set cardinality", () => {
+      it("with set cardinality", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "set",
           maxCount: 2n,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toStrictEqual(2n);
         expect(propertyShape.minCount.extract()).toBeUndefined();
       });
 
-      it("without cardinality", () => {
+      it("without cardinality", async () => {
         const propertyShape = sh.PropertyShape("property", { maxCount: 1n });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
         expect(propertyShape.minCount.extract()).toBeUndefined();
       });
     });
 
     describe("minCount", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.minCount.extract()).toBeUndefined();
       });
 
-      it("with optional cardinality", () => {
+      it("with optional cardinality", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "optional",
           minCount: 1n,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
         expect(propertyShape.minCount.extract()).toBeUndefined();
       });
 
-      it("with required cardinality", () => {
+      it("with required cardinality", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "required",
           minCount: 0n,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toStrictEqual(1n);
         expect(propertyShape.minCount.extract()).toStrictEqual(1n);
       });
 
-      it("with set cardinality", () => {
+      it("with set cardinality", async () => {
         const propertyShape = sh.PropertyShape("property", {
           cardinality: "set",
           minCount: 1n,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toBeUndefined();
         expect(propertyShape.minCount.extract()).toStrictEqual(1n);
       });
 
-      it("without cardinality", () => {
+      it("without cardinality", async () => {
         const propertyShape = sh.PropertyShape("property", { minCount: 1n });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.maxCount.extract()).toBeUndefined();
         expect(propertyShape.minCount.extract()).toStrictEqual(1n);
       });
     });
 
     describe("path", () => {
-      it("unspecified", () => {
+      it("unspecified", async () => {
         const propertyShape = sh.PropertyShape("property");
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
       });
 
-      it("IRI", () => {
+      it("IRI", async () => {
         const propertyShape = sh.PropertyShape(undefined, {
           path: exTbox.property,
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
       });
 
-      it("string", () => {
+      it("string", async () => {
         const propertyShape = sh.PropertyShape(undefined, {
           path: "property",
         });
-        expectValidShapes(propertyShape);
+        await expectValidShapes(propertyShape);
         expect(propertyShape.path).toEqualRdfTerm(exTbox.property);
       });
     });
