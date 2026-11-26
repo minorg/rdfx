@@ -1767,6 +1767,14 @@ export namespace sh_PropertyShapeSpecificProperties {
     sh_PropertyShapeSpecificProperties.Identifier,
     sh_PropertyShapeSpecificProperties
   > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        sh_PropertyShapeSpecificProperties.schema.properties.$rdfType
+          .toRdfTypes,
+        parameters.graph,
+      );
+    }
     parameters.resource.add(
       sh_PropertyShapeSpecificProperties.schema.properties.defaultValue.path,
       parameters.object.defaultValue.toList(),
@@ -2222,6 +2230,12 @@ export namespace sh_PropertyShapeSpecificProperties {
       $identifier: {
         kind: "Identifier",
         type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        kind: "RdfType",
+        toRdfTypes: [
+          dataFactory.namedNode("http://www.w3.org/ns/shacl#PropertyShape"),
+        ],
       } as const,
       defaultValue: {
         kind: "Shacl",
@@ -4232,6 +4246,13 @@ export namespace sh_NodeShapeSpecificProperties {
     sh_NodeShapeSpecificProperties.Identifier,
     sh_NodeShapeSpecificProperties
   > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        sh_NodeShapeSpecificProperties.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
     parameters.resource.add(
       sh_NodeShapeSpecificProperties.schema.properties.closed.path,
       parameters.object.closed
@@ -4555,6 +4576,12 @@ export namespace sh_NodeShapeSpecificProperties {
       $identifier: {
         kind: "Identifier",
         type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        kind: "RdfType",
+        toRdfTypes: [
+          dataFactory.namedNode("http://www.w3.org/ns/shacl#NodeShape"),
+        ],
       } as const,
       closed: {
         kind: "Shacl",
@@ -4886,6 +4913,13 @@ export namespace sh_PropertyGroup {
     sh_PropertyGroup.Identifier,
     sh_PropertyGroup
   > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        sh_PropertyGroup.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
     parameters.resource.add(
       sh_BaseShape.schema.properties.comment.path,
       parameters.object.comment.flatMap((item) => [item]),
@@ -4988,6 +5022,12 @@ export namespace sh_PropertyGroup {
       $identifier: {
         kind: "Identifier",
         type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        kind: "RdfType",
+        toRdfTypes: [
+          dataFactory.namedNode("http://www.w3.org/ns/shacl#PropertyGroup"),
+        ],
       } as const,
       comment: {
         kind: "Shacl",

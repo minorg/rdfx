@@ -120,11 +120,13 @@ rdfx:ShNodeShape-tsImport
 rdfx:ShNodeShapeSpecificProperties
     shaclmate:name "sh_NodeShapeSpecificProperties" ;
     a sh:NodeShape ;
+    shaclmate:toRdfType sh:NodeShape ;
     sh:property rdfx:ShNodeShape-closed, rdfx:ShNodeShape-discriminantValue, rdfx:ShNodeShape-extern, rdfx:ShNodeShape-fromRdfType, rdfx:ShNodeShape-ignoredProperties, rdfx:ShNodeShape-property, rdfx:ShNodeShape-rdfType, rdfx:ShNodeShape-toRdfType, rdfx:ShNodeShape-tsImport .
 
 rdfx:ShPropertyGroup
     shaclmate:name "sh_PropertyGroup" ;
     a sh:NodeShape ;
+    shaclmate:toRdfType sh:PropertyGroup ;
     sh:property rdfx:rdfsComment, rdfx:rdfsLabel .
 
 rdfx:ShPropertyPath
@@ -264,6 +266,7 @@ rdfx:ShPropertyShape-uniqueLang
 rdfx:ShPropertyShapeSpecificProperties
     shaclmate:name "sh_PropertyShapeSpecificProperties" ;
     a sh:NodeShape ;
+    shaclmate:toRdfType sh:PropertyShape ;
     sh:property rdfx:ShPropertyShape-defaultValue, rdfx:ShPropertyShape-description, rdfx:ShPropertyShape-disjoint, rdfx:ShPropertyShape-display, rdfx:ShPropertyShape-equals, rdfx:ShPropertyShape-group, rdfx:ShPropertyShape-lessThan, rdfx:ShPropertyShape-lessThanOrEquals, rdfx:ShPropertyShape-maxCount, rdfx:ShPropertyShape-minCount, rdfx:ShPropertyShape-name, rdfx:ShPropertyShape-order, rdfx:ShPropertyShape-path, rdfx:ShPropertyShape-qualifiedMaxCount, rdfx:ShPropertyShape-qualifiedMinCount, rdfx:ShPropertyShape-qualifiedValueShape, rdfx:ShPropertyShape-qualifiedValueShapesDisjoint, rdfx:ShPropertyShape-resolve, rdfx:ShPropertyShape-uniqueLang .
 
 rdfx:ShSeverity
