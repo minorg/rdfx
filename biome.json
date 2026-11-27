@@ -38,7 +38,7 @@
           }
         }
       },
-      "recommended": true,
+      "preset": "recommended",
       "style": {
         "noNonNullAssertion": "off"
       },
