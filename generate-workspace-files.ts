@@ -11,7 +11,7 @@ const shaclmateVersion = "4.0.113";
 const vitestVersion = "~4.1.5";
 
 const externalDependencies = {
-  "@biomejs/biome": "2.3.10",
+  "@biomejs/biome": "2.6.9",
   "@rdfjs/dataset": "~2.0.2",
   "@rdfjs/namespace": "~2.0.1",
   "@rdfjs/parser-jsonld": "~2.1.3",
