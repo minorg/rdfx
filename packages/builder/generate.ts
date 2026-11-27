@@ -52,19 +52,6 @@ async function main() {
         inputDataset.size,
         inputDirentPath,
       );
-    } else if (inputDirent.isDirectory()) {
-      logger.debug("parsing %s", inputDirentPath);
-      (
-        await new RdfDirectory(inputDirentPath, { logger }).parseInto(
-          inputDataset,
-          { prefixMap },
-        )
-      ).unsafeCoerce();
-      logger.debug(
-        "parsed %d quads from %s",
-        inputDataset.size,
-        inputDirentPath,
-      );
     } else {
       logger.debug("skipping non-file, non-directory %s", inputDirentPath);
     }
