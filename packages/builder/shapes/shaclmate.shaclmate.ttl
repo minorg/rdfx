@@ -9,8 +9,9 @@
 
 rdfx:ShaclmateOperation
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_Operation" ;
     rdfs:comment "Service operation." ;
-    sh:property rdfx:ShaclmateOperation-error, rdfx:ShaclmateOperation-httpBinding, rdfx:ShaclmateOperation-input, rdfx:ShaclmateOperation-name, rdfx:ShaclmateOperation-output, shaclmate:comment, shaclmate:label .
+    sh:property rdfx:ShaclmateOperation-error, rdfx:ShaclmateOperation-httpBinding, rdfx:ShaclmateOperation-input, rdfx:ShaclmateOperation-name, rdfx:ShaclmateOperation-output, rdfx:rdfsComment, rdfx:rdfsLabel .
 
 rdfx:ShaclmateOperation-error
     a sh:PropertyShape ;
@@ -50,6 +51,7 @@ rdfx:ShaclmateOperation-output
 
 rdfx:ShaclmateOperationError
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationError" ;
     rdfs:comment "Error type associated with an operation. Must be a struct type (i.e., have at least one sh:property)." ;
     sh:and (rdfx:ShNodeShape
         rdfx:ShaclmateOperationErrorSpecificProperties
@@ -64,6 +66,7 @@ rdfx:ShaclmateOperationError-httpBinding
 
 rdfx:ShaclmateOperationErrorHttpBinding
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationErrorHttpBinding" ;
     rdfs:comment "HTTP binding for an operation error." ;
     sh:property rdfx:ShaclmateOperationErrorHttpBinding-statusCode .
 
@@ -82,6 +85,7 @@ rdfx:ShaclmateOperationErrorSpecificProperties
 
 rdfx:ShaclmateOperationHttpBinding
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationHttpBinding" ;
     rdfs:comment "HTTP binding for an operation." ;
     sh:property rdfx:ShaclmateOperationHttpBinding-method, rdfx:ShaclmateOperationHttpBinding-statusCode, rdfx:ShaclmateOperationHttpBinding-urlTemplate .
 
@@ -109,6 +113,7 @@ rdfx:ShaclmateOperationHttpBinding-urlTemplate
 
 rdfx:ShaclmateOperationInput
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationInput" ;
     rdfs:comment "Parameter associated with an operation." ;
     sh:and (rdfx:ShNodeShape
         rdfx:ShaclmateOperationInputSpecificProperties
@@ -123,6 +128,7 @@ rdfx:ShaclmateOperationInput-httpBinding
 
 rdfx:ShaclmateOperationInputHttpBinding
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationInputHttpBinding" ;
     rdfs:comment "HTTP binding for an operation input." ;
     sh:property rdfx:ShaclmateOperationInputHttpBinding-contentType .
 
@@ -135,6 +141,7 @@ rdfx:ShaclmateOperationInputHttpBinding-contentType
 
 rdfx:ShaclmateOperationInputHttpBindingContentType
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationInputHttpBindingContentType" ;
     sh:in ("application/json"
     ) .
 
@@ -144,6 +151,7 @@ rdfx:ShaclmateOperationInputSpecificProperties
 
 rdfx:ShaclmateOperationOutput
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationOutput" ;
     rdfs:comment "Result associated with an operation." ;
     sh:and (rdfx:ShPropertyShape
         rdfx:ShaclmateOperationOutputSpecificProperties
@@ -158,6 +166,7 @@ rdfx:ShaclmateOperationOutput-httpBinding
 
 rdfx:ShaclmateOperationOutputHttpBinding
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationOutputHttpBinding" ;
     rdfs:comment "HTTP binding for an operation output." ;
     sh:property rdfx:ShaclmateOperationOutputHttpBinding-contentType .
 
@@ -170,6 +179,7 @@ rdfx:ShaclmateOperationOutputHttpBinding-contentType
 
 rdfx:ShaclmateOperationOutputHttpBindingContentType
     a sh:NodeShape ;
+    shaclmate:name "shaclmate_OperationOutputHttpBindingContentType" ;
     sh:in ("application/json"
     ) .
 
@@ -180,7 +190,8 @@ rdfx:ShaclmateOperationOutputSpecificProperties
 rdfx:ShaclmateService
     a rdfs:Class, sh:NodeShape ;
     rdfs:comment "Service with operations" ;
-    sh:property rdfx:ShaclmateService-name, rdfx:ShaclmateService-operation, shaclmate:comment, shaclmate:label .
+    shaclmate:name "shaclmate_Service" ;
+    sh:property rdfx:ShaclmateService-name, rdfx:ShaclmateService-operation, rdfx:rdfsComment, rdfx:rdfsLabel .
 
 rdfx:ShaclmateService-name
     shaclmate:display true ;

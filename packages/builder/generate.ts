@@ -7,7 +7,7 @@ import url from "node:url";
 import { promisify } from "node:util";
 import { datasetFactory } from "@rdfx/collection";
 import dataFactory from "@rdfx/data-factory";
-import { RdfDirectory, RdfFile } from "@rdfx/fs";
+import { RdfFile } from "@rdfx/fs";
 import { PrefixMap } from "@rdfx/iri";
 import { ConsoleLogger, type Logger } from "@rdfx/logger";
 import { Compiler, ShapesGraph, TsGenerator } from "@shaclmate/compiler";
@@ -38,7 +38,7 @@ async function main() {
     const inputDataset = datasetFactory.dataset();
     const inputDirentPath = path.join(inputDirectoryPath, inputDirent.name);
 
-    if (inputDirent.isFile()) {
+    if (inputDirent.isFile() || inputDirent.isSymbolicLink()) {
       if (inputDirent.name === "format.sh") {
         continue;
       }

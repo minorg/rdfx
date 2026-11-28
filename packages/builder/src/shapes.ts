@@ -1,3 +1,4 @@
+// biome-ignore-all lint/correctness/noUnusedVariables: namespace declaration merging
 import type {
   BlankNode,
   Literal,
@@ -27,6 +28,39 @@ export type $_ToRdfResourceFunction<
   resource: Resource<IdentifierT>;
   resourceSet: ResourceSet;
 }) => void;
+
+namespace $Array {
+  export function validate<ItemSchemaT, ItemValueT>(
+    validateItem: $ValidationFunction<ItemSchemaT, ItemValueT>,
+  ): $ValidationFunction<
+    $CollectionSchema<ItemSchemaT>,
+    readonly ItemValueT[]
+  > {
+    return (schema, valueArray) => {
+      if (
+        schema.minCount !== undefined &&
+        valueArray.length < schema.minCount
+      ) {
+        return Left(
+          new Error(
+            `value array has length (${valueArray.length}) less than minCount (${schema.minCount})`,
+          ),
+        ) as Either<Error, readonly ItemValueT[]>;
+      }
+
+      return Either.sequence(
+        valueArray.map((value) => validateItem(schema.itemType, value)),
+      ) as Either<Error, readonly ItemValueT[]>;
+    };
+  }
+}
+
+namespace $BigInt {
+  export const convert: $ConversionFunction<
+    bigint | number | string,
+    bigint
+  > = (value) => Either.encase(() => BigInt(value));
+}
 
 interface $CollectionSchema<ItemSchemaT> {
   readonly itemType: ItemSchemaT;
@@ -60,38 +94,16 @@ type $ConversionFunction<
   options: { defaultNamespace: DefaultNamespaceT | undefined },
 ) => Either<Error, TargetT>;
 
-const $convertToBigInt: $ConversionFunction<
-  bigint | number | string,
-  bigint
-> = (value) => Either.encase(() => BigInt(value));
-
-function $convertToIdentifier<
-  DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
->(
-  value: BlankNode | NamedNode | (keyof DefaultNamespaceT & string) | undefined,
-  { defaultNamespace }: { defaultNamespace: DefaultNamespaceT | undefined },
-): Either<Error, BlankNode | NamedNode> {
-  switch (typeof value) {
-    case "object":
-      return Either.of(value);
-    case "string":
-      return expandIri(value, { dataFactory: dataFactory, defaultNamespace });
-    case "undefined":
-      return Either.of(dataFactory.blankNode());
-  }
-}
-
 function $convertToIdentifierProperty<
   DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
 >(
   identifier:
-    | (() => BlankNode | NamedNode)
-    | BlankNode
-    | NamedNode
+    | (() => $Identifier)
+    | $Identifier
     | (keyof DefaultNamespaceT & string)
     | undefined,
   { defaultNamespace }: { defaultNamespace: DefaultNamespaceT | undefined },
-): Either<Error, () => BlankNode | NamedNode> {
+): Either<Error, () => $Identifier> {
   switch (typeof identifier) {
     case "function":
       return Either.of(identifier);
@@ -323,6 +335,30 @@ export namespace $EqualsResult {
     | { readonly left: any; readonly type: "right-null" };
 }
 
+type $Identifier = BlankNode | NamedNode;
+
+namespace $Identifier {
+  export function convert<
+    DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    value: $Identifier | (keyof DefaultNamespaceT & string) | undefined,
+    { defaultNamespace }: { defaultNamespace: DefaultNamespaceT | undefined },
+  ): Either<Error, $Identifier> {
+    switch (typeof value) {
+      case "object":
+        return Either.of(value);
+      case "string":
+        return expandIri(value, { dataFactory: dataFactory, defaultNamespace });
+      case "undefined":
+        return Either.of(dataFactory.blankNode());
+    }
+  }
+}
+
+namespace $Identifier {
+  export const parse = NTriplesIdentifier.parser(dataFactory);
+}
+
 function $identityConversionFunction<T>(
   value: T,
   _options: { defaultNamespace: NamespaceBuilder | undefined },
@@ -377,14 +413,14 @@ export type $ObjectTypeGuardFunction<ObjectT extends $Object> = (
   object: $Object,
 ) => object is ObjectT;
 
-const $parseIdentifier = NTriplesIdentifier.parser(dataFactory);
-
 export function $parseIri(identifier: string): Either<Error, NamedNode> {
-  return $parseIdentifier(identifier).chain((identifier) =>
-    identifier.termType === "NamedNode"
-      ? Right(identifier)
-      : Left(new Error("expected identifier to be NamedNode")),
-  ) as Either<Error, NamedNode>;
+  return $Identifier
+    .parse(identifier)
+    .chain((identifier) =>
+      identifier.termType === "NamedNode"
+        ? Right(identifier)
+        : Left(new Error("expected identifier to be NamedNode")),
+    ) as Either<Error, NamedNode>;
 }
 
 export type $PropertyPath = RdfxResourcePropertyPath;
@@ -543,24 +579,6 @@ export type $ToStringFunction<T> = (value: T) => string;
 
 export type $ToStringRecordFunction<T> = (value: T) => Record<string, string>;
 
-function $validateArray<ItemSchemaT, ItemValueT>(
-  validateItem: $ValidationFunction<ItemSchemaT, ItemValueT>,
-): $ValidationFunction<$CollectionSchema<ItemSchemaT>, readonly ItemValueT[]> {
-  return (schema, valueArray) => {
-    if (schema.minCount !== undefined && valueArray.length < schema.minCount) {
-      return Left(
-        new Error(
-          `value array has length (${valueArray.length}) less than minCount (${schema.minCount})`,
-        ),
-      ) as Either<Error, readonly ItemValueT[]>;
-    }
-
-    return Either.sequence(
-      valueArray.map((value) => validateItem(schema.itemType, value)),
-    ) as Either<Error, readonly ItemValueT[]>;
-  };
-}
-
 function $validateMaybe<ItemSchemaT, ItemValueT>(
   validateItem: $ValidationFunction<ItemSchemaT, ItemValueT>,
 ) {
@@ -629,6 +647,8 @@ const $xsd_boolean = dataFactory.namedNode(
 const $xsd_double = dataFactory.namedNode(
   "http://www.w3.org/2001/XMLSchema#double",
 );
+
+const $xsd_int = dataFactory.namedNode("http://www.w3.org/2001/XMLSchema#int");
 
 const $xsd_integer = dataFactory.namedNode(
   "http://www.w3.org/2001/XMLSchema#integer",
@@ -846,7 +866,7 @@ export namespace skos_ConceptScheme {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.altLabel.type,
           value,
         ),
@@ -872,7 +892,7 @@ export namespace skos_ConceptScheme {
       )(parameters.concepts, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.concepts.type,
           value,
         ),
@@ -883,7 +903,7 @@ export namespace skos_ConceptScheme {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.definition.type,
           value,
         ),
@@ -894,7 +914,7 @@ export namespace skos_ConceptScheme {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.hiddenLabel.type,
           value,
         ),
@@ -902,7 +922,7 @@ export namespace skos_ConceptScheme {
       notation: $convertToScalarSet($convertToLiteral)(parameters.notation, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.notation.type,
           value,
         ),
@@ -913,7 +933,7 @@ export namespace skos_ConceptScheme {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.prefLabel.type,
           value,
         ),
@@ -939,7 +959,7 @@ export namespace skos_ConceptScheme {
       )(parameters.topConcepts, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.topConcepts.type,
           value,
         ),
@@ -947,7 +967,7 @@ export namespace skos_ConceptScheme {
       type: $convertToScalarSet($convertToIri)(parameters.type, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.type.type,
           value,
         ),
@@ -1407,7 +1427,7 @@ export namespace skos_Concept {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.altLabel.type,
           value,
         ),
@@ -1433,7 +1453,7 @@ export namespace skos_Concept {
       )(parameters.broader, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_Concept.schema.properties.broader.type,
           value,
         ),
@@ -1444,7 +1464,7 @@ export namespace skos_Concept {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.definition.type,
           value,
         ),
@@ -1455,7 +1475,7 @@ export namespace skos_Concept {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.hiddenLabel.type,
           value,
         ),
@@ -1463,7 +1483,7 @@ export namespace skos_Concept {
       notation: $convertToScalarSet($convertToLiteral)(parameters.notation, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.notation.type,
           value,
         ),
@@ -1474,7 +1494,7 @@ export namespace skos_Concept {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.prefLabel.type,
           value,
         ),
@@ -1482,7 +1502,7 @@ export namespace skos_Concept {
       type: $convertToScalarSet($convertToIri)(parameters.type, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.type.type,
           value,
         ),
@@ -1717,6 +1737,591 @@ export namespace skos_Concept {
     $compactRecord({ $identifier: _skosConcept.$identifier().toString() });
 }
 
+/**
+ * Service with operations
+ */
+export type shaclmate_Service = {
+  readonly $identifier: () => shaclmate_Service.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  readonly label: readonly Literal[];
+
+  /**
+   * Identifier-safe name of the service
+   */
+  readonly name: Maybe<string>;
+
+  /**
+   * Set of operations associated with the service
+   */
+  readonly operations: readonly shaclmate_Operation[];
+};
+
+export namespace shaclmate_Service {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_Service.Identifier,
+    shaclmate_Service
+  > = (parameters) => {
+    if (!parameters.ignoreRdfType) {
+      parameters.resource.add(
+        $rdf_type,
+        shaclmate_Service.schema.properties.$rdfType.toRdfTypes,
+        parameters.graph,
+      );
+    }
+    parameters.resource.add(
+      shaclmate_Service.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Service.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Service.schema.properties.name.path,
+      parameters.object.name
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Service.schema.properties.operations.path,
+      parameters.object.operations.flatMap((item) =>
+        shaclmate_Operation.toRdfResourceValues(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: shaclmate_Service.schema.properties.operations.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Omit<shaclmate_Service, "comment" | "operations">
+  > = (_shaclmateService) =>
+    `shaclmate_Service(${JSON.stringify(shaclmate_Service.toStringRecord(_shaclmateService))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_Service.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_Service.Discriminated> = (parameters = {}) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("shaclmate_Service" as const),
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.label.type,
+          value,
+        ),
+      ),
+      name: $convertToMaybe($identityConversionFunction)(parameters.name, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_Service.schema.properties.name.type,
+          value,
+        ),
+      ),
+      operations: $convertToScalarSet($identityConversionFunction)(
+        parameters.operations,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.operations.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: shaclmate_Service.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => shaclmate_Service.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly name?: string | Maybe<string>;
+    readonly operations?: shaclmate_Operation | readonly shaclmate_Operation[];
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_Service.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_Service.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_Service & {
+    readonly termType: "shaclmate_Service";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_Service: $ObjectTypeGuardFunction<
+    shaclmate_Service.Discriminated
+  > = (object): object is shaclmate_Service.Discriminated =>
+    object.termType === "shaclmate_Service";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      $rdfType: {
+        fromRdfType: dataFactory.namedNode(
+          "http://purl.org/rdfx/builder/ontology#ShaclmateService",
+        ),
+        kind: "RdfType",
+        toRdfTypes: [
+          dataFactory.namedNode(
+            "http://purl.org/rdfx/builder/ontology#ShaclmateService",
+          ),
+        ],
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      name: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#name"),
+        type: {
+          itemType: { datatype: $xsd_string, kind: "String" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      operations: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#operation",
+        ),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_Operation.schema;
+            },
+            kind: "Set",
+          } as const;
+        },
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_Service.Identifier,
+    shaclmate_Service
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_Service.Identifier,
+    shaclmate_Service
+  >(shaclmate_Service._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_Service,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_Service.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Omit<shaclmate_Service, "comment" | "operations">
+  > = (_shaclmateService) =>
+    $compactRecord({
+      $identifier: _shaclmateService.$identifier().toString(),
+      label:
+        _shaclmateService.label.length > 0
+          ? `[${_shaclmateService.label.map((item) => item.toString())}]`
+          : undefined,
+      name: _shaclmateService.name.map((item) => item.toString()).extract(),
+    });
+}
+
+export type shaclmate_OperationOutputHttpBindingContentType =
+  shaclmate_OperationOutputHttpBindingContentType.Schema["in"][number];
+
+export namespace shaclmate_OperationOutputHttpBindingContentType {
+  export const schema = {
+    datatype: $xsd_string,
+    in: ["application/json"] as const,
+    kind: "String",
+  } as const;
+
+  export type Schema = typeof schema;
+}
+
+/**
+ * HTTP binding for an operation output.
+ */
+export type shaclmate_OperationOutputHttpBinding = {
+  readonly $identifier: () => shaclmate_OperationOutputHttpBinding.Identifier;
+
+  /**
+   * HTTP result response body content type. If not specified, it's inferred from the request method and content type.
+   */
+  readonly contentType: Maybe<shaclmate_OperationOutputHttpBindingContentType>;
+};
+
+export namespace shaclmate_OperationOutputHttpBinding {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_OperationOutputHttpBinding.Identifier,
+    shaclmate_OperationOutputHttpBinding
+  > = (parameters) => {
+    parameters.resource.add(
+      shaclmate_OperationOutputHttpBinding.schema.properties.contentType.path,
+      parameters.object.contentType
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<shaclmate_OperationOutputHttpBinding, "$identifier">
+  > = (_shaclmateOperationOutputHttpBinding) =>
+    `shaclmate_OperationOutputHttpBinding(${JSON.stringify(
+      shaclmate_OperationOutputHttpBinding.toStringRecord(
+        _shaclmateOperationOutputHttpBinding,
+      ),
+    )})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_OperationOutputHttpBinding.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_OperationOutputHttpBinding.Discriminated> = (
+    parameters = {},
+  ) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("shaclmate_OperationOutputHttpBinding" as const),
+      contentType: $convertToMaybe($identityConversionFunction)(
+        parameters.contentType,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_OperationOutputHttpBinding.schema.properties.contentType
+            .type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, {
+        $toString: shaclmate_OperationOutputHttpBinding.$toString,
+      }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => shaclmate_OperationOutputHttpBinding.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly contentType?:
+      | shaclmate_OperationOutputHttpBindingContentType
+      | Maybe<shaclmate_OperationOutputHttpBindingContentType>;
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_OperationOutputHttpBinding.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_OperationOutputHttpBinding.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_OperationOutputHttpBinding & {
+    readonly termType: "shaclmate_OperationOutputHttpBinding";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_OperationOutputHttpBinding: $ObjectTypeGuardFunction<
+    shaclmate_OperationOutputHttpBinding.Discriminated
+  > = (object): object is shaclmate_OperationOutputHttpBinding.Discriminated =>
+    object.termType === "shaclmate_OperationOutputHttpBinding";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      contentType: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://schema.org/contentType"),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationOutputHttpBindingContentType.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_OperationOutputHttpBinding.Identifier,
+    shaclmate_OperationOutputHttpBinding
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_OperationOutputHttpBinding.Identifier,
+    shaclmate_OperationOutputHttpBinding
+  >(shaclmate_OperationOutputHttpBinding._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_OperationOutputHttpBinding,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_OperationOutputHttpBinding.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<shaclmate_OperationOutputHttpBinding, "$identifier">
+  > = (_shaclmateOperationOutputHttpBinding) =>
+    $compactRecord({
+      $identifier: _shaclmateOperationOutputHttpBinding
+        .$identifier()
+        .toString(),
+    });
+}
+
+export type ShaclmateOperationOutputSpecificProperties = {
+  readonly $identifier: () => ShaclmateOperationOutputSpecificProperties.Identifier;
+
+  /**
+   * HTTP binding for the operation output.
+   */
+  readonly httpBinding: Maybe<shaclmate_OperationOutputHttpBinding>;
+};
+
+export namespace ShaclmateOperationOutputSpecificProperties {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    ShaclmateOperationOutputSpecificProperties.Identifier,
+    ShaclmateOperationOutputSpecificProperties
+  > = (parameters) => {
+    parameters.resource.add(
+      ShaclmateOperationOutputSpecificProperties.schema.properties.httpBinding
+        .path,
+      parameters.object.httpBinding.toList().flatMap((value) =>
+        shaclmate_OperationOutputHttpBinding.toRdfResourceValues(value, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath:
+            ShaclmateOperationOutputSpecificProperties.schema.properties
+              .httpBinding.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<ShaclmateOperationOutputSpecificProperties, "$identifier">
+  > = (_shaclmateOperationOutputSpecificProperties) =>
+    `ShaclmateOperationOutputSpecificProperties(${JSON.stringify(
+      ShaclmateOperationOutputSpecificProperties.toStringRecord(
+        _shaclmateOperationOutputSpecificProperties,
+      ),
+    )})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: ShaclmateOperationOutputSpecificProperties.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, ShaclmateOperationOutputSpecificProperties.Discriminated> =
+    (parameters = {}) =>
+      $sequenceRecord({
+        $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+          defaultNamespace: parameters.$defaultNamespace,
+        }),
+        termType: Right("ShaclmateOperationOutputSpecificProperties" as const),
+        httpBinding: $convertToMaybe($identityConversionFunction)(
+          parameters.httpBinding,
+          {
+            defaultNamespace: parameters.$defaultNamespace,
+          },
+        ).chain((value) =>
+          $validateMaybe($identityValidationFunction)(
+            ShaclmateOperationOutputSpecificProperties.schema.properties
+              .httpBinding.type,
+            value,
+          ),
+        ),
+      }).map((object) =>
+        $monkeyPatchObject(object, {
+          $toString: ShaclmateOperationOutputSpecificProperties.$toString,
+        }),
+      );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => ShaclmateOperationOutputSpecificProperties.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly httpBinding?:
+      | shaclmate_OperationOutputHttpBinding
+      | Maybe<shaclmate_OperationOutputHttpBinding>;
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: ShaclmateOperationOutputSpecificProperties.CreateParameters<$DefaultNamespaceT>,
+  ) => ShaclmateOperationOutputSpecificProperties.Discriminated = (
+    parameters,
+  ) => create(parameters).unsafeCoerce();
+
+  export type Discriminated = ShaclmateOperationOutputSpecificProperties & {
+    readonly termType: "ShaclmateOperationOutputSpecificProperties";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isShaclmateOperationOutputSpecificProperties: $ObjectTypeGuardFunction<
+    ShaclmateOperationOutputSpecificProperties.Discriminated
+  > = (
+    object,
+  ): object is ShaclmateOperationOutputSpecificProperties.Discriminated =>
+    object.termType === "ShaclmateOperationOutputSpecificProperties";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      httpBinding: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#httpBinding",
+        ),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationOutputHttpBinding.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    ShaclmateOperationOutputSpecificProperties.Identifier,
+    ShaclmateOperationOutputSpecificProperties
+  > = $wrap_ToRdfResourceFunction<
+    ShaclmateOperationOutputSpecificProperties.Identifier,
+    ShaclmateOperationOutputSpecificProperties
+  >(ShaclmateOperationOutputSpecificProperties._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    ShaclmateOperationOutputSpecificProperties,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    ShaclmateOperationOutputSpecificProperties.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<ShaclmateOperationOutputSpecificProperties, "$identifier">
+  > = (_shaclmateOperationOutputSpecificProperties) =>
+    $compactRecord({
+      $identifier: _shaclmateOperationOutputSpecificProperties
+        .$identifier()
+        .toString(),
+    });
+}
+
 export type sh_PropertyShapeSpecificProperties = {
   readonly $identifier: () => sh_PropertyShapeSpecificProperties.Identifier;
 
@@ -1753,11 +2358,11 @@ export type sh_PropertyShapeSpecificProperties = {
 
   readonly qualifiedMinCount: Maybe<bigint>;
 
-  readonly qualifiedValueShape: Maybe<BlankNode | NamedNode>;
+  readonly qualifiedValueShape: Maybe<$Identifier>;
 
   readonly qualifiedValueShapesDisjoint: Maybe<boolean>;
 
-  readonly resolve: Maybe<BlankNode | NamedNode>;
+  readonly resolve: Maybe<$Identifier>;
 
   readonly uniqueLang: Maybe<boolean>;
 };
@@ -1975,7 +2580,7 @@ export namespace sh_PropertyShapeSpecificProperties {
       disjoint: $convertToScalarSet($convertToIri)(parameters.disjoint, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_PropertyShapeSpecificProperties.schema.properties.disjoint.type,
           value,
         ),
@@ -1989,7 +2594,7 @@ export namespace sh_PropertyShapeSpecificProperties {
       equals: $convertToScalarSet($convertToIri)(parameters.equals, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_PropertyShapeSpecificProperties.schema.properties.equals.type,
           value,
         ),
@@ -2015,7 +2620,7 @@ export namespace sh_PropertyShapeSpecificProperties {
       )(parameters.groups, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_PropertyShapeSpecificProperties.schema.properties.groups.type,
           value,
         ),
@@ -2023,7 +2628,7 @@ export namespace sh_PropertyShapeSpecificProperties {
       lessThan: $convertToScalarSet($convertToIri)(parameters.lessThan, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_PropertyShapeSpecificProperties.schema.properties.lessThan.type,
           value,
         ),
@@ -2034,13 +2639,13 @@ export namespace sh_PropertyShapeSpecificProperties {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_PropertyShapeSpecificProperties.schema.properties.lessThanOrEquals
             .type,
           value,
         ),
       ),
-      maxCount: $convertToMaybe($convertToBigInt)(parameters.maxCount, {
+      maxCount: $convertToMaybe($BigInt.convert)(parameters.maxCount, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
@@ -2048,7 +2653,7 @@ export namespace sh_PropertyShapeSpecificProperties {
           value,
         ),
       ),
-      minCount: $convertToMaybe($convertToBigInt)(parameters.minCount, {
+      minCount: $convertToMaybe($BigInt.convert)(parameters.minCount, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
@@ -2073,7 +2678,7 @@ export namespace sh_PropertyShapeSpecificProperties {
         ),
       ),
       path: Either.of(parameters.path),
-      qualifiedMaxCount: $convertToMaybe($convertToBigInt)(
+      qualifiedMaxCount: $convertToMaybe($BigInt.convert)(
         parameters.qualifiedMaxCount,
         {
           defaultNamespace: parameters.$defaultNamespace,
@@ -2085,7 +2690,7 @@ export namespace sh_PropertyShapeSpecificProperties {
           value,
         ),
       ),
-      qualifiedMinCount: $convertToMaybe($convertToBigInt)(
+      qualifiedMinCount: $convertToMaybe($BigInt.convert)(
         parameters.qualifiedMinCount,
         {
           defaultNamespace: parameters.$defaultNamespace,
@@ -2097,7 +2702,7 @@ export namespace sh_PropertyShapeSpecificProperties {
           value,
         ),
       ),
-      qualifiedValueShape: $convertToMaybe($convertToIdentifier)(
+      qualifiedValueShape: $convertToMaybe($Identifier.convert)(
         parameters.qualifiedValueShape,
         {
           defaultNamespace: parameters.$defaultNamespace,
@@ -2120,7 +2725,7 @@ export namespace sh_PropertyShapeSpecificProperties {
           value,
         ),
       ),
-      resolve: $convertToMaybe($convertToIdentifier)(parameters.resolve, {
+      resolve: $convertToMaybe($Identifier.convert)(parameters.resolve, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
@@ -2193,13 +2798,13 @@ export namespace sh_PropertyShapeSpecificProperties {
       | BlankNode
       | NamedNode
       | (keyof $DefaultNamespaceT & string)
-      | Maybe<BlankNode | NamedNode>;
+      | Maybe<$Identifier>;
     readonly qualifiedValueShapesDisjoint?: boolean | Maybe<boolean>;
     readonly resolve?:
       | BlankNode
       | NamedNode
       | (keyof $DefaultNamespaceT & string)
-      | Maybe<BlankNode | NamedNode>;
+      | Maybe<$Identifier>;
     readonly uniqueLang?: boolean | Maybe<boolean>;
   };
 
@@ -2214,9 +2819,9 @@ export namespace sh_PropertyShapeSpecificProperties {
     readonly termType: "sh_PropertyShapeSpecificProperties";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = $Identifier;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $Identifier.parse;
   }
 
   export const issh_PropertyShapeSpecificProperties: $ObjectTypeGuardFunction<
@@ -2614,7 +3219,7 @@ export namespace sh_BaseShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_BaseShape.schema.properties.comment.path,
+      shaclmate_Service.schema.properties.comment.path,
       parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -2710,7 +3315,7 @@ export namespace sh_BaseShape {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_BaseShape.schema.properties.label.path,
+      shaclmate_Service.schema.properties.label.path,
       parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -3117,7 +3722,7 @@ export namespace sh_BaseShape {
       )(parameters.and, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
+        $validateMaybe($Array.validate($identityValidationFunction))(
           sh_BaseShape.schema.properties.and.type,
           value,
         ),
@@ -3125,7 +3730,7 @@ export namespace sh_BaseShape {
       class_: $convertToScalarSet($convertToIri)(parameters.class_, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.class_.type,
           value,
         ),
@@ -3133,8 +3738,8 @@ export namespace sh_BaseShape {
       comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.comment.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.comment.type,
           value,
         ),
       ),
@@ -3171,7 +3776,7 @@ export namespace sh_BaseShape {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.hasValues.type,
           value,
         ),
@@ -3188,7 +3793,7 @@ export namespace sh_BaseShape {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
+        $validateMaybe($Array.validate($identityValidationFunction))(
           sh_BaseShape.schema.properties.in_.type,
           value,
         ),
@@ -3204,8 +3809,8 @@ export namespace sh_BaseShape {
       label: $convertToScalarSet($convertToLiteral)(parameters.label, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.label.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.label.type,
           value,
         ),
       ),
@@ -3215,7 +3820,7 @@ export namespace sh_BaseShape {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
+        $validateMaybe($Array.validate($identityValidationFunction))(
           sh_BaseShape.schema.properties.languageIn.type,
           value,
         ),
@@ -3242,7 +3847,7 @@ export namespace sh_BaseShape {
           value,
         ),
       ),
-      maxLength: $convertToMaybe($convertToBigInt)(parameters.maxLength, {
+      maxLength: $convertToMaybe($BigInt.convert)(parameters.maxLength, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
@@ -3283,7 +3888,7 @@ export namespace sh_BaseShape {
           value,
         ),
       ),
-      minLength: $convertToMaybe($convertToBigInt)(parameters.minLength, {
+      minLength: $convertToMaybe($BigInt.convert)(parameters.minLength, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
         $validateMaybe($identityValidationFunction)(
@@ -3366,7 +3971,7 @@ export namespace sh_BaseShape {
       )(parameters.not, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.not.type,
           value,
         ),
@@ -3391,7 +3996,7 @@ export namespace sh_BaseShape {
       )(parameters.or, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
+        $validateMaybe($Array.validate($identityValidationFunction))(
           sh_BaseShape.schema.properties.or.type,
           value,
         ),
@@ -3432,7 +4037,7 @@ export namespace sh_BaseShape {
       subClassOf: $convertToScalarSet($convertToIri)(parameters.subClassOf, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.subClassOf.type,
           value,
         ),
@@ -3443,7 +4048,7 @@ export namespace sh_BaseShape {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.targetClasses.type,
           value,
         ),
@@ -3454,7 +4059,7 @@ export namespace sh_BaseShape {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.targetNodes.type,
           value,
         ),
@@ -3465,7 +4070,7 @@ export namespace sh_BaseShape {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.targetObjectsOf.type,
           value,
         ),
@@ -3476,7 +4081,7 @@ export namespace sh_BaseShape {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.targetSubjectsOf.type,
           value,
         ),
@@ -3484,7 +4089,7 @@ export namespace sh_BaseShape {
       type: $convertToScalarSet($convertToIri)(parameters.type, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.type.type,
           value,
         ),
@@ -3509,7 +4114,7 @@ export namespace sh_BaseShape {
       )(parameters.xone, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
+        $validateMaybe($Array.validate($identityValidationFunction))(
           sh_BaseShape.schema.properties.xone.type,
           value,
         ),
@@ -3690,9 +4295,9 @@ export namespace sh_BaseShape {
     readonly termType: "sh_BaseShape";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = $Identifier;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $Identifier.parse;
   }
 
   export const issh_BaseShape: $ObjectTypeGuardFunction<
@@ -4180,9 +4785,9 @@ export namespace sh_PropertyShape {
     readonly termType: "sh_PropertyShape";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = $Identifier;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $Identifier.parse;
   }
 
   export const issh_PropertyShape: $ObjectTypeGuardFunction<
@@ -4217,6 +4822,432 @@ export namespace sh_PropertyShape {
       resourceSet: options.resourceSet,
     }).identifier,
   ];
+}
+
+/**
+ * Result associated with an operation.
+ */
+export type shaclmate_OperationOutput = sh_PropertyShape &
+  ShaclmateOperationOutputSpecificProperties;
+
+export namespace shaclmate_OperationOutput {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_OperationOutput.Identifier,
+    shaclmate_OperationOutput
+  > = (parameters) => {
+    sh_PropertyShape._toRdfResource(parameters);
+    ShaclmateOperationOutputSpecificProperties._toRdfResource(parameters);
+  };
+
+  export const $toString: $ToStringFunction<shaclmate_OperationOutput> = (
+    value,
+  ) =>
+    JSON.stringify([
+      sh_PropertyShape.$toString(value),
+      ShaclmateOperationOutputSpecificProperties.$toString(value),
+    ]);
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: shaclmate_OperationOutput.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_OperationOutput.Discriminated> = (parameters) =>
+    sh_PropertyShape
+      .create(parameters)
+      .chain((member0) =>
+        ShaclmateOperationOutputSpecificProperties.create(parameters).map(
+          (member1) => ({
+            ...member0,
+            ...member1,
+            termType: "shaclmate_OperationOutput" as const,
+          }),
+        ),
+      )
+      .map((object) =>
+        $monkeyPatchObject(object, {
+          $toString: shaclmate_OperationOutput.$toString,
+        }),
+      );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = sh_PropertyShape.CreateParameters<$DefaultNamespaceT> &
+    ShaclmateOperationOutputSpecificProperties.CreateParameters<$DefaultNamespaceT>;
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: shaclmate_OperationOutput.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_OperationOutput.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_OperationOutput & {
+    readonly termType: "shaclmate_OperationOutput";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_OperationOutput: $ObjectTypeGuardFunction<
+    shaclmate_OperationOutput.Discriminated
+  > = (object): object is shaclmate_OperationOutput.Discriminated =>
+    object.termType === "shaclmate_OperationOutput";
+
+  export const schema = {
+    kind: "ObjectIntersection",
+    members: [
+      sh_PropertyShape.schema,
+      ShaclmateOperationOutputSpecificProperties.schema,
+    ] as const,
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_OperationOutput.Identifier,
+    shaclmate_OperationOutput
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_OperationOutput.Identifier,
+    shaclmate_OperationOutput
+  >(shaclmate_OperationOutput._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_OperationOutput,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_OperationOutput.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+}
+
+export type shaclmate_OperationInputHttpBindingContentType =
+  shaclmate_OperationInputHttpBindingContentType.Schema["in"][number];
+
+export namespace shaclmate_OperationInputHttpBindingContentType {
+  export const schema = {
+    datatype: $xsd_string,
+    in: ["application/json"] as const,
+    kind: "String",
+  } as const;
+
+  export type Schema = typeof schema;
+}
+
+/**
+ * HTTP binding for an operation input.
+ */
+export type shaclmate_OperationInputHttpBinding = {
+  readonly $identifier: () => shaclmate_OperationInputHttpBinding.Identifier;
+
+  /**
+   * HTTP request body content type. This should be specified if the operation has parameters that are not bound to its request URI template. If it's not specified it defaults to JSON.
+   */
+  readonly contentType: Maybe<shaclmate_OperationInputHttpBindingContentType>;
+};
+
+export namespace shaclmate_OperationInputHttpBinding {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_OperationInputHttpBinding.Identifier,
+    shaclmate_OperationInputHttpBinding
+  > = (parameters) => {
+    parameters.resource.add(
+      shaclmate_OperationInputHttpBinding.schema.properties.contentType.path,
+      parameters.object.contentType
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<shaclmate_OperationInputHttpBinding, "$identifier">
+  > = (_shaclmateOperationInputHttpBinding) =>
+    `shaclmate_OperationInputHttpBinding(${JSON.stringify(
+      shaclmate_OperationInputHttpBinding.toStringRecord(
+        _shaclmateOperationInputHttpBinding,
+      ),
+    )})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_OperationInputHttpBinding.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_OperationInputHttpBinding.Discriminated> = (
+    parameters = {},
+  ) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("shaclmate_OperationInputHttpBinding" as const),
+      contentType: $convertToMaybe($identityConversionFunction)(
+        parameters.contentType,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_OperationInputHttpBinding.schema.properties.contentType
+            .type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, {
+        $toString: shaclmate_OperationInputHttpBinding.$toString,
+      }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => shaclmate_OperationInputHttpBinding.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly contentType?:
+      | shaclmate_OperationInputHttpBindingContentType
+      | Maybe<shaclmate_OperationInputHttpBindingContentType>;
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_OperationInputHttpBinding.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_OperationInputHttpBinding.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_OperationInputHttpBinding & {
+    readonly termType: "shaclmate_OperationInputHttpBinding";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_OperationInputHttpBinding: $ObjectTypeGuardFunction<
+    shaclmate_OperationInputHttpBinding.Discriminated
+  > = (object): object is shaclmate_OperationInputHttpBinding.Discriminated =>
+    object.termType === "shaclmate_OperationInputHttpBinding";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      contentType: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://schema.org/encodingType"),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationInputHttpBindingContentType.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_OperationInputHttpBinding.Identifier,
+    shaclmate_OperationInputHttpBinding
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_OperationInputHttpBinding.Identifier,
+    shaclmate_OperationInputHttpBinding
+  >(shaclmate_OperationInputHttpBinding._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_OperationInputHttpBinding,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_OperationInputHttpBinding.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<shaclmate_OperationInputHttpBinding, "$identifier">
+  > = (_shaclmateOperationInputHttpBinding) =>
+    $compactRecord({
+      $identifier: _shaclmateOperationInputHttpBinding.$identifier().toString(),
+    });
+}
+
+export type ShaclmateOperationInputSpecificProperties = {
+  readonly $identifier: () => ShaclmateOperationInputSpecificProperties.Identifier;
+
+  /**
+   * HTTP binding for the operation input.
+   */
+  readonly httpBinding: Maybe<shaclmate_OperationInputHttpBinding>;
+};
+
+export namespace ShaclmateOperationInputSpecificProperties {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    ShaclmateOperationInputSpecificProperties.Identifier,
+    ShaclmateOperationInputSpecificProperties
+  > = (parameters) => {
+    parameters.resource.add(
+      ShaclmateOperationInputSpecificProperties.schema.properties.httpBinding
+        .path,
+      parameters.object.httpBinding.toList().flatMap((value) =>
+        shaclmate_OperationInputHttpBinding.toRdfResourceValues(value, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath:
+            ShaclmateOperationInputSpecificProperties.schema.properties
+              .httpBinding.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<ShaclmateOperationInputSpecificProperties, "$identifier">
+  > = (_shaclmateOperationInputSpecificProperties) =>
+    `ShaclmateOperationInputSpecificProperties(${JSON.stringify(
+      ShaclmateOperationInputSpecificProperties.toStringRecord(
+        _shaclmateOperationInputSpecificProperties,
+      ),
+    )})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: ShaclmateOperationInputSpecificProperties.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, ShaclmateOperationInputSpecificProperties.Discriminated> =
+    (parameters = {}) =>
+      $sequenceRecord({
+        $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+          defaultNamespace: parameters.$defaultNamespace,
+        }),
+        termType: Right("ShaclmateOperationInputSpecificProperties" as const),
+        httpBinding: $convertToMaybe($identityConversionFunction)(
+          parameters.httpBinding,
+          {
+            defaultNamespace: parameters.$defaultNamespace,
+          },
+        ).chain((value) =>
+          $validateMaybe($identityValidationFunction)(
+            ShaclmateOperationInputSpecificProperties.schema.properties
+              .httpBinding.type,
+            value,
+          ),
+        ),
+      }).map((object) =>
+        $monkeyPatchObject(object, {
+          $toString: ShaclmateOperationInputSpecificProperties.$toString,
+        }),
+      );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => ShaclmateOperationInputSpecificProperties.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly httpBinding?:
+      | shaclmate_OperationInputHttpBinding
+      | Maybe<shaclmate_OperationInputHttpBinding>;
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: ShaclmateOperationInputSpecificProperties.CreateParameters<$DefaultNamespaceT>,
+  ) => ShaclmateOperationInputSpecificProperties.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = ShaclmateOperationInputSpecificProperties & {
+    readonly termType: "ShaclmateOperationInputSpecificProperties";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isShaclmateOperationInputSpecificProperties: $ObjectTypeGuardFunction<
+    ShaclmateOperationInputSpecificProperties.Discriminated
+  > = (
+    object,
+  ): object is ShaclmateOperationInputSpecificProperties.Discriminated =>
+    object.termType === "ShaclmateOperationInputSpecificProperties";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      httpBinding: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#httpBinding",
+        ),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationInputHttpBinding.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    ShaclmateOperationInputSpecificProperties.Identifier,
+    ShaclmateOperationInputSpecificProperties
+  > = $wrap_ToRdfResourceFunction<
+    ShaclmateOperationInputSpecificProperties.Identifier,
+    ShaclmateOperationInputSpecificProperties
+  >(ShaclmateOperationInputSpecificProperties._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    ShaclmateOperationInputSpecificProperties,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    ShaclmateOperationInputSpecificProperties.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<ShaclmateOperationInputSpecificProperties, "$identifier">
+  > = (_shaclmateOperationInputSpecificProperties) =>
+    $compactRecord({
+      $identifier: _shaclmateOperationInputSpecificProperties
+        .$identifier()
+        .toString(),
+    });
 }
 
 export type sh_NodeShapeSpecificProperties = {
@@ -4445,7 +5476,7 @@ export namespace sh_NodeShapeSpecificProperties {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateMaybe($validateArray($identityValidationFunction))(
+        $validateMaybe($Array.validate($identityValidationFunction))(
           sh_NodeShapeSpecificProperties.schema.properties.ignoredProperties
             .type,
           value,
@@ -4472,7 +5503,7 @@ export namespace sh_NodeShapeSpecificProperties {
       )(parameters.properties, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_NodeShapeSpecificProperties.schema.properties.properties.type,
           value,
         ),
@@ -4488,7 +5519,7 @@ export namespace sh_NodeShapeSpecificProperties {
       toRdfTypes: $convertToScalarSet($convertToIri)(parameters.toRdfTypes, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_NodeShapeSpecificProperties.schema.properties.toRdfTypes.type,
           value,
         ),
@@ -4499,7 +5530,7 @@ export namespace sh_NodeShapeSpecificProperties {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_NodeShapeSpecificProperties.schema.properties.tsImports.type,
           value,
         ),
@@ -4560,9 +5591,9 @@ export namespace sh_NodeShapeSpecificProperties {
     readonly termType: "sh_NodeShapeSpecificProperties";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = $Identifier;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $Identifier.parse;
   }
 
   export const issh_NodeShapeSpecificProperties: $ObjectTypeGuardFunction<
@@ -4761,9 +5792,9 @@ export namespace sh_NodeShape {
     readonly termType: "sh_NodeShape";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = $Identifier;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $Identifier.parse;
   }
 
   export const issh_NodeShape: $ObjectTypeGuardFunction<
@@ -4799,6 +5830,1067 @@ export namespace sh_NodeShape {
   ];
 }
 
+/**
+ * Parameter associated with an operation.
+ */
+export type shaclmate_OperationInput = sh_NodeShape &
+  ShaclmateOperationInputSpecificProperties;
+
+export namespace shaclmate_OperationInput {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_OperationInput.Identifier,
+    shaclmate_OperationInput
+  > = (parameters) => {
+    sh_NodeShape._toRdfResource(parameters);
+    ShaclmateOperationInputSpecificProperties._toRdfResource(parameters);
+  };
+
+  export const $toString: $ToStringFunction<shaclmate_OperationInput> = (
+    value,
+  ) =>
+    JSON.stringify([
+      sh_NodeShape.$toString(value),
+      ShaclmateOperationInputSpecificProperties.$toString(value),
+    ]);
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_OperationInput.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_OperationInput.Discriminated> = (parameters) =>
+    sh_NodeShape
+      .create(parameters)
+      .chain((member0) =>
+        ShaclmateOperationInputSpecificProperties.create(parameters).map(
+          (member1) => ({
+            ...member0,
+            ...member1,
+            termType: "shaclmate_OperationInput" as const,
+          }),
+        ),
+      )
+      .map((object) =>
+        $monkeyPatchObject(object, {
+          $toString: shaclmate_OperationInput.$toString,
+        }),
+      );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = sh_NodeShape.CreateParameters<$DefaultNamespaceT> &
+    ShaclmateOperationInputSpecificProperties.CreateParameters<$DefaultNamespaceT>;
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_OperationInput.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_OperationInput.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_OperationInput & {
+    readonly termType: "shaclmate_OperationInput";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_OperationInput: $ObjectTypeGuardFunction<
+    shaclmate_OperationInput.Discriminated
+  > = (object): object is shaclmate_OperationInput.Discriminated =>
+    object.termType === "shaclmate_OperationInput";
+
+  export const schema = {
+    kind: "ObjectIntersection",
+    members: [
+      sh_NodeShape.schema,
+      ShaclmateOperationInputSpecificProperties.schema,
+    ] as const,
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_OperationInput.Identifier,
+    shaclmate_OperationInput
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_OperationInput.Identifier,
+    shaclmate_OperationInput
+  >(shaclmate_OperationInput._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_OperationInput,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_OperationInput.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+}
+
+/**
+ * HTTP binding for an operation.
+ */
+export type shaclmate_OperationHttpBinding = {
+  readonly $identifier: () => shaclmate_OperationHttpBinding.Identifier;
+
+  /**
+   * HTTP request body method. If this is not specified, it's inferred from the existence of path, query, and/or body parameters.
+   */
+  readonly method: Maybe<HttpMethod>;
+
+  /**
+   * HTTP result response status code. If not specified, it defaults to 200 if there is a result, 204 if not.
+   */
+  readonly statusCode: Maybe<HttpSuccessStatusCode>;
+
+  /**
+   * RFC 6570 URI template for the HTTP request. Variables in the template must correspond to properties of the parameter. Any other properties of the parameter are serialized into the HTTP requets body following the given/inferred content type.
+   */
+  readonly urlTemplate: string;
+};
+
+export namespace shaclmate_OperationHttpBinding {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_OperationHttpBinding.Identifier,
+    shaclmate_OperationHttpBinding
+  > = (parameters) => {
+    parameters.resource.add(
+      shaclmate_OperationHttpBinding.schema.properties.method.path,
+      parameters.object.method
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_OperationHttpBinding.schema.properties.statusCode.path,
+      parameters.object.statusCode
+        .toList()
+        .flatMap((value) => [$literalFactory.number(value, $xsd_int)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_OperationHttpBinding.schema.properties.urlTemplate.path,
+      [$literalFactory.string(parameters.object.urlTemplate)],
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<shaclmate_OperationHttpBinding, "$identifier">
+  > = (_shaclmateOperationHttpBinding) =>
+    `shaclmate_OperationHttpBinding(${JSON.stringify(
+      shaclmate_OperationHttpBinding.toStringRecord(
+        _shaclmateOperationHttpBinding,
+      ),
+    )})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: shaclmate_OperationHttpBinding.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_OperationHttpBinding.Discriminated> = (
+    parameters,
+  ) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("shaclmate_OperationHttpBinding" as const),
+      method: $convertToMaybe($identityConversionFunction)(parameters.method, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_OperationHttpBinding.schema.properties.method.type,
+          value,
+        ),
+      ),
+      statusCode: $convertToMaybe($identityConversionFunction)(
+        parameters.statusCode,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_OperationHttpBinding.schema.properties.statusCode.type,
+          value,
+        ),
+      ),
+      urlTemplate: Either.of(parameters.urlTemplate),
+    }).map((object) =>
+      $monkeyPatchObject(object, {
+        $toString: shaclmate_OperationHttpBinding.$toString,
+      }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => shaclmate_OperationHttpBinding.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly method?: HttpMethod | Maybe<HttpMethod>;
+    readonly statusCode?: HttpSuccessStatusCode | Maybe<HttpSuccessStatusCode>;
+    readonly urlTemplate: string;
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: shaclmate_OperationHttpBinding.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_OperationHttpBinding.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_OperationHttpBinding & {
+    readonly termType: "shaclmate_OperationHttpBinding";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_OperationHttpBinding: $ObjectTypeGuardFunction<
+    shaclmate_OperationHttpBinding.Discriminated
+  > = (object): object is shaclmate_OperationHttpBinding.Discriminated =>
+    object.termType === "shaclmate_OperationHttpBinding";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      method: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://schema.org/httpMethod"),
+        get type() {
+          return {
+            get itemType() {
+              return HttpMethod.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      statusCode: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#httpStatusCode",
+        ),
+        get type() {
+          return {
+            get itemType() {
+              return HttpSuccessStatusCode.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      urlTemplate: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://schema.org/urlTemplate"),
+        type: { datatype: $xsd_string, kind: "String" } as const,
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_OperationHttpBinding.Identifier,
+    shaclmate_OperationHttpBinding
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_OperationHttpBinding.Identifier,
+    shaclmate_OperationHttpBinding
+  >(shaclmate_OperationHttpBinding._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_OperationHttpBinding,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_OperationHttpBinding.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<shaclmate_OperationHttpBinding, "$identifier">
+  > = (_shaclmateOperationHttpBinding) =>
+    $compactRecord({
+      $identifier: _shaclmateOperationHttpBinding.$identifier().toString(),
+    });
+}
+
+/**
+ * HTTP binding for an operation error.
+ */
+export type shaclmate_OperationErrorHttpBinding = {
+  readonly $identifier: () => shaclmate_OperationErrorHttpBinding.Identifier;
+
+  /**
+   * HTTP client/server error code for the bound error.
+   */
+  readonly statusCode: HttpErrorStatusCode;
+};
+
+export namespace shaclmate_OperationErrorHttpBinding {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_OperationErrorHttpBinding.Identifier,
+    shaclmate_OperationErrorHttpBinding
+  > = (parameters) => {
+    parameters.resource.add(
+      shaclmate_OperationErrorHttpBinding.schema.properties.statusCode.path,
+      [$literalFactory.number(parameters.object.statusCode, $xsd_int)],
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<shaclmate_OperationErrorHttpBinding, "$identifier">
+  > = (_shaclmateOperationErrorHttpBinding) =>
+    `shaclmate_OperationErrorHttpBinding(${JSON.stringify(
+      shaclmate_OperationErrorHttpBinding.toStringRecord(
+        _shaclmateOperationErrorHttpBinding,
+      ),
+    )})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: shaclmate_OperationErrorHttpBinding.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_OperationErrorHttpBinding.Discriminated> = (
+    parameters,
+  ) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("shaclmate_OperationErrorHttpBinding" as const),
+      statusCode: Either.of(parameters.statusCode),
+    }).map((object) =>
+      $monkeyPatchObject(object, {
+        $toString: shaclmate_OperationErrorHttpBinding.$toString,
+      }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => shaclmate_OperationErrorHttpBinding.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly statusCode: HttpErrorStatusCode;
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters: shaclmate_OperationErrorHttpBinding.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_OperationErrorHttpBinding.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_OperationErrorHttpBinding & {
+    readonly termType: "shaclmate_OperationErrorHttpBinding";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_OperationErrorHttpBinding: $ObjectTypeGuardFunction<
+    shaclmate_OperationErrorHttpBinding.Discriminated
+  > = (object): object is shaclmate_OperationErrorHttpBinding.Discriminated =>
+    object.termType === "shaclmate_OperationErrorHttpBinding";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      statusCode: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#httpStatusCode",
+        ),
+        get type() {
+          return HttpErrorStatusCode.schema;
+        },
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_OperationErrorHttpBinding.Identifier,
+    shaclmate_OperationErrorHttpBinding
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_OperationErrorHttpBinding.Identifier,
+    shaclmate_OperationErrorHttpBinding
+  >(shaclmate_OperationErrorHttpBinding._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_OperationErrorHttpBinding,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_OperationErrorHttpBinding.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<shaclmate_OperationErrorHttpBinding, "$identifier">
+  > = (_shaclmateOperationErrorHttpBinding) =>
+    $compactRecord({
+      $identifier: _shaclmateOperationErrorHttpBinding.$identifier().toString(),
+    });
+}
+
+export type ShaclmateOperationErrorSpecificProperties = {
+  readonly $identifier: () => ShaclmateOperationErrorSpecificProperties.Identifier;
+
+  /**
+   * HTTP binding for the operation error.
+   */
+  readonly httpBinding: Maybe<shaclmate_OperationErrorHttpBinding>;
+};
+
+export namespace ShaclmateOperationErrorSpecificProperties {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    ShaclmateOperationErrorSpecificProperties.Identifier,
+    ShaclmateOperationErrorSpecificProperties
+  > = (parameters) => {
+    parameters.resource.add(
+      ShaclmateOperationErrorSpecificProperties.schema.properties.httpBinding
+        .path,
+      parameters.object.httpBinding.toList().flatMap((value) =>
+        shaclmate_OperationErrorHttpBinding.toRdfResourceValues(value, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath:
+            ShaclmateOperationErrorSpecificProperties.schema.properties
+              .httpBinding.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<ShaclmateOperationErrorSpecificProperties, "$identifier">
+  > = (_shaclmateOperationErrorSpecificProperties) =>
+    `ShaclmateOperationErrorSpecificProperties(${JSON.stringify(
+      ShaclmateOperationErrorSpecificProperties.toStringRecord(
+        _shaclmateOperationErrorSpecificProperties,
+      ),
+    )})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: ShaclmateOperationErrorSpecificProperties.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, ShaclmateOperationErrorSpecificProperties.Discriminated> =
+    (parameters = {}) =>
+      $sequenceRecord({
+        $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+          defaultNamespace: parameters.$defaultNamespace,
+        }),
+        termType: Right("ShaclmateOperationErrorSpecificProperties" as const),
+        httpBinding: $convertToMaybe($identityConversionFunction)(
+          parameters.httpBinding,
+          {
+            defaultNamespace: parameters.$defaultNamespace,
+          },
+        ).chain((value) =>
+          $validateMaybe($identityValidationFunction)(
+            ShaclmateOperationErrorSpecificProperties.schema.properties
+              .httpBinding.type,
+            value,
+          ),
+        ),
+      }).map((object) =>
+        $monkeyPatchObject(object, {
+          $toString: ShaclmateOperationErrorSpecificProperties.$toString,
+        }),
+      );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => ShaclmateOperationErrorSpecificProperties.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly httpBinding?:
+      | shaclmate_OperationErrorHttpBinding
+      | Maybe<shaclmate_OperationErrorHttpBinding>;
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: ShaclmateOperationErrorSpecificProperties.CreateParameters<$DefaultNamespaceT>,
+  ) => ShaclmateOperationErrorSpecificProperties.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = ShaclmateOperationErrorSpecificProperties & {
+    readonly termType: "ShaclmateOperationErrorSpecificProperties";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isShaclmateOperationErrorSpecificProperties: $ObjectTypeGuardFunction<
+    ShaclmateOperationErrorSpecificProperties.Discriminated
+  > = (
+    object,
+  ): object is ShaclmateOperationErrorSpecificProperties.Discriminated =>
+    object.termType === "ShaclmateOperationErrorSpecificProperties";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      httpBinding: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#httpBinding",
+        ),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationErrorHttpBinding.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    ShaclmateOperationErrorSpecificProperties.Identifier,
+    ShaclmateOperationErrorSpecificProperties
+  > = $wrap_ToRdfResourceFunction<
+    ShaclmateOperationErrorSpecificProperties.Identifier,
+    ShaclmateOperationErrorSpecificProperties
+  >(ShaclmateOperationErrorSpecificProperties._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    ShaclmateOperationErrorSpecificProperties,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    ShaclmateOperationErrorSpecificProperties.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<ShaclmateOperationErrorSpecificProperties, "$identifier">
+  > = (_shaclmateOperationErrorSpecificProperties) =>
+    $compactRecord({
+      $identifier: _shaclmateOperationErrorSpecificProperties
+        .$identifier()
+        .toString(),
+    });
+}
+
+/**
+ * Error type associated with an operation. Must be a struct type (i.e., have at least one sh:property).
+ */
+export type shaclmate_OperationError = sh_NodeShape &
+  ShaclmateOperationErrorSpecificProperties;
+
+export namespace shaclmate_OperationError {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_OperationError.Identifier,
+    shaclmate_OperationError
+  > = (parameters) => {
+    sh_NodeShape._toRdfResource(parameters);
+    ShaclmateOperationErrorSpecificProperties._toRdfResource(parameters);
+  };
+
+  export const $toString: $ToStringFunction<shaclmate_OperationError> = (
+    value,
+  ) =>
+    JSON.stringify([
+      sh_NodeShape.$toString(value),
+      ShaclmateOperationErrorSpecificProperties.$toString(value),
+    ]);
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_OperationError.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_OperationError.Discriminated> = (parameters) =>
+    sh_NodeShape
+      .create(parameters)
+      .chain((member0) =>
+        ShaclmateOperationErrorSpecificProperties.create(parameters).map(
+          (member1) => ({
+            ...member0,
+            ...member1,
+            termType: "shaclmate_OperationError" as const,
+          }),
+        ),
+      )
+      .map((object) =>
+        $monkeyPatchObject(object, {
+          $toString: shaclmate_OperationError.$toString,
+        }),
+      );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = sh_NodeShape.CreateParameters<$DefaultNamespaceT> &
+    ShaclmateOperationErrorSpecificProperties.CreateParameters<$DefaultNamespaceT>;
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_OperationError.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_OperationError.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_OperationError & {
+    readonly termType: "shaclmate_OperationError";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_OperationError: $ObjectTypeGuardFunction<
+    shaclmate_OperationError.Discriminated
+  > = (object): object is shaclmate_OperationError.Discriminated =>
+    object.termType === "shaclmate_OperationError";
+
+  export const schema = {
+    kind: "ObjectIntersection",
+    members: [
+      sh_NodeShape.schema,
+      ShaclmateOperationErrorSpecificProperties.schema,
+    ] as const,
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_OperationError.Identifier,
+    shaclmate_OperationError
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_OperationError.Identifier,
+    shaclmate_OperationError
+  >(shaclmate_OperationError._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_OperationError,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_OperationError.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+}
+
+/**
+ * Service operation.
+ */
+export type shaclmate_Operation = {
+  readonly $identifier: () => shaclmate_Operation.Identifier;
+
+  readonly comment: readonly Literal[];
+
+  /**
+   * Error types associated with the operation.
+   */
+  readonly errors: readonly shaclmate_OperationError[];
+
+  /**
+   * HTTP binding for the operation.
+   */
+  readonly httpBinding: Maybe<shaclmate_OperationHttpBinding>;
+
+  /**
+   * Optional operation input type.
+   */
+  readonly input: Maybe<shaclmate_OperationInput>;
+
+  readonly label: readonly Literal[];
+
+  /**
+   * Identifier-safe name of the operation, incorporated into generated code.
+   */
+  readonly name: Maybe<string>;
+
+  /**
+   * Optional operation output type.
+   */
+  readonly output: Maybe<shaclmate_OperationOutput>;
+};
+
+export namespace shaclmate_Operation {
+  export const _toRdfResource: $_ToRdfResourceFunction<
+    shaclmate_Operation.Identifier,
+    shaclmate_Operation
+  > = (parameters) => {
+    parameters.resource.add(
+      shaclmate_Service.schema.properties.comment.path,
+      parameters.object.comment.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Operation.schema.properties.errors.path,
+      parameters.object.errors.flatMap((item) =>
+        shaclmate_OperationError.toRdfResourceValues(item, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: shaclmate_Operation.schema.properties.errors.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Operation.schema.properties.httpBinding.path,
+      parameters.object.httpBinding.toList().flatMap((value) =>
+        shaclmate_OperationHttpBinding.toRdfResourceValues(value, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: shaclmate_Operation.schema.properties.httpBinding.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Operation.schema.properties.input.path,
+      parameters.object.input.toList().flatMap((value) =>
+        shaclmate_OperationInput.toRdfResourceValues(value, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: shaclmate_Operation.schema.properties.input.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Service.schema.properties.label.path,
+      parameters.object.label.flatMap((item) => [item]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Operation.schema.properties.name.path,
+      parameters.object.name
+        .toList()
+        .flatMap((value) => [$literalFactory.string(value)]),
+      parameters.graph,
+    );
+    parameters.resource.add(
+      shaclmate_Operation.schema.properties.output.path,
+      parameters.object.output.toList().flatMap((value) =>
+        shaclmate_OperationOutput.toRdfResourceValues(value, {
+          ignoreRdfType: parameters.ignoreRdfType,
+          graph: parameters.graph,
+          resource: parameters.resource,
+          resourceSet: parameters.resourceSet,
+          propertyPath: shaclmate_Operation.schema.properties.output.path,
+        }),
+      ),
+      parameters.graph,
+    );
+    return parameters.resource;
+  };
+
+  export const $toString: $ToStringFunction<
+    Pick<shaclmate_Operation, "$identifier" | "label" | "name">
+  > = (_shaclmateOperation) =>
+    `shaclmate_Operation(${JSON.stringify(shaclmate_Operation.toStringRecord(_shaclmateOperation))})`;
+
+  export const create: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_Operation.CreateParameters<$DefaultNamespaceT>,
+  ) => Either<Error, shaclmate_Operation.Discriminated> = (parameters = {}) =>
+    $sequenceRecord({
+      $identifier: $convertToIdentifierProperty(parameters.$identifier, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }),
+      termType: Right("shaclmate_Operation" as const),
+      comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.comment.type,
+          value,
+        ),
+      ),
+      errors: $convertToScalarSet($identityConversionFunction)(
+        parameters.errors,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Operation.schema.properties.errors.type,
+          value,
+        ),
+      ),
+      httpBinding: $convertToMaybe($identityConversionFunction)(
+        parameters.httpBinding,
+        {
+          defaultNamespace: parameters.$defaultNamespace,
+        },
+      ).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_Operation.schema.properties.httpBinding.type,
+          value,
+        ),
+      ),
+      input: $convertToMaybe($identityConversionFunction)(parameters.input, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_Operation.schema.properties.input.type,
+          value,
+        ),
+      ),
+      label: $convertToScalarSet($convertToLiteral)(parameters.label, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.label.type,
+          value,
+        ),
+      ),
+      name: $convertToMaybe($identityConversionFunction)(parameters.name, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_Operation.schema.properties.name.type,
+          value,
+        ),
+      ),
+      output: $convertToMaybe($identityConversionFunction)(parameters.output, {
+        defaultNamespace: parameters.$defaultNamespace,
+      }).chain((value) =>
+        $validateMaybe($identityValidationFunction)(
+          shaclmate_Operation.schema.properties.output.type,
+          value,
+        ),
+      ),
+    }).map((object) =>
+      $monkeyPatchObject(object, { $toString: shaclmate_Operation.$toString }),
+    );
+
+  export type CreateParameters<
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  > = {
+    readonly $defaultNamespace?: $DefaultNamespaceT;
+    readonly $identifier?:
+      | (() => shaclmate_Operation.Identifier)
+      | BlankNode
+      | NamedNode
+      | (keyof $DefaultNamespaceT & string);
+    readonly comment?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly errors?:
+      | shaclmate_OperationError
+      | readonly shaclmate_OperationError[];
+    readonly httpBinding?:
+      | shaclmate_OperationHttpBinding
+      | Maybe<shaclmate_OperationHttpBinding>;
+    readonly input?: shaclmate_OperationInput | Maybe<shaclmate_OperationInput>;
+    readonly label?:
+      | bigint
+      | boolean
+      | number
+      | string
+      | Date
+      | Literal
+      | readonly (bigint | boolean | number | string | Date | Literal)[];
+    readonly name?: string | Maybe<string>;
+    readonly output?:
+      | shaclmate_OperationOutput
+      | Maybe<shaclmate_OperationOutput>;
+  };
+
+  export const createUnsafe: <
+    $DefaultNamespaceT extends NamespaceBuilder = NamespaceBuilder,
+  >(
+    parameters?: shaclmate_Operation.CreateParameters<$DefaultNamespaceT>,
+  ) => shaclmate_Operation.Discriminated = (parameters) =>
+    create(parameters).unsafeCoerce();
+
+  export type Discriminated = shaclmate_Operation & {
+    readonly termType: "shaclmate_Operation";
+  };
+
+  export type Identifier = $Identifier;
+  export namespace Identifier {
+    export const parse = $Identifier.parse;
+  }
+
+  export const isshaclmate_Operation: $ObjectTypeGuardFunction<
+    shaclmate_Operation.Discriminated
+  > = (object): object is shaclmate_Operation.Discriminated =>
+    object.termType === "shaclmate_Operation";
+
+  export const schema = {
+    kind: "Object",
+    properties: {
+      $identifier: {
+        kind: "Identifier",
+        type: { kind: "Identifier" } as const,
+      } as const,
+      comment: {
+        kind: "Shacl",
+        path: $rdfs_comment,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      errors: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#error"),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationError.schema;
+            },
+            kind: "Set",
+          } as const;
+        },
+      } as const,
+      httpBinding: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#httpBinding",
+        ),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationHttpBinding.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      input: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#input"),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationInput.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+      label: {
+        kind: "Shacl",
+        path: $rdfs_label,
+        type: { itemType: { kind: "Literal" } as const, kind: "Set" } as const,
+      } as const,
+      name: {
+        kind: "Shacl",
+        path: dataFactory.namedNode("http://purl.org/shaclmate/ontology#name"),
+        type: {
+          itemType: { datatype: $xsd_string, kind: "String" } as const,
+          kind: "Option",
+        } as const,
+      } as const,
+      output: {
+        kind: "Shacl",
+        path: dataFactory.namedNode(
+          "http://purl.org/shaclmate/ontology#output",
+        ),
+        get type() {
+          return {
+            get itemType() {
+              return shaclmate_OperationOutput.schema;
+            },
+            kind: "Option",
+          } as const;
+        },
+      } as const,
+    },
+  } as const;
+
+  export type Schema = typeof schema;
+
+  export const toRdfResource: $ToRdfResourceFunction<
+    shaclmate_Operation.Identifier,
+    shaclmate_Operation
+  > = $wrap_ToRdfResourceFunction<
+    shaclmate_Operation.Identifier,
+    shaclmate_Operation
+  >(shaclmate_Operation._toRdfResource);
+
+  export const toRdfResourceValues: $ToRdfResourceValuesFunction<
+    shaclmate_Operation,
+    BlankNode | NamedNode
+  > = (value, options) => [
+    shaclmate_Operation.toRdfResource(value, {
+      graph: options.graph,
+      resourceSet: options.resourceSet,
+    }).identifier,
+  ];
+
+  export const toStringRecord: $ToStringRecordFunction<
+    Pick<shaclmate_Operation, "$identifier" | "label" | "name">
+  > = (_shaclmateOperation) =>
+    $compactRecord({
+      $identifier: _shaclmateOperation.$identifier().toString(),
+      label:
+        _shaclmateOperation.label.length > 0
+          ? `[${_shaclmateOperation.label.map((item) => item.toString())}]`
+          : undefined,
+      name: _shaclmateOperation.name.map((item) => item.toString()).extract(),
+    });
+}
+
 export type sh_Shape =
   | sh_NodeShape.Discriminated
   | sh_PropertyShape.Discriminated;
@@ -4815,9 +6907,9 @@ export namespace sh_Shape {
     throw new Error("unable to serialize to string");
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = $Identifier;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $Identifier.parse;
   }
 
   export const issh_Shape: $ObjectTypeGuardFunction<sh_Shape> = (
@@ -4921,12 +7013,12 @@ export namespace sh_PropertyGroup {
       );
     }
     parameters.resource.add(
-      sh_BaseShape.schema.properties.comment.path,
+      shaclmate_Service.schema.properties.comment.path,
       parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_BaseShape.schema.properties.label.path,
+      shaclmate_Service.schema.properties.label.path,
       parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -4951,16 +7043,16 @@ export namespace sh_PropertyGroup {
       comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.comment.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.comment.type,
           value,
         ),
       ),
       label: $convertToScalarSet($convertToLiteral)(parameters.label, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.label.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.label.type,
           value,
         ),
       ),
@@ -5006,9 +7098,9 @@ export namespace sh_PropertyGroup {
     readonly termType: "sh_PropertyGroup";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = $Identifier;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $Identifier.parse;
   }
 
   export const issh_PropertyGroup: $ObjectTypeGuardFunction<
@@ -5103,7 +7195,7 @@ export namespace rdfs_Class {
       );
     }
     parameters.resource.add(
-      sh_BaseShape.schema.properties.comment.path,
+      shaclmate_Service.schema.properties.comment.path,
       parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -5113,7 +7205,7 @@ export namespace rdfs_Class {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_BaseShape.schema.properties.label.path,
+      shaclmate_Service.schema.properties.label.path,
       parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -5153,8 +7245,8 @@ export namespace rdfs_Class {
       comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.comment.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.comment.type,
           value,
         ),
       ),
@@ -5169,8 +7261,8 @@ export namespace rdfs_Class {
       label: $convertToScalarSet($convertToLiteral)(parameters.label, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.label.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.label.type,
           value,
         ),
       ),
@@ -5180,7 +7272,7 @@ export namespace rdfs_Class {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           rdfs_Class.schema.properties.seeAlso.type,
           value,
         ),
@@ -5188,7 +7280,7 @@ export namespace rdfs_Class {
       subClassOf: $convertToScalarSet($convertToIri)(parameters.subClassOf, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           sh_BaseShape.schema.properties.subClassOf.type,
           value,
         ),
@@ -5196,7 +7288,7 @@ export namespace rdfs_Class {
       type: $convertToScalarSet($convertToIri)(parameters.type, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.type.type,
           value,
         ),
@@ -5375,7 +7467,7 @@ export namespace rdf_Statement {
       );
     }
     parameters.resource.add(
-      sh_BaseShape.schema.properties.comment.path,
+      shaclmate_Service.schema.properties.comment.path,
       parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -5385,7 +7477,7 @@ export namespace rdf_Statement {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_BaseShape.schema.properties.label.path,
+      shaclmate_Service.schema.properties.label.path,
       parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -5435,8 +7527,8 @@ export namespace rdf_Statement {
       comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.comment.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.comment.type,
           value,
         ),
       ),
@@ -5451,8 +7543,8 @@ export namespace rdf_Statement {
       label: $convertToScalarSet($convertToLiteral)(parameters.label, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.label.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.label.type,
           value,
         ),
       ),
@@ -5466,7 +7558,7 @@ export namespace rdf_Statement {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           rdfs_Class.schema.properties.seeAlso.type,
           value,
         ),
@@ -5475,7 +7567,7 @@ export namespace rdf_Statement {
       type: $convertToScalarSet($convertToIri)(parameters.type, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.type.type,
           value,
         ),
@@ -5534,9 +7626,9 @@ export namespace rdf_Statement {
     readonly termType: "rdf_Statement";
   };
 
-  export type Identifier = BlankNode | NamedNode;
+  export type Identifier = $Identifier;
   export namespace Identifier {
-    export const parse = $parseIdentifier;
+    export const parse = $Identifier.parse;
   }
 
   export const isrdf_Statement: $ObjectTypeGuardFunction<
@@ -5672,7 +7764,7 @@ export namespace rdf_Property {
       );
     }
     parameters.resource.add(
-      sh_BaseShape.schema.properties.comment.path,
+      shaclmate_Service.schema.properties.comment.path,
       parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -5687,7 +7779,7 @@ export namespace rdf_Property {
       parameters.graph,
     );
     parameters.resource.add(
-      sh_BaseShape.schema.properties.label.path,
+      shaclmate_Service.schema.properties.label.path,
       parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -5732,15 +7824,15 @@ export namespace rdf_Property {
       comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.comment.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.comment.type,
           value,
         ),
       ),
       domain: $convertToScalarSet($convertToIri)(parameters.domain, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           rdf_Property.schema.properties.domain.type,
           value,
         ),
@@ -5756,15 +7848,15 @@ export namespace rdf_Property {
       label: $convertToScalarSet($convertToLiteral)(parameters.label, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.label.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.label.type,
           value,
         ),
       ),
       range: $convertToScalarSet($convertToIri)(parameters.range, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           rdf_Property.schema.properties.range.type,
           value,
         ),
@@ -5775,7 +7867,7 @@ export namespace rdf_Property {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           rdfs_Class.schema.properties.seeAlso.type,
           value,
         ),
@@ -5786,7 +7878,7 @@ export namespace rdf_Property {
           defaultNamespace: parameters.$defaultNamespace,
         },
       ).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           rdf_Property.schema.properties.subPropertyOf.type,
           value,
         ),
@@ -5794,7 +7886,7 @@ export namespace rdf_Property {
       type: $convertToScalarSet($convertToIri)(parameters.type, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
+        $Array.validate($identityValidationFunction)(
           skos_ConceptScheme.schema.properties.type.type,
           value,
         ),
@@ -5981,12 +8073,12 @@ export namespace owl_Ontology {
       );
     }
     parameters.resource.add(
-      sh_BaseShape.schema.properties.comment.path,
+      shaclmate_Service.schema.properties.comment.path,
       parameters.object.comment.flatMap((item) => [item]),
       parameters.graph,
     );
     parameters.resource.add(
-      sh_BaseShape.schema.properties.label.path,
+      shaclmate_Service.schema.properties.label.path,
       parameters.object.label.flatMap((item) => [item]),
       parameters.graph,
     );
@@ -6011,16 +8103,16 @@ export namespace owl_Ontology {
       comment: $convertToScalarSet($convertToLiteral)(parameters.comment, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.comment.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.comment.type,
           value,
         ),
       ),
       label: $convertToScalarSet($convertToLiteral)(parameters.label, {
         defaultNamespace: parameters.$defaultNamespace,
       }).chain((value) =>
-        $validateArray($identityValidationFunction)(
-          sh_BaseShape.schema.properties.label.type,
+        $Array.validate($identityValidationFunction)(
+          shaclmate_Service.schema.properties.label.type,
           value,
         ),
       ),
@@ -6135,6 +8227,46 @@ export namespace owl_Ontology {
     });
 }
 
+export type HttpSuccessStatusCode = HttpSuccessStatusCode.Schema["in"][number];
+
+export namespace HttpSuccessStatusCode {
+  export const schema = {
+    datatype: $xsd_int,
+    in: [200, 201, 202, 203, 204, 205, 206, 207, 208, 226] as const,
+    kind: "Int",
+  } as const;
+
+  export type Schema = typeof schema;
+}
+
+export type HttpMethod = HttpMethod.Schema["in"][number];
+
+export namespace HttpMethod {
+  export const schema = {
+    datatype: $xsd_string,
+    in: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"] as const,
+    kind: "String",
+  } as const;
+
+  export type Schema = typeof schema;
+}
+
+export type HttpErrorStatusCode = HttpErrorStatusCode.Schema["in"][number];
+
+export namespace HttpErrorStatusCode {
+  export const schema = {
+    datatype: $xsd_int,
+    in: [
+      400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414,
+      415, 416, 417, 418, 421, 422, 423, 424, 425, 426, 428, 429, 431, 451, 500,
+      501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
+    ] as const,
+    kind: "Int",
+  } as const;
+
+  export type Schema = typeof schema;
+}
+
 export type $Object =
   | owl_Ontology.Discriminated
   | rdf_Property.Discriminated
@@ -6144,10 +8276,22 @@ export type $Object =
   | sh_NodeShapeSpecificProperties.Discriminated
   | sh_PropertyGroup.Discriminated
   | sh_PropertyShapeSpecificProperties.Discriminated
+  | shaclmate_Operation.Discriminated
+  | shaclmate_OperationErrorHttpBinding.Discriminated
+  | shaclmate_OperationHttpBinding.Discriminated
+  | shaclmate_OperationInputHttpBinding.Discriminated
+  | shaclmate_OperationOutputHttpBinding.Discriminated
+  | shaclmate_Service.Discriminated
+  | ShaclmateOperationErrorSpecificProperties.Discriminated
+  | ShaclmateOperationInputSpecificProperties.Discriminated
+  | ShaclmateOperationOutputSpecificProperties.Discriminated
   | skos_Concept.Discriminated
   | skos_ConceptScheme.Discriminated
   | sh_NodeShape.Discriminated
-  | sh_PropertyShape.Discriminated;
+  | sh_PropertyShape.Discriminated
+  | shaclmate_OperationError.Discriminated
+  | shaclmate_OperationInput.Discriminated
+  | shaclmate_OperationOutput.Discriminated;
 
 export namespace $Object {
   export const toRdfResource: $ToRdfResourceFunction<
@@ -6174,6 +8318,42 @@ export namespace $Object {
           object,
           options,
         );
+      case "shaclmate_Operation":
+        return shaclmate_Operation.toRdfResource(object, options);
+      case "shaclmate_OperationErrorHttpBinding":
+        return shaclmate_OperationErrorHttpBinding.toRdfResource(
+          object,
+          options,
+        );
+      case "shaclmate_OperationHttpBinding":
+        return shaclmate_OperationHttpBinding.toRdfResource(object, options);
+      case "shaclmate_OperationInputHttpBinding":
+        return shaclmate_OperationInputHttpBinding.toRdfResource(
+          object,
+          options,
+        );
+      case "shaclmate_OperationOutputHttpBinding":
+        return shaclmate_OperationOutputHttpBinding.toRdfResource(
+          object,
+          options,
+        );
+      case "shaclmate_Service":
+        return shaclmate_Service.toRdfResource(object, options);
+      case "ShaclmateOperationErrorSpecificProperties":
+        return ShaclmateOperationErrorSpecificProperties.toRdfResource(
+          object,
+          options,
+        );
+      case "ShaclmateOperationInputSpecificProperties":
+        return ShaclmateOperationInputSpecificProperties.toRdfResource(
+          object,
+          options,
+        );
+      case "ShaclmateOperationOutputSpecificProperties":
+        return ShaclmateOperationOutputSpecificProperties.toRdfResource(
+          object,
+          options,
+        );
       case "skos_Concept":
         return skos_Concept.toRdfResource(object, options);
       case "skos_ConceptScheme":
@@ -6182,6 +8362,12 @@ export namespace $Object {
         return sh_NodeShape.toRdfResource(object, options);
       case "sh_PropertyShape":
         return sh_PropertyShape.toRdfResource(object, options);
+      case "shaclmate_OperationError":
+        return shaclmate_OperationError.toRdfResource(object, options);
+      case "shaclmate_OperationInput":
+        return shaclmate_OperationInput.toRdfResource(object, options);
+      case "shaclmate_OperationOutput":
+        return shaclmate_OperationOutput.toRdfResource(object, options);
       default:
         object satisfies never;
         throw new Error("should never reach this point");
@@ -6206,6 +8392,24 @@ export namespace $Object {
         return sh_PropertyGroup.$toString(object);
       case "sh_PropertyShapeSpecificProperties":
         return sh_PropertyShapeSpecificProperties.$toString(object);
+      case "shaclmate_Operation":
+        return shaclmate_Operation.$toString(object);
+      case "shaclmate_OperationErrorHttpBinding":
+        return shaclmate_OperationErrorHttpBinding.$toString(object);
+      case "shaclmate_OperationHttpBinding":
+        return shaclmate_OperationHttpBinding.$toString(object);
+      case "shaclmate_OperationInputHttpBinding":
+        return shaclmate_OperationInputHttpBinding.$toString(object);
+      case "shaclmate_OperationOutputHttpBinding":
+        return shaclmate_OperationOutputHttpBinding.$toString(object);
+      case "shaclmate_Service":
+        return shaclmate_Service.$toString(object);
+      case "ShaclmateOperationErrorSpecificProperties":
+        return ShaclmateOperationErrorSpecificProperties.$toString(object);
+      case "ShaclmateOperationInputSpecificProperties":
+        return ShaclmateOperationInputSpecificProperties.$toString(object);
+      case "ShaclmateOperationOutputSpecificProperties":
+        return ShaclmateOperationOutputSpecificProperties.$toString(object);
       case "skos_Concept":
         return skos_Concept.$toString(object);
       case "skos_ConceptScheme":
@@ -6214,6 +8418,12 @@ export namespace $Object {
         return sh_NodeShape.$toString(object);
       case "sh_PropertyShape":
         return sh_PropertyShape.$toString(object);
+      case "shaclmate_OperationError":
+        return shaclmate_OperationError.$toString(object);
+      case "shaclmate_OperationInput":
+        return shaclmate_OperationInput.$toString(object);
+      case "shaclmate_OperationOutput":
+        return shaclmate_OperationOutput.$toString(object);
       default:
         object satisfies never;
         throw new Error("should never reach this point");
